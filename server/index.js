@@ -13,6 +13,7 @@ const attendanceRoutes = require('./routes/attendanceRoutes')
 const marksRoutes = require('./routes/marksRoutes')
 const announcementRoutes = require('./routes/announcementRoutes')
 const notificationRoutes = require('./routes/notificationRoutes')
+const eventRoutes = require('./routes/eventRoutes')
 const connectDB = require('./config/db')
 
 const app = express()
@@ -31,6 +32,7 @@ app.use('/api/attendance', attendanceRoutes)
 app.use('/api/marks', marksRoutes)
 app.use('/api/announcements', announcementRoutes)
 app.use('/api/notifications', notificationRoutes)
+app.use('/api/events', eventRoutes)
 
 app.use((error, req, res, next) => {
   console.error('Request failed.')

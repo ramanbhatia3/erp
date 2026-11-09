@@ -15,6 +15,8 @@ import StudentMarksPage from './StudentMarksPage'
 import AnnouncementsPage from './AnnouncementsPage'
 import NotificationsPage from './NotificationsPage'
 import LatestAnnouncementsWidget from '../components/dashboard/LatestAnnouncementsWidget'
+import UpcomingEventsWidget from '../components/dashboard/UpcomingEventsWidget'
+import EventsPage from './EventsPage'
 import ClassAdvisorDashboard from './dashboards/ClassAdvisorDashboard'
 import PlacementAdminDashboard from './dashboards/PlacementAdminDashboard'
 import StudentDashboard from './dashboards/StudentDashboard'
@@ -71,10 +73,14 @@ function DashboardPage() {
     location.pathname === `/dashboard/${dashboardRole}/announcements`
   const isNotificationsPage =
     location.pathname === `/dashboard/${dashboardRole}/notifications`
+  const isEventsPage =
+    location.pathname === `/dashboard/${dashboardRole}/events`
 
   return (
     <DashboardLayout user={user} role={dashboardRole}>
-      {isNotificationsPage ? (
+      {isEventsPage ? (
+        <EventsPage />
+      ) : isNotificationsPage ? (
         <NotificationsPage />
       ) : isAnnouncementsPage ? (
         <AnnouncementsPage />
@@ -101,6 +107,7 @@ function DashboardPage() {
       ) : (
         <div className="space-y-6">
           <RoleDashboard user={user} />
+          <UpcomingEventsWidget />
           <LatestAnnouncementsWidget />
         </div>
       )}

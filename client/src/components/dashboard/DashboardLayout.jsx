@@ -24,6 +24,7 @@ const roleMenus = {
     ['Settings', 'SE'],
     ['Reports', 'RP'],
     ['Announcements', 'AN'],
+    ['Events', 'EV'],
     ['Notifications', 'NO'],
   ],
   teacher: [
@@ -35,6 +36,7 @@ const roleMenus = {
     ['Low Attendance Students', 'LA'],
     ['Students', 'ST'],
     ['Announcements', 'AN'],
+    ['Events', 'EV'],
     ['Notifications', 'NO'],
   ],
   classAdvisor: [
@@ -44,6 +46,7 @@ const roleMenus = {
     ['Attendance', 'AT'],
     ['Low Attendance Students', 'LA'],
     ['Announcements', 'AN'],
+    ['Events', 'EV'],
     ['Notifications', 'NO'],
   ],
   student: [
@@ -52,6 +55,7 @@ const roleMenus = {
     ['Attendance', 'AT'],
     ['Results', 'RS'],
     ['Notices', 'NT'],
+    ['Events', 'EV'],
     ['Notifications', 'NO'],
   ],
   placementAdmin: [
@@ -61,6 +65,7 @@ const roleMenus = {
     ['Applications', 'AP'],
     ['Reports', 'RP'],
     ['Notices', 'NT'],
+    ['Events', 'EV'],
     ['Notifications', 'NO'],
   ],
 }
@@ -90,6 +95,7 @@ function DashboardLayout({ user, role, children }) {
     location.pathname.endsWith('/announcements')
   const isNotificationsPage =
     location.pathname.endsWith('/notifications')
+  const isEventsPage = location.pathname.endsWith('/events')
   const [selectedMenu, setSelectedMenu] = useState('Overview')
   const { logout } = useAuth()
   const navigate = useNavigate()
@@ -120,6 +126,8 @@ function DashboardLayout({ user, role, children }) {
                         : 'Announcements'
                       : isNotificationsPage
                         ? 'Notifications'
+                        : isEventsPage
+                          ? 'Events'
                       : selectedMenu
 
   function handleLogout() {
@@ -190,6 +198,11 @@ function DashboardLayout({ user, role, children }) {
 
     if (label === 'Notifications') {
       navigate(`/dashboard/${role}/notifications`)
+      return
+    }
+
+    if (label === 'Events') {
+      navigate(`/dashboard/${role}/events`)
       return
     }
 
@@ -315,7 +328,7 @@ function DashboardLayout({ user, role, children }) {
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="mx-auto max-w-7xl">
-            {isDepartmentsPage || isUsersPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isLowAttendancePage || isSettingsPage || isAnnouncementsPage || isNotificationsPage ? (
+            {isDepartmentsPage || isUsersPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isLowAttendancePage || isSettingsPage || isAnnouncementsPage || isNotificationsPage || isEventsPage ? (
               children
             ) : activeMenu === 'Overview' ? (
               children
