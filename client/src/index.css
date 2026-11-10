@@ -1,8 +1,182 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-body {
-  min-width: 320px;
-  min-height: 100vh;
-  margin: 0;
-  font-family: Arial, sans-serif;
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-200: #bfdbfe;
+  --color-blue-300: #93c5fd;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+  --color-blue-800: #1e40af;
+  --color-blue-900: #1e3a8a;
+  --color-blue-950: #172554;
+
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-serif: 'Fraunces', serif;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --ink: #172033;
+    --paper: #f3f6fb;
+    --cream: #e9eef6;
+    --border: #e1e7f0;
+    --muted: #718096;
+    --bg-main: var(--paper);
+    --bg-card: #ffffff;
+    --sidebar-bg: #111a2b;
+    --text-main: var(--ink);
+    --text-muted: var(--muted);
+    --border-color: var(--border);
+
+    --color-slate-50: #f7f9fc;
+    --color-slate-100: #eef2f8;
+    --color-slate-200: #e1e7f0;
+    --color-slate-300: #cbd5e1;
+    --color-slate-400: #94a3b8;
+    --color-slate-500: #718096;
+    --color-slate-600: #526179;
+    --color-slate-700: #394860;
+    --color-slate-800: #25334a;
+    --color-slate-900: #172033;
+    --color-slate-950: #111a2b;
+
+    --color-blue-50: #eff6ff;
+    --color-blue-100: #dbeafe;
+    --color-blue-200: #bfdbfe;
+    --color-blue-300: #93c5fd;
+    --color-blue-400: #60a5fa;
+    --color-blue-500: #3b82f6;
+    --color-blue-600: #2563eb;
+    --color-blue-700: #1d4ed8;
+    --color-blue-800: #1e40af;
+    --color-blue-900: #1e3a8a;
+    --color-blue-950: #172554;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+    --ink: #e8edf7;
+    --paper: #101827;
+    --cream: #182337;
+    --border: #28364d;
+    --muted: #9aa9bf;
+    --bg-main: var(--paper);
+    --bg-card: #172235;
+    --sidebar-bg: #0b1220;
+    --text-main: var(--ink);
+    --text-muted: var(--muted);
+    --border-color: var(--border);
+
+    --color-slate-50: #172235;
+    --color-slate-100: #1b2940;
+    --color-slate-200: #28364d;
+    --color-slate-300: #3b4b64;
+    --color-slate-400: #71829b;
+    --color-slate-500: #9aa9bf;
+    --color-slate-600: #b4c0d2;
+    --color-slate-700: #cbd5e1;
+    --color-slate-800: #dce4ef;
+    --color-slate-900: #e8edf7;
+    --color-slate-950: #0b1220;
+
+    --color-blue-50: #142a47;
+    --color-blue-100: #17365e;
+    --color-blue-200: #204b7c;
+    --color-blue-300: #3470ad;
+    --color-blue-400: #5593d2;
+    --color-blue-500: #70a9e5;
+    --color-blue-600: #3b82d0;
+    --color-blue-700: #70a9e5;
+    --color-blue-800: #9bc5ef;
+    --color-blue-900: #c6ddf7;
+    --color-blue-950: #e2effc;
+  }
+
+  body {
+    min-width: 320px;
+    min-height: 100vh;
+    margin: 0;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  ::selection {
+    background: #bfdbfe;
+    color: #172033;
+  }
+}
+
+.app-canvas {
+  background:
+    radial-gradient(ellipse at 86% 0%, rgb(219 234 254 / 0.58), transparent 34rem),
+    linear-gradient(135deg, #f8faff 0%, #f2f5fa 52%, #edf2f8 100%);
+}
+
+.dark .app-canvas {
+  background:
+    radial-gradient(ellipse at 86% 0%, rgb(37 99 235 / 0.13), transparent 34rem),
+    linear-gradient(135deg, #111b2b 0%, #101827 54%, #0c1421 100%);
+}
+
+.dark .dashboard-sidebar {
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+}
+
+.dark .bg-white {
+  background-color: var(--bg-card);
+}
+
+.dark .bg-white\/80 {
+  background-color: rgb(23 34 53 / 0.88);
+}
+
+.dark .divide-slate-100 > :not(:last-child) {
+  border-color: var(--border-color);
+}
+
+.dark .bg-blue-700 {
+  background-color: #1d4ed8;
+}
+
+.dark .hover\:bg-blue-800:hover {
+  background-color: #1e40af;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
 }
