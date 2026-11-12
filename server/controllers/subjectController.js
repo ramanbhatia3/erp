@@ -78,7 +78,19 @@ async function listSubjects(req, res, next) {
 
 async function createSubject(req, res, next) {
   try {
-    const { name, code, department, class: classId, teacher } = req.body
+    const {
+      name,
+      code,
+      department,
+      class: classId,
+      teacher,
+      type,
+      weeklyPeriods,
+      roomType,
+      isLab,
+      requiresConsecutivePeriods,
+      consecutivePeriodCount,
+    } = req.body
     const validationMessage = await validateSubjectRelations({
       department,
       classId,
@@ -95,6 +107,12 @@ async function createSubject(req, res, next) {
       department,
       class: classId,
       teacher,
+      type,
+      weeklyPeriods,
+      roomType,
+      isLab,
+      requiresConsecutivePeriods,
+      consecutivePeriodCount,
     })
 
     await subject.populate([
@@ -121,7 +139,19 @@ async function updateSubject(req, res, next) {
     }
 
     const updates = {}
-    for (const field of ['name', 'code', 'department', 'class', 'teacher']) {
+    for (const field of [
+      'name',
+      'code',
+      'department',
+      'class',
+      'teacher',
+      'type',
+      'weeklyPeriods',
+      'roomType',
+      'isLab',
+      'requiresConsecutivePeriods',
+      'consecutivePeriodCount',
+    ]) {
       if (req.body[field] !== undefined) updates[field] = req.body[field]
     }
 

@@ -12,6 +12,7 @@ RBPU Hub is a role-based university portal for managing academic operations in o
 - **Marks:** Teachers can record and edit marks using configured assessment components. Students can view their own results.
 - **Communication:** Authorized users can publish university-, department-, or class-scoped announcements. Users have a notification inbox with unread counts and read controls.
 - **Events:** Authorized staff can manage scoped university events. Users can browse relevant events in a monthly calendar or filtered list.
+- **Timetable planning:** The app now includes a timetable generator that reuses department class, subject, teacher, and room data to build a class schedule and validates the generated timetable against available resources.
 - **Health check:** `GET /api/health` reports whether the API process is responding.
 - **Role-specific navigation:** Separate dashboard routes and access control are set up for superadmins, teachers, class advisors, students, and placement admins.
 
@@ -105,6 +106,7 @@ All API routes are under `/api`:
 | Announcements | `/announcements` | Scoped announcements |
 | Notifications | `/notifications` | User notification inbox and read state |
 | Events | `/events` | Scoped academic event calendar and management |
+| Timetable | `/timetable` | Timetable configuration, room data, validation, and class schedule generation |
 
 Most endpoints require authentication; write and administrative access is restricted by role. Request validation is applied to the API inputs.
 

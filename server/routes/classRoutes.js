@@ -44,6 +44,22 @@ router.get(
   classController.listClasses,
 )
 
+router.get(
+  '/:id/subjects',
+  ...canRead,
+  param('id').isMongoId().withMessage('Class ID is invalid.'),
+  checkValidation,
+  classController.getClassSubjects,
+)
+
+router.get(
+  '/:id/faculty',
+  ...canRead,
+  param('id').isMongoId().withMessage('Class ID is invalid.'),
+  checkValidation,
+  classController.getClassFaculty,
+)
+
 router.post(
   '/',
   ...superadminOnly,

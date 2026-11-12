@@ -26,6 +26,7 @@ const menuIconPaths = {
   AN: 'M3 11v2a2 2 0 0 0 2 2h2l9 5V4l-9 5H5a2 2 0 0 0-2 2ZM7 15l1 5h4l-2-4M20 9a5 5 0 0 1 0 6',
   EV: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2ZM8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01',
   NO: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4',
+  TM: 'M3 6h18M7 6V3m10 3V3M4 10h16v10H4z',
   AT: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2ZM8 15l2 2 5-5',
   MK: 'M12 3 14.8 8.7 21 9.6l-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z',
   LA: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z',
@@ -60,6 +61,7 @@ const roleMenus = {
     ['Users', 'US'],
     ['Classes', 'CL'],
     ['Subjects', 'SB'],
+    ['Timetable', 'TM'],
     ['Settings', 'SE'],
     ['Reports', 'RP'],
     ['Announcements', 'AN'],
@@ -70,6 +72,7 @@ const roleMenus = {
     ['Overview', 'OV'],
     ['My Classes', 'MC'],
     ['Subjects', 'SB'],
+    ['Timetable', 'TM'],
     ['Attendance', 'AT'],
     ['Marks', 'MK'],
     ['Low Attendance Students', 'LA'],
@@ -82,6 +85,7 @@ const roleMenus = {
     ['Overview', 'OV'],
     ['My Class', 'MC'],
     ['Students', 'ST'],
+    ['Timetable', 'TM'],
     ['Attendance', 'AT'],
     ['Low Attendance Students', 'LA'],
     ['Announcements', 'AN'],
@@ -91,6 +95,7 @@ const roleMenus = {
   student: [
     ['Overview', 'OV'],
     ['My Subjects', 'SB'],
+    ['Timetable', 'TM'],
     ['Attendance', 'AT'],
     ['Results', 'RS'],
     ['Notices', 'NT'],
@@ -138,6 +143,7 @@ function DashboardLayout({ user, role, children }) {
   const isNotificationsPage =
     location.pathname.endsWith('/notifications')
   const isEventsPage = location.pathname.endsWith('/events')
+  const isTimetablePage = location.pathname.endsWith('/timetable')
   const [selectedMenu, setSelectedMenu] = useState('Overview')
   const { logout } = useAuth()
   const navigate = useNavigate()
@@ -156,27 +162,29 @@ function DashboardLayout({ user, role, children }) {
       ? role === 'superadmin' ? 'Classes' : 'My Classes'
       : isSubjectsPage
         ? 'Subjects'
-        : isAttendancePage
-          ? 'Attendance'
-          : isStudentAttendancePage
+        : isTimetablePage
+          ? 'Timetable'
+          : isAttendancePage
             ? 'Attendance'
-            : isStudentMarksPage
-              ? 'Results'
-              : isTeacherMarksPage
-                ? 'Marks'
-                : isLowAttendancePage
-                  ? 'Low Attendance Students'
-                  : isSettingsPage
-                    ? 'Settings'
-                    : isAnnouncementsPage
-                      ? role === 'student' || role === 'placementAdmin'
-                        ? 'Notices'
-                        : 'Announcements'
-                      : isNotificationsPage
-                        ? 'Notifications'
-                        : isEventsPage
-                          ? 'Events'
-                      : selectedMenu
+            : isStudentAttendancePage
+              ? 'Attendance'
+              : isStudentMarksPage
+                ? 'Results'
+                : isTeacherMarksPage
+                  ? 'Marks'
+                  : isLowAttendancePage
+                    ? 'Low Attendance Students'
+                    : isSettingsPage
+                      ? 'Settings'
+                      : isAnnouncementsPage
+                        ? role === 'student' || role === 'placementAdmin'
+                          ? 'Notices'
+                          : 'Announcements'
+                        : isNotificationsPage
+                          ? 'Notifications'
+                          : isEventsPage
+                            ? 'Events'
+                        : selectedMenu
 
   function handleLogout() {
     logout()
@@ -203,6 +211,11 @@ function DashboardLayout({ user, role, children }) {
 
     if (label === 'Subjects') {
       navigate(`/dashboard/${role}/subjects`)
+      return
+    }
+
+    if (label === 'Timetable') {
+      navigate(`/dashboard/${role}/timetable`)
       return
     }
 

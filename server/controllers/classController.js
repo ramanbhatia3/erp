@@ -56,6 +56,54 @@ async function listClasses(req, res, next) {
   }
 }
 
+async function getClassSubjects(req, res, next) {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Class ID is invalid.' })
+    }
+
+    const classRecord = await Class.findById(req.params.id)
+    if (!classRecord) {
+      return res.status(404).json({ message: 'Class not found.' })
+    }
+
+    const subjects = await Subject.find({ class: req.params.id })
+      .populate('department', 'name code')
+      .populate('teacher', 'name email')
+      .sort({ name: 1 })
+
+    return res.json({ class: classRecord, subjects })
+  } catch (error) {
+    return next(error)
+  }
+}
+
+async function getClassFaculty(req, res, next) {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: 'Class ID is invalid.' })
+    }
+
+    const classRecord = await Class.findById(req.params.id)
+    if (!classRecord) {
+      return res.status(404).json({ message: 'Class not found.' })
+    }
+
+    const subjects = await Subject.find({ class: req.params.id })
+      .populate('teacher', 'name email department')
+      .lean()
+
+    const faculty = [...new Map(subjects
+      .filter((subject) => subject.teacher)
+      .map((subject) => [String(subject.teacher._id), subject.teacher]))
+      .values()]
+
+    return res.json({ class: classRecord, faculty })
+  } catch (error) {
+    return next(error)
+  }
+}
+
 async function createClass(req, res, next) {
   try {
     const { department, name, semester, section, academicYear } = req.body
@@ -169,4 +217,4 @@ async function deleteClass(req, res, next) {
   }
 }
 
-module.exports = { listClasses, createClass, updateClass, deleteClass }
+module.exports = { listClasses, getClassSubjects, getClassFaculty, createClass, updateClass, deleteClass }

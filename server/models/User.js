@@ -50,6 +50,22 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    availability: {
+      type: [String],
+      default: [],
+    },
+    maxLecturesPerDay: {
+      type: Number,
+      min: 1,
+      max: 12,
+      default: 6,
+    },
+    maxLecturesPerWeek: {
+      type: Number,
+      min: 1,
+      max: 40,
+      default: 20,
+    },
   },
   { timestamps: true },
 )

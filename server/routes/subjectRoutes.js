@@ -32,6 +32,14 @@ const classValidation = body('class')
 const teacherValidation = body('teacher')
   .isMongoId()
   .withMessage('Select a valid teacher.')
+const optionalSubjectMeta = [
+  body('type').optional().isIn(['Theory', 'Practical', 'Lab', 'Elective']).withMessage('Select a valid subject type.'),
+  body('weeklyPeriods').optional().isInt({ min: 1, max: 12 }).withMessage('Weekly periods must be between 1 and 12.').toInt(),
+  body('roomType').optional().trim().notEmpty().withMessage('Room type is required when provided.'),
+  body('isLab').optional().isBoolean().withMessage('Lab status must be true or false.'),
+  body('requiresConsecutivePeriods').optional().isBoolean().withMessage('Consecutive period flag must be true or false.'),
+  body('consecutivePeriodCount').optional().isInt({ min: 1, max: 6 }).withMessage('Consecutive period count must be between 1 and 6.').toInt(),
+]
 
 router.get(
   '/',
@@ -58,6 +66,7 @@ router.post(
   departmentValidation,
   classValidation,
   teacherValidation,
+  ...optionalSubjectMeta,
   checkValidation,
   subjectController.createSubject,
 )
@@ -77,6 +86,7 @@ router.put(
   body('department').optional().isMongoId(),
   body('class').optional().isMongoId(),
   body('teacher').optional().isMongoId(),
+  ...optionalSubjectMeta,
   checkValidation,
   subjectController.updateSubject,
 )
