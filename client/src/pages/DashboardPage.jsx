@@ -17,6 +17,7 @@ import NotificationsPage from './NotificationsPage'
 import LatestAnnouncementsWidget from '../components/dashboard/LatestAnnouncementsWidget'
 import UpcomingEventsWidget from '../components/dashboard/UpcomingEventsWidget'
 import EventsPage from './EventsPage'
+import ClubsPage from './ClubsPage'
 import TimetablePage from './TimetablePage'
 import ClassAdvisorDashboard from './dashboards/ClassAdvisorDashboard'
 import PlacementAdminDashboard from './dashboards/PlacementAdminDashboard'
@@ -76,6 +77,8 @@ function DashboardPage() {
     location.pathname === `/dashboard/${dashboardRole}/notifications`
   const isEventsPage =
     location.pathname === `/dashboard/${dashboardRole}/events`
+  const isClubsPage =
+    location.pathname === `/dashboard/${dashboardRole}/clubs`
   const isTimetablePage =
     location.pathname === `/dashboard/${dashboardRole}/timetable`
 
@@ -85,6 +88,8 @@ function DashboardPage() {
         <TimetablePage />
       ) : isEventsPage ? (
         <EventsPage />
+      ) : isClubsPage ? (
+        <ClubsPage />
       ) : isNotificationsPage ? (
         <NotificationsPage />
       ) : isAnnouncementsPage ? (

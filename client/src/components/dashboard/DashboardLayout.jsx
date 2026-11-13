@@ -31,6 +31,7 @@ const menuIconPaths = {
   MK: 'M12 3 14.8 8.7 21 9.6l-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z',
   LA: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z',
   ST: 'M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M20 8v6M23 11h-6',
+  CB: 'M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0ZM3 20a7 7 0 0 1 14 0M18 8a3 3 0 0 1 0 6M20 17a5 5 0 0 1 2 3',
   PD: 'M3 7h18v13H3zM8 7V4h8v3M3 12h18M10 12v2h4v-2',
   AP: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h8',
   RS: 'M12 3 14.8 8.7 21 9.6l-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z',
@@ -66,6 +67,7 @@ const roleMenus = {
     ['Reports', 'RP'],
     ['Announcements', 'AN'],
     ['Events', 'EV'],
+    ['Clubs', 'CB'],
     ['Notifications', 'NO'],
   ],
   teacher: [
@@ -79,6 +81,7 @@ const roleMenus = {
     ['Students', 'ST'],
     ['Announcements', 'AN'],
     ['Events', 'EV'],
+    ['Clubs', 'CB'],
     ['Notifications', 'NO'],
   ],
   classAdvisor: [
@@ -90,6 +93,7 @@ const roleMenus = {
     ['Low Attendance Students', 'LA'],
     ['Announcements', 'AN'],
     ['Events', 'EV'],
+    ['Clubs', 'CB'],
     ['Notifications', 'NO'],
   ],
   student: [
@@ -100,6 +104,7 @@ const roleMenus = {
     ['Results', 'RS'],
     ['Notices', 'NT'],
     ['Events', 'EV'],
+    ['Clubs', 'CB'],
     ['Notifications', 'NO'],
   ],
   placementAdmin: [
@@ -110,6 +115,7 @@ const roleMenus = {
     ['Reports', 'RP'],
     ['Notices', 'NT'],
     ['Events', 'EV'],
+    ['Clubs', 'CB'],
     ['Notifications', 'NO'],
   ],
 }
@@ -143,6 +149,7 @@ function DashboardLayout({ user, role, children }) {
   const isNotificationsPage =
     location.pathname.endsWith('/notifications')
   const isEventsPage = location.pathname.endsWith('/events')
+  const isClubsPage = location.pathname.endsWith('/clubs')
   const isTimetablePage = location.pathname.endsWith('/timetable')
   const [selectedMenu, setSelectedMenu] = useState('Overview')
   const { logout } = useAuth()
@@ -184,6 +191,8 @@ function DashboardLayout({ user, role, children }) {
                           ? 'Notifications'
                           : isEventsPage
                             ? 'Events'
+                            : isClubsPage
+                              ? 'Clubs'
                         : selectedMenu
 
   function handleLogout() {
@@ -264,6 +273,11 @@ function DashboardLayout({ user, role, children }) {
 
     if (label === 'Events') {
       navigate(`/dashboard/${role}/events`)
+      return
+    }
+
+    if (label === 'Clubs') {
+      navigate(`/dashboard/${role}/clubs`)
       return
     }
 
@@ -427,7 +441,7 @@ function DashboardLayout({ user, role, children }) {
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="mx-auto max-w-[1440px]">
-            {isDepartmentsPage || isUsersPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isLowAttendancePage || isSettingsPage || isAnnouncementsPage || isNotificationsPage || isEventsPage ? (
+            {isDepartmentsPage || isUsersPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isLowAttendancePage || isSettingsPage || isAnnouncementsPage || isNotificationsPage || isEventsPage || isClubsPage ? (
               children
             ) : activeMenu === 'Overview' ? (
               children
