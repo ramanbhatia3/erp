@@ -30,7 +30,6 @@ function UsersPage() {
   const [users, setUsers] = useState([])
   const [departments, setDepartments] = useState([])
   const [classes, setClasses] = useState([])
-  const [teachers, setTeachers] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [search, setSearch] = useState('')
@@ -48,10 +47,10 @@ function UsersPage() {
   const [bulkCredentials, setBulkCredentials] = useState([])
   const [bulkError, setBulkError] = useState('')
   const [uploading, setUploading] = useState(false)
-  const [deactivatingUser, setDeactivatingUser] = useState(null)
-  const [deactivating, setDeactivating] = useState(false)
-  const [advisorSelections, setAdvisorSelections] = useState({})
-  const [savingAdvisorId, setSavingAdvisorId] = useState('')
+  const [statusUser, setStatusUser] = useState(null)
+  const [updatingStatus, setUpdatingStatus] = useState(false)
+  const [removingStudent, setRemovingStudent] = useState(null)
+  const [removingFromClass, setRemovingFromClass] = useState(false)
 
   const userParams = useMemo(() => {
     const params = {}
@@ -66,24 +65,11 @@ function UsersPage() {
 
   useEffect(() => {
     let active = true
-    Promise.all([
-      api.get('/departments'),
-      api.get('/classes'),
-      api.get('/users/teachers'),
-    ])
-      .then(([departmentResponse, classResponse, teacherResponse]) => {
+    Promise.all([api.get('/departments'), api.get('/classes')])
+      .then(([departmentResponse, classResponse]) => {
         if (!active) return
         setDepartments(departmentResponse.data.departments)
         setClasses(classResponse.data.classes)
-        setTeachers(teacherResponse.data.teachers)
-        setAdvisorSelections(
-          Object.fromEntries(
-            classResponse.data.classes.map((item) => [
-              item._id,
-              item.advisor?._id || '',
-            ]),
-          ),
-        )
         setLoadError('')
       })
       .catch((error) => {
@@ -190,7 +176,7 @@ function UsersPage() {
       name: form.name.trim(),
       email: form.email.trim(),
       department: form.department,
-      ...(form.role === 'student'
+      ...(form.role === 'student' && form.class
         ? {
             class: form.class,
             section: form.section.trim(),
@@ -224,18 +210,52 @@ function UsersPage() {
     }
   }
 
-  async function handleDeactivate() {
-    if (!deactivatingUser) return
-    setDeactivating(true)
+  async function handleStatusChange() {
+    if (!statusUser) return
+    const isActive = !statusUser.isActive
+    setUpdatingStatus(true)
     try {
-      await api.patch(`/users/${deactivatingUser._id}/deactivate`)
-      toast.success('User deactivated.')
-      setDeactivatingUser(null)
+      await api.patch(`/users/${statusUser._id}/status`, { isActive })
+      toast.success(isActive ? 'User reactivated.' : 'User suspended.')
+      setStatusUser(null)
       refreshUsers()
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Unable to deactivate user.'))
+      toast.error(getErrorMessage(error, 'Unable to update account status.'))
     } finally {
-      setDeactivating(false)
+      setUpdatingStatus(false)
+    }
+  }
+
+  async function handlePasswordReset(user) {
+    try {
+      const response = await api.post(`/users/${user._id}/reset-password`)
+      setCreatedCredentials({
+        name: response.data.user.name,
+        email: response.data.user.email,
+        password: response.data.defaultPassword,
+      })
+      setEditingUser(null)
+      setModalOpen(true)
+      toast.success('Temporary password generated.')
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to reset the user password.'))
+    }
+  }
+
+  async function handleRemoveFromClass() {
+    if (!removingStudent) return
+    setRemovingFromClass(true)
+    try {
+      const response = await api.patch(`/users/${removingStudent._id}/remove-from-class`)
+      setUsers((current) =>
+        current.map((item) => item._id === removingStudent._id ? response.data.user : item),
+      )
+      setRemovingStudent(null)
+      toast.success('Student removed from the class.')
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to remove the student from this class.'))
+    } finally {
+      setRemovingFromClass(false)
     }
   }
 
@@ -262,22 +282,6 @@ function UsersPage() {
       toast.error(message)
     } finally {
       setUploading(false)
-    }
-  }
-
-  async function saveAdvisor(classItem) {
-    const advisor = advisorSelections[classItem._id] || null
-    setSavingAdvisorId(classItem._id)
-    try {
-      const response = await api.put(`/users/classes/${classItem._id}/advisor`, { advisor })
-      setClasses((current) =>
-        current.map((item) => item._id === classItem._id ? response.data.class : item),
-      )
-      toast.success('Class advisor assignment updated.')
-    } catch (error) {
-      toast.error(getErrorMessage(error, 'Unable to assign class advisor.'))
-    } finally {
-      setSavingAdvisorId('')
     }
   }
 
@@ -319,13 +323,23 @@ function UsersPage() {
       key: 'actions',
       label: 'Actions',
       render: (user) => (
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button className="px-3 py-1.5" variant="secondary" onClick={() => openEdit(user)}>
             Edit
           </Button>
-          {user.isActive && (
-            <Button className="px-3 py-1.5" variant="danger" onClick={() => setDeactivatingUser(user)}>
-              Deactivate
+          <Button className="px-3 py-1.5" variant="secondary" onClick={() => handlePasswordReset(user)}>
+            Reset password
+          </Button>
+          <Button
+            className="px-3 py-1.5"
+            variant={user.isActive ? 'danger' : 'secondary'}
+            onClick={() => setStatusUser(user)}
+          >
+            {user.isActive ? 'Suspend' : 'Reactivate'}
+          </Button>
+          {user.role === 'student' && user.class && (
+            <Button className="px-3 py-1.5" variant="danger" onClick={() => setRemovingStudent(user)}>
+              Remove from class
             </Button>
           )}
         </div>
@@ -421,62 +435,15 @@ function UsersPage() {
         )}
       </section>
 
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900">Class Advisor Assignments</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Choose a teacher from the same department for each class.
-          </p>
-        </div>
-        {classes.length ? (
-          <div className="grid gap-4 lg:grid-cols-2">
-            {classes.map((classItem) => {
-              const departmentId = classItem.department?._id
-              const departmentTeachers = teachers.filter(
-                (teacher) => teacher.department === departmentId,
-              )
-              return (
-                <Card className="grid gap-4 sm:grid-cols-[1fr_1.2fr_auto] sm:items-end" key={classItem._id}>
-                  <div>
-                    <p className="font-semibold text-slate-900">{classItem.name} · {classItem.section}</p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      {classItem.department?.name} · Semester {classItem.semester}
-                    </p>
-                  </div>
-                  <Select
-                    id={`advisor-${classItem._id}`}
-                    label="Class advisor"
-                    value={advisorSelections[classItem._id] || ''}
-                    onChange={(event) => setAdvisorSelections((current) => ({ ...current, [classItem._id]: event.target.value }))}
-                    options={[
-                      { value: '', label: 'No advisor assigned' },
-                      ...departmentTeachers.map((teacher) => ({
-                        value: teacher._id,
-                        label: teacher.name,
-                      })),
-                    ]}
-                  />
-                  <Button disabled={savingAdvisorId === classItem._id} onClick={() => saveAdvisor(classItem)}>
-                    {savingAdvisorId === classItem._id ? 'Saving...' : 'Save'}
-                  </Button>
-                </Card>
-              )
-            })}
-          </div>
-        ) : (
-          <EmptyState title="No classes available" message="Create a class before assigning an advisor." />
-        )}
-      </section>
-
       <Modal
         isOpen={modalOpen}
         onClose={() => !saving && (setModalOpen(false), setCreatedCredentials(null))}
-        title={createdCredentials ? 'User created' : editingUser ? 'Edit User' : 'Add User'}
+        title={createdCredentials ? 'Temporary password' : editingUser ? 'Edit User' : 'Add User'}
       >
         {createdCredentials ? (
           <div className="space-y-4">
             <p className="text-sm text-slate-600">
-              Copy this default password now. It will not be shown again.
+              Copy this temporary password now. It will not be shown again.
             </p>
             <div className="space-y-2 rounded-lg bg-slate-50 p-4 text-sm">
               <p><span className="font-medium">Name:</span> {createdCredentials.name}</p>
@@ -524,7 +491,7 @@ function UsersPage() {
                   name="class"
                   value={form.class}
                   onChange={updateForm}
-                  required
+                  required={!editingUser || Boolean(editingUser.class)}
                   disabled={!form.department}
                   options={[
                     { value: '', label: 'Select class' },
@@ -535,8 +502,8 @@ function UsersPage() {
                   ]}
                 />
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Input id="managed-user-section" label="Section" name="section" value={form.section} onChange={updateForm} required maxLength={20} />
-                  <Input id="managed-user-roll" label="Roll number" name="rollNo" value={form.rollNo} onChange={updateForm} required maxLength={30} />
+                  <Input id="managed-user-section" label="Section" name="section" value={form.section} onChange={updateForm} required={!editingUser || Boolean(editingUser.class)} maxLength={20} />
+                  <Input id="managed-user-roll" label="Roll number" name="rollNo" value={form.rollNo} onChange={updateForm} required={!editingUser || Boolean(editingUser.class)} maxLength={30} />
                 </div>
               </>
             )}
@@ -606,13 +573,22 @@ function UsersPage() {
       </Modal>
 
       <ConfirmDialog
-        isOpen={Boolean(deactivatingUser)}
-        onClose={() => !deactivating && setDeactivatingUser(null)}
-        onConfirm={handleDeactivate}
-        title="Deactivate user?"
-        message={`Deactivate ${deactivatingUser?.name || 'this user'}? They will no longer be able to sign in.`}
-        confirmLabel="Deactivate"
-        busy={deactivating}
+        isOpen={Boolean(statusUser)}
+        onClose={() => !updatingStatus && setStatusUser(null)}
+        onConfirm={handleStatusChange}
+        title={statusUser?.isActive ? 'Suspend user?' : 'Reactivate user?'}
+        message={`${statusUser?.isActive ? 'Suspend' : 'Reactivate'} ${statusUser?.name || 'this user'}?`}
+        confirmLabel={statusUser?.isActive ? 'Suspend' : 'Reactivate'}
+        busy={updatingStatus}
+      />
+      <ConfirmDialog
+        isOpen={Boolean(removingStudent)}
+        onClose={() => !removingFromClass && setRemovingStudent(null)}
+        onConfirm={handleRemoveFromClass}
+        title="Remove student from class?"
+        message={`${removingStudent?.name || 'This student'} will be unassigned from the class. Their existing attendance and marks will be kept.`}
+        confirmLabel="Remove from class"
+        busy={removingFromClass}
       />
     </div>
   )

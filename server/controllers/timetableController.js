@@ -149,6 +149,20 @@ async function getClassTimetableData(req, res, next) {
       return res.status(404).json({ message: 'Class not found.' })
     }
 
+    if (req.user.role === 'teacher') {
+      const hasAccess =
+        String(classRecord.advisor) === String(req.user._id) ||
+        await Subject.exists({ class: classRecord._id, teacher: req.user._id })
+      if (!hasAccess) {
+        return res.status(403).json({ message: 'You do not have access to this class timetable.' })
+      }
+    } else if (
+      req.user.role === 'student' &&
+      String(classRecord._id) !== String(req.user.class)
+    ) {
+      return res.status(403).json({ message: 'You do not have access to this class timetable.' })
+    }
+
     const data = {
       class: classRecord,
       subjects: subjects.map((subject) => ({
@@ -331,6 +345,25 @@ async function listClassTimetable(req, res, next) {
       return res.status(400).json({ message: 'Class ID is invalid.' })
     }
 
+    const classRecord = await Class.findById(req.params.classId).select('advisor')
+    if (!classRecord) {
+      return res.status(404).json({ message: 'Class not found.' })
+    }
+
+    if (req.user.role === 'teacher') {
+      const hasAccess =
+        String(classRecord.advisor) === String(req.user._id) ||
+        await Subject.exists({ class: classRecord._id, teacher: req.user._id })
+      if (!hasAccess) {
+        return res.status(403).json({ message: 'You do not have access to this class timetable.' })
+      }
+    } else if (
+      req.user.role === 'student' &&
+      String(classRecord._id) !== String(req.user.class)
+    ) {
+      return res.status(403).json({ message: 'You do not have access to this class timetable.' })
+    }
+
     const entries = await Timetable.find({ classId: req.params.classId })
       .populate('subjectId', 'name code type')
       .populate('teacherId', 'name email')
@@ -347,6 +380,13 @@ async function listFacultyTimetable(req, res, next) {
   try {
     if (!mongoose.isValidObjectId(req.params.facultyId)) {
       return res.status(400).json({ message: 'Faculty ID is invalid.' })
+    }
+
+    if (
+      req.user.role !== 'superadmin' &&
+      (req.user.role !== 'teacher' || String(req.user._id) !== req.params.facultyId)
+    ) {
+      return res.status(403).json({ message: 'You can only view your own timetable.' })
     }
 
     const entries = await Timetable.find({ teacherId: req.params.facultyId })

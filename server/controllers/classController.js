@@ -5,7 +5,7 @@ const Subject = require('../models/Subject')
 const User = require('../models/User')
 const Attendance = require('../models/Attendance')
 
-function getTeacherScope(req, res) {
+async function getTeacherScope(req, res) {
   if (req.user.role !== 'teacher') return {}
 
   if (!req.user.department) {
@@ -23,7 +23,14 @@ function getTeacherScope(req, res) {
     return null
   }
 
-  return { department: req.user.department }
+  const subjectClasses = await Subject.find({ teacher: req.user._id }).distinct('class')
+  return {
+    department: req.user.department,
+    $or: [
+      { advisor: req.user._id },
+      { _id: { $in: subjectClasses } },
+    ],
+  }
 }
 
 async function validateDepartment(departmentId) {
@@ -32,7 +39,7 @@ async function validateDepartment(departmentId) {
 
 async function listClasses(req, res, next) {
   try {
-    const filter = getTeacherScope(req, res)
+    const filter = await getTeacherScope(req, res)
     if (!filter) return
 
     if (req.query.department) {
@@ -67,6 +74,15 @@ async function getClassSubjects(req, res, next) {
       return res.status(404).json({ message: 'Class not found.' })
     }
 
+    if (req.user.role === 'teacher') {
+      const hasAccess =
+        String(classRecord.advisor) === String(req.user._id) ||
+        await Subject.exists({ class: classRecord._id, teacher: req.user._id })
+      if (!hasAccess) {
+        return res.status(403).json({ message: 'You do not have access to this class.' })
+      }
+    }
+
     const subjects = await Subject.find({ class: req.params.id })
       .populate('department', 'name code')
       .populate('teacher', 'name email')
@@ -87,6 +103,15 @@ async function getClassFaculty(req, res, next) {
     const classRecord = await Class.findById(req.params.id)
     if (!classRecord) {
       return res.status(404).json({ message: 'Class not found.' })
+    }
+
+    if (req.user.role === 'teacher') {
+      const hasAccess =
+        String(classRecord.advisor) === String(req.user._id) ||
+        await Subject.exists({ class: classRecord._id, teacher: req.user._id })
+      if (!hasAccess) {
+        return res.status(403).json({ message: 'You do not have access to this class.' })
+      }
     }
 
     const subjects = await Subject.find({ class: req.params.id })

@@ -5,31 +5,41 @@ import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import Loader from '../components/ui/Loader'
+import useAuth from '../context/useAuth'
 
 const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 function TimetablePage() {
+  const { user } = useAuth()
+  const isTeacher = user.role === 'teacher'
   const [departments, setDepartments] = useState([])
   const [classes, setClasses] = useState([])
   const [selectedDepartment, setSelectedDepartment] = useState('')
   const [selectedClassId, setSelectedClassId] = useState('')
   const [classData, setClassData] = useState(null)
   const [config, setConfig] = useState(null)
+  const [facultyTimetable, setFacultyTimetable] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     let active = true
 
-    Promise.all([
-      api.get('/departments'),
-      api.get('/timetable/config'),
-    ])
-      .then(([departmentsResponse, configResponse]) => {
-        if (!active) return
-        setDepartments(departmentsResponse.data.departments || [])
-        setConfig(configResponse.data.configuration)
-      })
+    const request = isTeacher
+      ? api.get(`/timetable/faculty/${user.id}`)
+          .then((response) => {
+            if (active) setFacultyTimetable(response.data.timetable || [])
+          })
+      : Promise.all([
+          api.get('/departments'),
+          api.get('/timetable/config'),
+        ]).then(([departmentsResponse, configResponse]) => {
+          if (!active) return
+          setDepartments(departmentsResponse.data.departments || [])
+          setConfig(configResponse.data.configuration)
+        })
+
+    request
       .catch((error) => {
         if (!active) return
         const message = error.response?.data?.message || 'Unable to load timetable data.'
@@ -42,17 +52,17 @@ function TimetablePage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [isTeacher, user.id])
 
   useEffect(() => {
     if (!selectedDepartment) {
-      setClasses([])
-      setSelectedClassId('')
-      return
+      return undefined
     }
 
+    let active = true
     api.get('/classes', { params: { department: selectedDepartment } })
       .then((response) => {
+        if (!active) return
         setClasses(response.data.classes || [])
         if (response.data.classes?.[0]) {
           setSelectedClassId(response.data.classes[0]._id)
@@ -61,25 +71,35 @@ function TimetablePage() {
         }
       })
       .catch((error) => {
-        const message = error.response?.data?.message || 'Unable to load classes.'
-        toast.error(message)
+        if (active) {
+          const message = error.response?.data?.message || 'Unable to load classes.'
+          toast.error(message)
+        }
       })
+    return () => {
+      active = false
+    }
   }, [selectedDepartment])
 
   useEffect(() => {
     if (!selectedClassId) {
-      setClassData(null)
-      return
+      return undefined
     }
 
+    let active = true
     api.get(`/timetable/classes/${selectedClassId}/data`)
       .then((response) => {
-        setClassData(response.data)
+        if (active) setClassData(response.data)
       })
       .catch((error) => {
-        const message = error.response?.data?.message || 'Unable to load timetable details.'
-        toast.error(message)
+        if (active) {
+          const message = error.response?.data?.message || 'Unable to load timetable details.'
+          toast.error(message)
+        }
       })
+    return () => {
+      active = false
+    }
   }, [selectedClassId])
 
   const scheduleMatrix = useMemo(() => {
@@ -90,6 +110,18 @@ function TimetablePage() {
       periods: classData.existingTimetable.filter((entry) => entry.day === day).sort((a, b) => a.period - b.period),
     }))
   }, [classData])
+
+  function chooseDepartment(value) {
+    setSelectedDepartment(value)
+    setSelectedClassId('')
+    setClasses([])
+    setClassData(null)
+  }
+
+  function chooseClass(value) {
+    setSelectedClassId(value)
+    setClassData(null)
+  }
 
   async function handleGenerate() {
     if (!selectedClassId) {
@@ -127,6 +159,66 @@ function TimetablePage() {
     return <Loader message="Loading timetable configuration..." />
   }
 
+  if (isTeacher) {
+    const facultySchedule = (facultyTimetable || []).length
+      ? dayOrder.map((day) => ({
+      day,
+      periods: facultyTimetable
+        .filter((entry) => entry.day === day)
+        .sort((a, b) => a.period - b.period),
+      }))
+      : []
+
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">My timetable</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Your assigned classes, subjects, and periods.
+          </p>
+        </div>
+        {facultyTimetable === null ? (
+          <Card>
+            <p className="text-sm text-red-700">Unable to load your timetable. Refresh the page to try again.</p>
+          </Card>
+        ) : facultyTimetable.length ? (
+          <Card className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 text-xs font-bold uppercase tracking-wide text-slate-500">
+                  <th className="px-3 py-3">Day</th>
+                  <th className="px-3 py-3">Period</th>
+                  <th className="px-3 py-3">Time</th>
+                  <th className="px-3 py-3">Class</th>
+                  <th className="px-3 py-3">Subject</th>
+                  <th className="px-3 py-3">Room</th>
+                </tr>
+              </thead>
+              <tbody>
+                {facultySchedule.flatMap(({ day, periods }) => periods.map((entry) => (
+                  <tr className="border-b border-slate-100 last:border-0" key={entry._id}>
+                    <td className="px-3 py-3 font-semibold text-slate-800">{day}</td>
+                    <td className="px-3 py-3">{entry.period}</td>
+                    <td className="px-3 py-3">{entry.startTime}-{entry.endTime}</td>
+                    <td className="px-3 py-3">
+                      {entry.classId?.name} · {entry.classId?.section}
+                    </td>
+                    <td className="px-3 py-3">{entry.subjectId?.name}</td>
+                    <td className="px-3 py-3">{entry.roomId?.name || '—'}</td>
+                  </tr>
+                )))}
+              </tbody>
+            </table>
+          </Card>
+        ) : (
+          <Card>
+            <p className="text-sm text-slate-600">No timetable periods have been assigned to you yet.</p>
+          </Card>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -147,7 +239,7 @@ function TimetablePage() {
           <select
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none focus:border-blue-400"
             value={selectedDepartment}
-            onChange={(event) => setSelectedDepartment(event.target.value)}
+            onChange={(event) => chooseDepartment(event.target.value)}
           >
             <option value="">Select department</option>
             {departments.map((department) => (
@@ -163,7 +255,7 @@ function TimetablePage() {
           <select
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none focus:border-blue-400"
             value={selectedClassId}
-            onChange={(event) => setSelectedClassId(event.target.value)}
+            onChange={(event) => chooseClass(event.target.value)}
             disabled={!classes.length}
           >
             <option value="">Select class</option>

@@ -5,7 +5,7 @@ const { protect, authorizeRoles } = require('../middleware/authMiddleware')
 const checkValidation = require('../utils/authValidation')
 
 const router = express.Router()
-const canRead = [protect, authorizeRoles('superadmin', 'teacher', 'student', 'classAdvisor')]
+const canRead = [protect, authorizeRoles('superadmin', 'teacher')]
 const superadminOnly = [protect, authorizeRoles('superadmin')]
 
 router.get('/config', ...canRead, timetableController.getConfiguration)

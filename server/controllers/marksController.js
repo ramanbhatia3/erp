@@ -2,7 +2,6 @@ const Class = require('../models/Class')
 const Marks = require('../models/Marks')
 const Subject = require('../models/Subject')
 const User = require('../models/User')
-const createNotification = require('../utils/notify')
 const {
   getMarksSettings,
   calculateMarks,
@@ -90,13 +89,6 @@ async function createMarks(req, res, next) {
       { path: 'class', select: 'name section semester academicYear' },
       { path: 'enteredBy', select: 'name' },
     ])
-
-    await createNotification([relations.student._id], {
-      type: 'marks',
-      title: `New marks posted for ${subject.name}`,
-      message: 'Your marks have been added. Open results to view the details.',
-      link: '/dashboard/student/results',
-    })
 
     return res.status(201).json({
       mark: { ...formatMark(mark, settings), calculation },

@@ -9,18 +9,11 @@ import SubjectsPage from './SubjectsPage'
 import SettingsPage from './SettingsPage'
 import TeacherAttendancePage from './TeacherAttendancePage'
 import StudentAttendancePage from './StudentAttendancePage'
-import LowAttendanceStudentsPage from './LowAttendanceStudentsPage'
 import TeacherMarksPage from './TeacherMarksPage'
 import StudentMarksPage from './StudentMarksPage'
 import AnnouncementsPage from './AnnouncementsPage'
-import NotificationsPage from './NotificationsPage'
-import LatestAnnouncementsWidget from '../components/dashboard/LatestAnnouncementsWidget'
-import UpcomingEventsWidget from '../components/dashboard/UpcomingEventsWidget'
 import EventsPage from './EventsPage'
-import ClubsPage from './ClubsPage'
 import TimetablePage from './TimetablePage'
-import ClassAdvisorDashboard from './dashboards/ClassAdvisorDashboard'
-import PlacementAdminDashboard from './dashboards/PlacementAdminDashboard'
 import StudentDashboard from './dashboards/StudentDashboard'
 import SuperAdminDashboard from './dashboards/SuperAdminDashboard'
 import TeacherDashboard from './dashboards/TeacherDashboard'
@@ -29,9 +22,7 @@ import { getDashboardPath, getDashboardRole } from '../utils/dashboardPath'
 const dashboards = {
   superadmin: SuperAdminDashboard,
   teacher: TeacherDashboard,
-  classAdvisor: ClassAdvisorDashboard,
   student: StudentDashboard,
-  placementAdmin: PlacementAdminDashboard,
 }
 
 function DashboardPage() {
@@ -68,19 +59,32 @@ function DashboardPage() {
   const isTeacherMarksPage =
     dashboardRole === 'teacher' &&
     location.pathname === '/dashboard/teacher/marks'
-  const isLowAttendancePage =
-    ['teacher', 'classAdvisor'].includes(dashboardRole) &&
-    location.pathname === `/dashboard/${dashboardRole}/low-attendance`
   const isAnnouncementsPage =
     location.pathname === `/dashboard/${dashboardRole}/announcements`
-  const isNotificationsPage =
-    location.pathname === `/dashboard/${dashboardRole}/notifications`
   const isEventsPage =
     location.pathname === `/dashboard/${dashboardRole}/events`
-  const isClubsPage =
-    location.pathname === `/dashboard/${dashboardRole}/clubs`
   const isTimetablePage =
     location.pathname === `/dashboard/${dashboardRole}/timetable`
+  const isAdminPage =
+    dashboardRole === 'superadmin' &&
+    [isDepartmentsPage, isUsersPage, isClassesPage, isSubjectsPage, isSettingsPage]
+      .some(Boolean)
+  const isRolePage =
+    dashboardRole === 'teacher'
+      ? [isClassesPage, isSubjectsPage, isTimetablePage, isTeacherAttendancePage,
+          isTeacherMarksPage, isAnnouncementsPage, isEventsPage].some(Boolean)
+      : dashboardRole === 'student'
+        ? [isStudentAttendancePage, isStudentMarksPage].some(Boolean)
+        : dashboardRole === 'superadmin'
+          ? [isAdminPage, isTimetablePage, isAnnouncementsPage, isEventsPage].some(Boolean)
+          : false
+
+  if (
+    location.pathname !== `/dashboard/${dashboardRole}` &&
+    !isRolePage
+  ) {
+    return <Navigate to={getDashboardPath(user)} replace />
+  }
 
   return (
     <DashboardLayout user={user} role={dashboardRole}>
@@ -88,10 +92,6 @@ function DashboardPage() {
         <TimetablePage />
       ) : isEventsPage ? (
         <EventsPage />
-      ) : isClubsPage ? (
-        <ClubsPage />
-      ) : isNotificationsPage ? (
-        <NotificationsPage />
       ) : isAnnouncementsPage ? (
         <AnnouncementsPage />
       ) : isDepartmentsPage ? (
@@ -108,19 +108,11 @@ function DashboardPage() {
         <TeacherAttendancePage />
       ) : isStudentAttendancePage ? (
         <StudentAttendancePage />
-      ) : isLowAttendancePage ? (
-        <LowAttendanceStudentsPage />
       ) : isTeacherMarksPage ? (
         <TeacherMarksPage />
       ) : isStudentMarksPage ? (
         <StudentMarksPage />
-      ) : (
-        <div className="space-y-6">
-          <RoleDashboard user={user} />
-          <UpcomingEventsWidget />
-          <LatestAnnouncementsWidget />
-        </div>
-      )}
+      ) : <RoleDashboard user={user} />}
     </DashboardLayout>
   )
 }

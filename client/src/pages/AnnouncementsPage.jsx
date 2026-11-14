@@ -18,8 +18,8 @@ function messageFrom(error, fallback) {
 
 function AnnouncementsPage() {
   const { user } = useAuth()
-  const canPost = ['superadmin', 'teacher'].includes(user.role)
-  const isClassAdvisor = user.role === 'teacher' && user.isClassAdvisor
+  const canPost = user.role === 'superadmin'
+  const isClassAdvisor = false
   const [announcements, setAnnouncements] = useState([])
   const [departments, setDepartments] = useState([])
   const [classes, setClasses] = useState([])
@@ -162,9 +162,7 @@ function AnnouncementsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
-          {user.role === 'student' || user.role === 'placementAdmin'
-            ? 'Notices'
-            : 'Announcements'}
+          Announcements
         </h1>
         <p className="mt-1 text-sm text-slate-500">
           {canPost

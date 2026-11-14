@@ -109,12 +109,29 @@ router.put(
   userController.updateUser,
 )
 
-router.patch(
-  '/:id/deactivate',
+router.post(
+  '/:id/reset-password',
   ...superadminOnly,
   param('id').isMongoId().withMessage('User ID is invalid.'),
   checkValidation,
-  userController.deactivateUser,
+  userController.resetUserPassword,
+)
+
+router.patch(
+  '/:id/remove-from-class',
+  ...superadminOnly,
+  param('id').isMongoId().withMessage('User ID is invalid.'),
+  checkValidation,
+  userController.removeStudentFromClass,
+)
+
+router.patch(
+  '/:id/status',
+  ...superadminOnly,
+  param('id').isMongoId().withMessage('User ID is invalid.'),
+  body('isActive').isBoolean().withMessage('Account status must be active or suspended.'),
+  checkValidation,
+  userController.setUserStatus,
 )
 
 module.exports = router

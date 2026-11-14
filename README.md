@@ -1,22 +1,19 @@
 # RBPU Hub
 
-RBPU Hub is a role-based university portal for managing academic operations in one place. It pairs a React web client with an Express API and MongoDB, with separate dashboard entry points for university administrators, teachers, class advisors, students, and placement administrators.
+RBPU Hub is a role-based university portal for managing academic operations in one place. It pairs a React web client with an Express API and MongoDB, with focused workspaces for superadmins, teachers, and students.
 
-> **Project status:** The core account, academic-record, and administration workflows are present. Some dashboards are still scaffolds, and the placement workflow has not been built yet. See [What’s next](#whats-next) for a practical roadmap.
+> **Project status:** Core account, academic-record, and administration workflows are available for the three supported roles.
 
 ## What works today
 
 - **Sign-in and account protection:** JWT-backed login, current-user lookup, role-aware routes, and a forced password-change flow for first-time accounts.
-- **University setup:** Superadmins can manage departments, classes, subjects, academic settings, and user accounts. Student accounts can be imported from CSV, and teachers can be assigned as class advisors.
-- **Attendance:** Teachers can record and edit class attendance. Students can review their own attendance, and teachers/advisors can view low-attendance students. The student dashboard shows an attendance summary and shortage alerts.
+- **University setup:** Superadmins can manage departments, HODs, classes and class incharges, subjects and their teachers, academic settings, and user accounts. Student accounts can be imported from CSV; admins can edit, suspend/reactivate, reset passwords, or remove students from a class without deleting their academic history.
+- **Attendance:** Teachers can record and edit attendance for their assigned classes. Students can review their own attendance.
 - **Marks:** Teachers can record and edit marks using configured assessment components. Students can view their own results.
-- **Communication:** Authorized users can publish university-, department-, or class-scoped announcements. Users have a notification inbox with unread counts and read controls.
-- **Events:** Authorized staff can manage scoped university events. Users can browse relevant events in a monthly calendar or filtered list.
-- **Timetable planning:** The app now includes a timetable generator that reuses department class, subject, teacher, and room data to build a class schedule and validates the generated timetable against available resources.
+- **Announcements and events:** Superadmins can publish announcements and manage events. Teachers can view relevant announcements and events but cannot post or edit them.
+- **Timetables:** Superadmins can generate class schedules. Teachers can view their personal timetable.
 - **Health check:** `GET /api/health` reports whether the API process is responding.
-- **Role-specific navigation:** Separate dashboard routes and access control are set up for superadmins, teachers, class advisors, students, and placement admins.
-
-The role dashboards and some summary cards are still placeholders. In particular, placement administrators currently have a dashboard shell rather than placement-management features.
+- **Role-specific dashboards:** Superadmins see university counts and department/class assignments; teachers see their assigned classes, subjects, and student counts; students see their attendance and marks.
 
 ## Technology
 
@@ -104,7 +101,6 @@ All API routes are under `/api`:
 | Attendance | `/attendance` | Attendance entry, review, and student summaries |
 | Marks | `/marks` | Marks entry and student results |
 | Announcements | `/announcements` | Scoped announcements |
-| Notifications | `/notifications` | User notification inbox and read state |
 | Events | `/events` | Scoped academic event calendar and management |
 | Timetable | `/timetable` | Timetable configuration, room data, validation, and class schedule generation |
 
@@ -112,13 +108,10 @@ Most endpoints require authentication; write and administrative access is restri
 
 ## What’s next
 
-These are recommended next milestones, not claims about features that already exist:
+These are recommended next milestones:
 
-1. **Finish dashboard data:** Replace placeholder statistics and activity panels with live data for each role.
-2. **Build placement management:** Add placement drives, eligibility rules, student applications, and placement reporting.
-3. **Complete academic workflows:** Review timetable and semester workflows, and round out teacher/advisor views and reporting.
-4. **Add automated tests:** Cover authentication, role permissions, validation, attendance/marks calculations, and key client flows.
-5. **Prepare for deployment:** Document production configuration, secure secret management, database backups, logging, and deployment steps.
+1. **Add automated tests:** Cover authentication, role permissions, validation, attendance/marks calculations, and key client flows.
+2. **Prepare for deployment:** Document production configuration, secure secret management, database backups, logging, and deployment steps.
 
 ## Security notes
 

@@ -6,7 +6,12 @@ const checkValidation = require('../utils/authValidation')
 
 const router = express.Router()
 
-router.get('/', protect, settingsController.getSettings)
+router.get(
+  '/',
+  protect,
+  authorizeRoles('superadmin', 'teacher'),
+  settingsController.getSettings,
+)
 
 router.put(
   '/',

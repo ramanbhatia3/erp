@@ -7,9 +7,9 @@ const checkValidation = require('../utils/authValidation')
 const router = express.Router()
 const canRead = [
   protect,
-  authorizeRoles('superadmin', 'teacher', 'student', 'placementAdmin'),
+  authorizeRoles('superadmin', 'teacher'),
 ]
-const canManage = [protect, authorizeRoles('superadmin', 'teacher')]
+const canManage = [protect, authorizeRoles('superadmin')]
 const eventTypes = [
   'holiday',
   'exam',

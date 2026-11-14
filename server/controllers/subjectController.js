@@ -23,7 +23,7 @@ function getTeacherScope(req, res) {
     return null
   }
 
-  return { department: req.user.department }
+  return { department: req.user.department, teacher: req.user._id }
 }
 
 async function validateSubjectRelations({ department, classId, teacher }) {

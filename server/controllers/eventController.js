@@ -16,36 +16,22 @@ async function getTeacherScope(user) {
   const advisedClassIds = advisorClasses.map((item) => getId(item))
   const taughtClassIds = teachingSubjects.map((item) => getId(item.class))
   const classIds = [...new Set([...advisedClassIds, ...taughtClassIds])]
-  const isClassAdvisor = advisedClassIds.length > 0
 
-  return { classIds, isClassAdvisor }
+  return classIds
 }
 
 async function getRelevantFilter(user) {
   if (user.role === 'superadmin') return {}
 
-  const relevant = [{ visibility: 'university' }]
-  if (user.role === 'student') {
-    if (user.department) {
-      relevant.push({
-        visibility: 'department',
-        department: user.department,
-      })
-    }
-    if (user.class) {
-      relevant.push({ visibility: 'class', class: user.class })
-    }
-    return { $or: relevant }
-  }
-
   if (user.role === 'teacher') {
+    const relevant = [{ visibility: 'university' }]
     if (user.department) {
       relevant.push({
         visibility: 'department',
         department: user.department,
       })
     }
-    const { classIds } = await getTeacherScope(user)
+    const classIds = await getTeacherScope(user)
     if (classIds.length) {
       relevant.push({
         visibility: 'class',
@@ -58,46 +44,10 @@ async function getRelevantFilter(user) {
   return { visibility: 'university' }
 }
 
-async function validateEventScope(user, visibility, departmentId, classId) {
-  if (user.role === 'superadmin') return { error: null }
-
-  if (user.role !== 'teacher') {
-    return { error: 'You do not have permission to manage events.' }
-  }
-
-  if (visibility === 'university') {
-    return { error: 'Teachers cannot create university-wide events.' }
-  }
-
-  if (!user.department) {
-    return { error: 'Your account is not assigned to a department.' }
-  }
-
-  if (String(departmentId) !== String(user.department)) {
-    return { error: 'You can only manage events in your department.' }
-  }
-
-  const { classIds, isClassAdvisor } = await getTeacherScope(user)
-  if (isClassAdvisor && visibility !== 'class') {
-    return { error: 'Class advisors can only manage events for their assigned classes.' }
-  }
-
-  if (visibility === 'class') {
-    if (!classIds.includes(String(classId))) {
-      return { error: 'You can only manage events for classes you teach or advise.' }
-    }
-    if (isClassAdvisor) {
-      const isAdvisedClass = await Class.exists({
-        _id: classId,
-        advisor: user._id,
-      })
-      if (!isAdvisedClass) {
-        return { error: 'Class advisors can only manage events for their assigned classes.' }
-      }
-    }
-  }
-
-  return { error: null }
+function validateEventScope(user) {
+  return user.role === 'superadmin'
+    ? { error: null }
+    : { error: 'Only the super admin can manage events.' }
 }
 
 async function resolveEventScope(user, payload) {
@@ -271,14 +221,6 @@ async function updateEvent(req, res, next) {
     const scope = await resolveEventScope(req.user, payload)
     if (sendScopeError(res, scope.response)) return
 
-    if (
-      req.user.role === 'teacher' &&
-      event.createdBy &&
-      getId(event.createdBy) !== getId(req.user)
-    ) {
-      return res.status(403).json({ message: 'You can only edit events you created.' })
-    }
-
     Object.assign(event, payload, scope.values, {
       endDate: payload.endDate || undefined,
     })
@@ -304,19 +246,9 @@ async function deleteEvent(req, res, next) {
     const event = await Event.findById(req.params.id)
     if (!event) return res.status(404).json({ message: 'Event not found.' })
 
-    if (req.user.role !== 'superadmin') {
-      const scope = await validateEventScope(
-        req.user,
-        event.visibility,
-        event.department,
-        event.class,
-      )
-      if (scope.error) {
-        return res.status(403).json({ message: scope.error })
-      }
-      if (getId(event.createdBy) !== getId(req.user)) {
-        return res.status(403).json({ message: 'You can only delete events you created.' })
-      }
+    const scope = validateEventScope(req.user)
+    if (scope.error) {
+      return res.status(403).json({ message: scope.error })
     }
 
     await event.deleteOne()

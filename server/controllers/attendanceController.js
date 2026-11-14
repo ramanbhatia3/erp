@@ -3,7 +3,6 @@ const Class = require('../models/Class')
 const Subject = require('../models/Subject')
 const User = require('../models/User')
 const Settings = require('../models/Settings')
-const createNotification = require('../utils/notify')
 
 function getId(value) {
   return String(value?._id || value)
@@ -11,61 +10,6 @@ function getId(value) {
 
 function normalizeDate(value) {
   return new Date(`${value}T00:00:00.000Z`)
-}
-
-async function getAttendanceShortageStatus(studentIds) {
-  const ids = [...new Set(studentIds.map(String))]
-  const statuses = new Map(ids.map((id) => [id, false]))
-  if (ids.length === 0) return statuses
-
-  const [attendanceRecords, settings] = await Promise.all([
-    Attendance.find({ 'records.student': { $in: ids } }).select('subject records'),
-    Settings.findOne({ key: 'university' }).select('attendanceThreshold'),
-  ])
-  const threshold = settings?.attendanceThreshold ?? 75
-  const summaries = new Map(
-    ids.map((id) => [id, { present: 0, total: 0, subjects: new Map() }]),
-  )
-
-  for (const attendance of attendanceRecords) {
-    const subjectId = getId(attendance.subject)
-    for (const record of attendance.records) {
-      const summary = summaries.get(getId(record.student))
-      if (!summary) continue
-
-      summary.total += 1
-      if (record.status === 'present') summary.present += 1
-      const subject = summary.subjects.get(subjectId) || { present: 0, total: 0 }
-      subject.total += 1
-      if (record.status === 'present') subject.present += 1
-      summary.subjects.set(subjectId, subject)
-    }
-  }
-
-  for (const [id, summary] of summaries) {
-    const overallBelowThreshold =
-      summary.total > 0 && (summary.present / summary.total) * 100 < threshold
-    const subjectBelowThreshold = [...summary.subjects.values()].some(
-      (subject) => (subject.present / subject.total) * 100 < threshold,
-    )
-    statuses.set(id, overallBelowThreshold || subjectBelowThreshold)
-  }
-
-  return statuses
-}
-
-async function notifyNewAttendanceShortages(previousStatuses, studentIds) {
-  const currentStatuses = await getAttendanceShortageStatus(studentIds)
-  const newlyBelowThreshold = [...currentStatuses]
-    .filter(([id, isBelow]) => isBelow && !previousStatuses.get(id))
-    .map(([id]) => id)
-
-  await createNotification(newlyBelowThreshold, {
-    type: 'attendance_shortage',
-    title: 'Attendance shortage alert',
-    message: 'Your attendance has fallen below the required threshold.',
-    link: '/dashboard/student/attendance',
-  })
 }
 
 async function validateRecords(classId, records) {
@@ -116,8 +60,6 @@ async function createAttendance(req, res, next) {
       return res.status(400).json({ message: recordsError })
     }
 
-    const studentIds = records.map((record) => record.student)
-    const previousStatuses = await getAttendanceShortageStatus(studentIds)
     const attendance = await Attendance.create({
       class: classId,
       subject: subjectId,
@@ -127,7 +69,6 @@ async function createAttendance(req, res, next) {
       records,
     })
 
-    await notifyNewAttendanceShortages(previousStatuses, studentIds)
     await attendance.populate([
       { path: 'class', select: 'name section semester academicYear' },
       { path: 'subject', select: 'name code' },
@@ -169,18 +110,10 @@ async function updateAttendance(req, res, next) {
       return res.status(400).json({ message: recordsError })
     }
 
-    const studentIds = [
-      ...new Set([
-        ...attendance.records.map((record) => getId(record.student)),
-        ...req.body.records.map((record) => String(record.student)),
-      ]),
-    ]
-    const previousStatuses = await getAttendanceShortageStatus(studentIds)
     attendance.records = req.body.records
     attendance.editedBy = req.user._id
     attendance.editedAt = new Date()
     await attendance.save()
-    await notifyNewAttendanceShortages(previousStatuses, studentIds)
     await attendance.populate([
       { path: 'class', select: 'name section semester academicYear' },
       { path: 'subject', select: 'name code' },
@@ -383,156 +316,10 @@ async function getStudentAttendance(req, res, next) {
   }
 }
 
-async function getLowAttendanceStudents(req, res, next) {
-  try {
-    const [assignedSubjects, advisorClasses, settings] = await Promise.all([
-      Subject.find({ teacher: req.user._id }).select('class'),
-      Class.find({ advisor: req.user._id }).select('_id name section semester'),
-      Settings.findOne({ key: 'university' }).select('attendanceThreshold'),
-    ])
-    const assignedClassIds = assignedSubjects.map((subject) => getId(subject.class))
-    const advisorClassIds = advisorClasses.map((classRecord) => getId(classRecord))
-    const accessibleClassIds = [...new Set([...assignedClassIds, ...advisorClassIds])]
-    const attendanceThreshold = settings?.attendanceThreshold ?? 75
-    const classId = req.query.classId
-
-    if (!accessibleClassIds.length) {
-      return res.json({ attendanceThreshold, classes: [], students: [] })
-    }
-
-    if (classId && !accessibleClassIds.includes(classId)) {
-      return res.status(403).json({
-        message: 'You do not teach or advise this class.',
-      })
-    }
-
-    const selectedClassIds = classId ? [classId] : accessibleClassIds
-    const [classRecords, subjects] = await Promise.all([
-      Class.find({ _id: { $in: accessibleClassIds } })
-        .select('name section semester')
-        .sort({ semester: 1, name: 1, section: 1 }),
-      Subject.find({ class: { $in: selectedClassIds } })
-        .select('name code class teacher'),
-    ])
-    const advisorClassSet = new Set(advisorClassIds)
-    const allowedSubjectIds = subjects
-      .filter((subject) =>
-        advisorClassSet.has(getId(subject.class)) ||
-        getId(subject.teacher) === getId(req.user._id),
-      )
-      .map((subject) => subject._id)
-    const [students, attendanceRecords] = await Promise.all([
-      User.find({
-        class: { $in: selectedClassIds },
-        role: 'student',
-        isActive: true,
-      })
-        .select('name rollNo section class')
-        .populate('class', 'name section semester')
-        .sort({ name: 1 }),
-      allowedSubjectIds.length
-        ? Attendance.find({
-            class: { $in: selectedClassIds },
-            subject: { $in: allowedSubjectIds },
-          }).populate('subject', 'name code')
-        : [],
-    ])
-
-    const studentsById = new Map(
-      students.map((student) => [
-        `${getId(student.class)}:${getId(student)}`,
-        student,
-      ]),
-    )
-    const summaries = new Map()
-
-    for (const attendance of attendanceRecords) {
-      const classKey = getId(attendance.class)
-      const subjectKey = getId(attendance.subject)
-
-      for (const record of attendance.records) {
-        const key = `${classKey}:${getId(record.student)}`
-        if (!studentsById.has(key)) continue
-        if (!summaries.has(key)) {
-          summaries.set(key, {
-            studentKey: key,
-            present: 0,
-            absent: 0,
-            subjects: new Map(),
-          })
-        }
-
-        const summary = summaries.get(key)
-        if (!summary.subjects.has(subjectKey)) {
-          summary.subjects.set(subjectKey, {
-            subject: attendance.subject,
-            present: 0,
-            absent: 0,
-          })
-        }
-        summary[record.status] += 1
-        summary.subjects.get(subjectKey)[record.status] += 1
-      }
-    }
-
-    const lowAttendanceStudents = []
-    for (const summary of summaries.values()) {
-      const student = studentsById.get(summary.studentKey)
-      const total = summary.present + summary.absent
-      if (!total) continue
-
-      const overallPercentage = Number(
-        ((summary.present / total) * 100).toFixed(2),
-      )
-      const shortageSubjects = [...summary.subjects.values()]
-        .map((subjectSummary) => {
-          const subjectTotal = subjectSummary.present + subjectSummary.absent
-          return {
-            subject: subjectSummary.subject,
-            percentage: Number(
-              ((subjectSummary.present / subjectTotal) * 100).toFixed(2),
-            ),
-          }
-        })
-        .filter((subjectSummary) => subjectSummary.percentage < attendanceThreshold)
-      const overallBelowThreshold = overallPercentage < attendanceThreshold
-
-      if (overallBelowThreshold || shortageSubjects.length > 0) {
-        lowAttendanceStudents.push({
-          student,
-          class: student.class,
-          overall: {
-            present: summary.present,
-            absent: summary.absent,
-            total,
-            percentage: overallPercentage,
-          },
-          shortage: true,
-          overallBelowThreshold,
-          shortageSubjects,
-        })
-      }
-    }
-
-    lowAttendanceStudents.sort((left, right) =>
-      left.student.name.localeCompare(right.student.name),
-    )
-
-    return res.json({
-      attendanceThreshold,
-      classes: classRecords,
-      students: lowAttendanceStudents,
-    })
-  } catch (error) {
-    return next(error)
-  }
-}
-
 module.exports = {
   createAttendance,
   updateAttendance,
   listClassAttendance,
   listClassStudents,
   getStudentAttendance,
-  getLowAttendanceStudents,
 }

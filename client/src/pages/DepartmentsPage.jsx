@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../services/api'
 import Badge from '../components/ui/Badge'
@@ -21,6 +22,11 @@ function getErrorMessage(error, fallback) {
 function DepartmentsPage() {
   const [departments, setDepartments] = useState([])
   const [teachers, setTeachers] = useState([])
+  const [classes, setClasses] = useState([])
+  const [subjects, setSubjects] = useState([])
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState('')
+  const [advisorSelections, setAdvisorSelections] = useState({})
+  const [savingAdvisorId, setSavingAdvisorId] = useState('')
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [search, setSearch] = useState('')
@@ -34,15 +40,28 @@ function DepartmentsPage() {
   function fetchDepartmentData() {
     return Promise.all([
       api.get('/departments'),
-      api.get('/departments/teachers'),
+      api.get('/users/teachers'),
+      api.get('/classes'),
+      api.get('/subjects'),
     ])
   }
 
   async function loadDepartments() {
     try {
-      const [departmentResponse, teacherResponse] = await fetchDepartmentData()
+      const [departmentResponse, teacherResponse, classResponse, subjectResponse] =
+        await fetchDepartmentData()
       setDepartments(departmentResponse.data.departments)
       setTeachers(teacherResponse.data.teachers)
+      setClasses(classResponse.data.classes)
+      setSubjects(subjectResponse.data.subjects)
+      setAdvisorSelections(
+        Object.fromEntries(
+          classResponse.data.classes.map((item) => [
+            item._id,
+            item.advisor?._id || '',
+          ]),
+        ),
+      )
       setLoadError('')
     } catch (error) {
       const message = getErrorMessage(error, 'Unable to load departments.')
@@ -57,10 +76,20 @@ function DepartmentsPage() {
     let active = true
 
     fetchDepartmentData()
-      .then(([departmentResponse, teacherResponse]) => {
+      .then(([departmentResponse, teacherResponse, classResponse, subjectResponse]) => {
         if (active) {
           setDepartments(departmentResponse.data.departments)
           setTeachers(teacherResponse.data.teachers)
+          setClasses(classResponse.data.classes)
+          setSubjects(subjectResponse.data.subjects)
+          setAdvisorSelections(
+            Object.fromEntries(
+              classResponse.data.classes.map((item) => [
+                item._id,
+                item.advisor?._id || '',
+              ]),
+            ),
+          )
           setLoadError('')
         }
       })
@@ -90,6 +119,13 @@ function DepartmentsPage() {
         .includes(value),
     )
   }, [departments, search])
+
+  const selectedDepartment = departments.find(
+    (department) => department._id === selectedDepartmentId,
+  )
+  const selectedClasses = classes.filter(
+    (classItem) => classItem.department?._id === selectedDepartmentId,
+  )
 
   function openCreateModal() {
     setEditingDepartment(null)
@@ -171,8 +207,39 @@ function DepartmentsPage() {
     }
   }
 
+  async function saveAdvisor(classItem) {
+    const advisor = advisorSelections[classItem._id] || null
+    setSavingAdvisorId(classItem._id)
+    try {
+      const response = await api.put(`/users/classes/${classItem._id}/advisor`, { advisor })
+      setClasses((current) =>
+        current.map((item) => item._id === classItem._id ? response.data.class : item),
+      )
+      toast.success('Class incharge updated.')
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to update the class incharge.'))
+    } finally {
+      setSavingAdvisorId('')
+    }
+  }
+
   const columns = [
-    { key: 'name', label: 'Department' },
+    {
+      key: 'name',
+      label: 'Department',
+      render: (department) => (
+        <button
+          className="font-semibold text-blue-800 hover:underline"
+          type="button"
+          aria-expanded={selectedDepartmentId === department._id}
+          onClick={() => setSelectedDepartmentId(
+            (current) => current === department._id ? '' : department._id,
+          )}
+        >
+          {department.name}
+        </button>
+      ),
+    },
     {
       key: 'code',
       label: 'Code',
@@ -280,6 +347,106 @@ function DepartmentsPage() {
             )
           }
         />
+      )}
+
+      {selectedDepartment && (
+        <Card className="space-y-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">
+                {selectedDepartment.name} · {selectedDepartment.code}
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                HOD: {selectedDepartment.hod?.name || 'Not assigned'}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="secondary" onClick={() => openEditModal(selectedDepartment)}>
+                Edit department / HOD
+              </Button>
+              <Link
+                className="inline-flex items-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                to="/dashboard/superadmin/subjects"
+              >
+                Manage subjects and teachers
+              </Link>
+            </div>
+          </div>
+          {selectedClasses.length ? (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {selectedClasses.map((classItem) => {
+                const classSubjects = subjects.filter(
+                  (subject) => subject.class?._id === classItem._id,
+                )
+                const departmentTeachers = teachers.filter(
+                  (teacher) => String(teacher.department) === selectedDepartmentId,
+                )
+                return (
+                  <div className="space-y-4 rounded-xl border border-slate-200 p-4" key={classItem._id}>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold text-slate-900">
+                          {classItem.name} · {classItem.section}
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          Semester {classItem.semester} · {classItem.academicYear}
+                        </p>
+                      </div>
+                      <div className="flex min-w-[220px] flex-1 items-end gap-2 sm:flex-none">
+                        <div className="min-w-0 flex-1">
+                          <Select
+                            id={`department-incharge-${classItem._id}`}
+                            label="Class incharge"
+                            value={advisorSelections[classItem._id] || ''}
+                            onChange={(event) => setAdvisorSelections((current) => ({
+                              ...current,
+                              [classItem._id]: event.target.value,
+                            }))}
+                            options={[
+                              { value: '', label: 'No incharge assigned' },
+                              ...departmentTeachers.map((teacher) => ({
+                                value: teacher._id,
+                                label: teacher.name,
+                              })),
+                            ]}
+                          />
+                        </div>
+                        <Button
+                          className="px-3 py-2"
+                          disabled={savingAdvisorId === classItem._id}
+                          onClick={() => saveAdvisor(classItem)}
+                        >
+                          {savingAdvisorId === classItem._id ? 'Saving...' : 'Save'}
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                        Subjects and assigned teachers
+                      </p>
+                      {classSubjects.length ? (
+                        <ul className="mt-2 space-y-2">
+                          {classSubjects.map((subject) => (
+                            <li className="flex justify-between gap-3 text-sm" key={subject._id}>
+                              <span className="font-medium text-slate-800">{subject.name}</span>
+                              <span className="text-right text-slate-600">
+                                {subject.teacher?.name || 'Teacher not assigned'}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="mt-2 text-sm text-slate-500">No subjects assigned to this class.</p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <EmptyState title="No classes in this department" message="Create a class to assign its incharge and subjects." />
+          )}
+        </Card>
       )}
 
       <Modal

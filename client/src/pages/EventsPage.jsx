@@ -111,8 +111,8 @@ function eventIncludesDate(event, key) {
 
 function EventsPage() {
   const { user } = useAuth()
-  const canManage = ['superadmin', 'teacher'].includes(user.role)
-  const isClassAdvisor = user.role === 'teacher' && user.isClassAdvisor
+  const canManage = user.role === 'superadmin'
+  const isClassAdvisor = false
   const [month, setMonth] = useState(initialMonth)
   const [view, setView] = useState('calendar')
   const [typeFilter, setTypeFilter] = useState('')

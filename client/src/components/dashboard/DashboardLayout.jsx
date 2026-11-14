@@ -4,14 +4,11 @@ import useAuth from '../../context/useAuth'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
 import EmptyState from '../ui/EmptyState'
-import NotificationBell from './NotificationBell'
 
 const roleLabels = {
   superadmin: 'Super Admin',
   teacher: 'Teacher',
-  classAdvisor: 'Class Advisor',
   student: 'Student',
-  placementAdmin: 'Placement Admin',
 }
 
 const menuIconPaths = {
@@ -22,20 +19,12 @@ const menuIconPaths = {
   MC: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z',
   SB: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z',
   SE: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.6 2.8-.2-.1a1.7 1.7 0 0 0-1.8.2l-.2.1h-3.2l-.1-.2a1.7 1.7 0 0 0-1.4-1l-.2-.1-1.6-2.8.1-.2a1.7 1.7 0 0 0-.3-1.8l-.1-.2v-3.2l.2-.1a1.7 1.7 0 0 0 1-1.4l.1-.2 2.8-1.6.2.1a1.7 1.7 0 0 0 1.8-.3l.2-.1h3.2l.1.2a1.7 1.7 0 0 0 1.4 1l.2.1 1.6 2.8-.1.2a1.7 1.7 0 0 0 .3 1.8l.1.2v3.2l-.2.1',
-  RP: 'M3 3v18h18M8 16v-4M13 16V7M18 16v-7',
   AN: 'M3 11v2a2 2 0 0 0 2 2h2l9 5V4l-9 5H5a2 2 0 0 0-2 2ZM7 15l1 5h4l-2-4M20 9a5 5 0 0 1 0 6',
   EV: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2ZM8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01',
-  NO: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4',
   TM: 'M3 6h18M7 6V3m10 3V3M4 10h16v10H4z',
   AT: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2ZM8 15l2 2 5-5',
   MK: 'M12 3 14.8 8.7 21 9.6l-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z',
-  LA: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z',
-  ST: 'M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M20 8v6M23 11h-6',
-  CB: 'M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0ZM3 20a7 7 0 0 1 14 0M18 8a3 3 0 0 1 0 6M20 17a5 5 0 0 1 2 3',
-  PD: 'M3 7h18v13H3zM8 7V4h8v3M3 12h18M10 12v2h4v-2',
-  AP: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h8',
   RS: 'M12 3 14.8 8.7 21 9.6l-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z',
-  NT: 'M3 11v2a2 2 0 0 0 2 2h2l9 5V4l-9 5H5a2 2 0 0 0-2 2ZM7 15l1 5h4l-2-4M20 9a5 5 0 0 1 0 6',
 }
 
 function MenuIcon({ code }) {
@@ -64,11 +53,8 @@ const roleMenus = {
     ['Subjects', 'SB'],
     ['Timetable', 'TM'],
     ['Settings', 'SE'],
-    ['Reports', 'RP'],
     ['Announcements', 'AN'],
     ['Events', 'EV'],
-    ['Clubs', 'CB'],
-    ['Notifications', 'NO'],
   ],
   teacher: [
     ['Overview', 'OV'],
@@ -77,46 +63,13 @@ const roleMenus = {
     ['Timetable', 'TM'],
     ['Attendance', 'AT'],
     ['Marks', 'MK'],
-    ['Low Attendance Students', 'LA'],
-    ['Students', 'ST'],
     ['Announcements', 'AN'],
     ['Events', 'EV'],
-    ['Clubs', 'CB'],
-    ['Notifications', 'NO'],
-  ],
-  classAdvisor: [
-    ['Overview', 'OV'],
-    ['My Class', 'MC'],
-    ['Students', 'ST'],
-    ['Timetable', 'TM'],
-    ['Attendance', 'AT'],
-    ['Low Attendance Students', 'LA'],
-    ['Announcements', 'AN'],
-    ['Events', 'EV'],
-    ['Clubs', 'CB'],
-    ['Notifications', 'NO'],
   ],
   student: [
     ['Overview', 'OV'],
-    ['My Subjects', 'SB'],
-    ['Timetable', 'TM'],
     ['Attendance', 'AT'],
     ['Results', 'RS'],
-    ['Notices', 'NT'],
-    ['Events', 'EV'],
-    ['Clubs', 'CB'],
-    ['Notifications', 'NO'],
-  ],
-  placementAdmin: [
-    ['Overview', 'OV'],
-    ['Students', 'ST'],
-    ['Placement Drives', 'PD'],
-    ['Applications', 'AP'],
-    ['Reports', 'RP'],
-    ['Notices', 'NT'],
-    ['Events', 'EV'],
-    ['Clubs', 'CB'],
-    ['Notifications', 'NO'],
   ],
 }
 
@@ -139,17 +92,11 @@ function DashboardLayout({ user, role, children }) {
     role === 'student' && location.pathname.endsWith('/results')
   const isTeacherMarksPage =
     role === 'teacher' && location.pathname.endsWith('/marks')
-  const isLowAttendancePage =
-    ['teacher', 'classAdvisor'].includes(role) &&
-    location.pathname.endsWith('/low-attendance')
   const isSettingsPage =
     role === 'superadmin' && location.pathname.endsWith('/settings')
   const isAnnouncementsPage =
     location.pathname.endsWith('/announcements')
-  const isNotificationsPage =
-    location.pathname.endsWith('/notifications')
   const isEventsPage = location.pathname.endsWith('/events')
-  const isClubsPage = location.pathname.endsWith('/clubs')
   const isTimetablePage = location.pathname.endsWith('/timetable')
   const [selectedMenu, setSelectedMenu] = useState('Overview')
   const { logout } = useAuth()
@@ -179,21 +126,13 @@ function DashboardLayout({ user, role, children }) {
                 ? 'Results'
                 : isTeacherMarksPage
                   ? 'Marks'
-                  : isLowAttendancePage
-                    ? 'Low Attendance Students'
                     : isSettingsPage
                       ? 'Settings'
                       : isAnnouncementsPage
-                        ? role === 'student' || role === 'placementAdmin'
-                          ? 'Notices'
-                          : 'Announcements'
-                        : isNotificationsPage
-                          ? 'Notifications'
-                          : isEventsPage
-                            ? 'Events'
-                            : isClubsPage
-                              ? 'Clubs'
-                        : selectedMenu
+                        ? 'Announcements'
+                        : isEventsPage
+                          ? 'Events'
+                          : selectedMenu
 
   function handleLogout() {
     logout()
@@ -248,36 +187,18 @@ function DashboardLayout({ user, role, children }) {
       return
     }
 
-    if (
-      ['teacher', 'classAdvisor'].includes(role) &&
-      label === 'Low Attendance Students'
-    ) {
-      navigate(`/dashboard/${role}/low-attendance`)
-      return
-    }
-
     if (role === 'superadmin' && label === 'Settings') {
       navigate('/dashboard/superadmin/settings')
       return
     }
 
-    if (label === 'Announcements' || label === 'Notices') {
+    if (label === 'Announcements') {
       navigate(`/dashboard/${role}/announcements`)
-      return
-    }
-
-    if (label === 'Notifications') {
-      navigate(`/dashboard/${role}/notifications`)
       return
     }
 
     if (label === 'Events') {
       navigate(`/dashboard/${role}/events`)
-      return
-    }
-
-    if (label === 'Clubs') {
-      navigate(`/dashboard/${role}/clubs`)
       return
     }
 
@@ -403,7 +324,6 @@ function DashboardLayout({ user, role, children }) {
             >
               <span aria-hidden="true">{isDark ? '☀' : '☾'}</span>
             </button>
-            <NotificationBell />
             <span className="max-w-20 truncate text-xs font-medium text-slate-800 sm:hidden">
               {user.name}
             </span>
@@ -441,7 +361,7 @@ function DashboardLayout({ user, role, children }) {
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="mx-auto max-w-[1440px]">
-            {isDepartmentsPage || isUsersPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isLowAttendancePage || isSettingsPage || isAnnouncementsPage || isNotificationsPage || isEventsPage || isClubsPage ? (
+            {isDepartmentsPage || isUsersPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isSettingsPage || isAnnouncementsPage || isEventsPage || isTimetablePage ? (
               children
             ) : activeMenu === 'Overview' ? (
               children

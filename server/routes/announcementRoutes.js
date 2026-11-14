@@ -5,11 +5,8 @@ const { protect, authorizeRoles } = require('../middleware/authMiddleware')
 const checkValidation = require('../utils/authValidation')
 
 const router = express.Router()
-const canRead = [
-  protect,
-  authorizeRoles('superadmin', 'teacher', 'student', 'placementAdmin'),
-]
-const canPost = [protect, authorizeRoles('superadmin', 'teacher')]
+const canRead = [protect, authorizeRoles('superadmin', 'teacher')]
+const canPost = [protect, authorizeRoles('superadmin')]
 
 router.get(
   '/',

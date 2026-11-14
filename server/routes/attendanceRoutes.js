@@ -73,14 +73,6 @@ router.get(
 )
 
 router.get(
-  '/low-attendance',
-  ...teachersOnly,
-  query('classId').optional().isMongoId().withMessage('Class ID is invalid.'),
-  checkValidation,
-  attendanceController.getLowAttendanceStudents,
-)
-
-router.get(
   '/student/me',
   protect,
   authorizeRoles('student'),

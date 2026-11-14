@@ -4,24 +4,38 @@ import toast from 'react-hot-toast'
 import api from '../../services/api'
 import Card from '../../components/ui/Card'
 import EmptyState from '../../components/ui/EmptyState'
+import Loader from '../../components/ui/Loader'
 import StatCard from '../../components/ui/StatCard'
 import DashboardWelcome from '../../components/dashboard/DashboardWelcome'
 
 function StudentDashboard({ user }) {
-  const [attendance, setAttendance] = useState(null)
+  const [summary, setSummary] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     let active = true
-    api.get('/attendance/student/me')
-      .then((response) => {
-        if (active) setAttendance(response.data)
+    Promise.all([
+      api.get('/attendance/student/me'),
+      api.get('/marks/student/me'),
+    ])
+      .then(([attendanceResponse, marksResponse]) => {
+        if (!active) return
+        setSummary({
+          attendance: attendanceResponse.data,
+          marks: marksResponse.data.marks,
+        })
+        setError('')
       })
-      .catch((error) => {
+      .catch((requestError) => {
         if (active) {
-          toast.error(
-            error.response?.data?.message || 'Unable to load attendance summary.',
-          )
+          const message = requestError.response?.data?.message || 'Unable to load your attendance and marks.'
+          setError(message)
+          toast.error(message)
         }
+      })
+      .finally(() => {
+        if (active) setLoading(false)
       })
 
     return () => {
@@ -32,59 +46,46 @@ function StudentDashboard({ user }) {
   return (
     <div className="space-y-6">
       <DashboardWelcome
-        title="Student life"
+        title="Student"
         user={user}
-        subtitle="A quick look at your learning, attendance, and the latest campus updates."
+        subtitle="View your attendance and marks."
       />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <StatCard label="My Subjects" value="—" />
-        <StatCard
-          label="Attendance"
-          value={attendance ? `${attendance.overall.percentage}%` : '—'}
-          detail={
-            attendance
-              ? `${attendance.overall.present} of ${attendance.overall.total} lectures`
-              : undefined
-          }
-        />
-        <StatCard label="Results" value="—" />
-      </div>
-      {attendance?.shortage && (
-        <div
-          className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-900"
-          role="alert"
-        >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-semibold">Attendance shortage alert</p>
-              <p className="mt-1 text-sm">
-                {attendance.overallBelowThreshold
-                  ? `Your overall attendance is below ${attendance.attendanceThreshold}%.`
-                  : `Your attendance is below ${attendance.attendanceThreshold}% in ${attendance.shortageSubjects.length} subject(s).`}
-              </p>
-              {attendance.shortageSubjects.length > 0 && (
-                <p className="mt-1 text-sm">
-                  {attendance.shortageSubjects
-                    .map((item) => `${item.subject?.name || 'Subject'} (${item.percentage}%)`)
-                    .join(', ')}
-                </p>
-              )}
-            </div>
-            <Link
-              className="shrink-0 rounded-lg bg-red-700 px-4 py-2 text-center text-sm font-medium text-white hover:bg-red-800"
-              to="/dashboard/student/attendance"
-            >
-              View attendance
-            </Link>
+      {loading ? (
+        <Card><Loader label="Loading your academic summary..." /></Card>
+      ) : error ? (
+        <EmptyState title="Academic summary unavailable" message={error} />
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <StatCard
+              label="Attendance"
+              value={`${summary.attendance.overall.percentage}%`}
+              detail={`${summary.attendance.overall.present} present of ${summary.attendance.overall.total} classes`}
+            />
+            <StatCard label="Marks available" value={summary.marks.length} />
           </div>
-        </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Card className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="font-semibold text-slate-900">Attendance</h2>
+                <p className="mt-1 text-sm text-slate-500">Review your subject attendance and history.</p>
+              </div>
+              <Link className="shrink-0 rounded-lg bg-blue-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800" to="/dashboard/student/attendance">
+                View
+              </Link>
+            </Card>
+            <Card className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="font-semibold text-slate-900">Marks</h2>
+                <p className="mt-1 text-sm text-slate-500">Review your assignment and MST marks.</p>
+              </div>
+              <Link className="shrink-0 rounded-lg bg-blue-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800" to="/dashboard/student/results">
+                View
+              </Link>
+            </Card>
+          </div>
+        </>
       )}
-      <Card>
-        <EmptyState
-          title="Your student overview is ready"
-          message="Your timetable, attendance, results, and notices will appear here."
-        />
-      </Card>
     </div>
   )
 }

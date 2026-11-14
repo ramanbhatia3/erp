@@ -25,7 +25,7 @@ async function validateDepartmentAndClass({ role, department, classId }) {
   const departmentExists = await Department.exists({ _id: department })
   if (!departmentExists) return 'Department was not found.'
 
-  if (role === 'student') {
+  if (role === 'student' && classId) {
     const classRecord = await Class.findById(classId).select('department')
     if (!classRecord) return 'Class was not found.'
     if (String(classRecord.department) !== String(department)) {
@@ -179,23 +179,74 @@ async function updateUser(req, res, next) {
   }
 }
 
-async function deactivateUser(req, res, next) {
+async function setUserStatus(req, res, next) {
   try {
     const user = await User.findById(req.params.id)
     if (!user || !['teacher', 'student'].includes(user.role)) {
       return res.status(404).json({ message: 'Managed user not found.' })
     }
 
-    if (user.role === 'teacher' && (await Class.exists({ advisor: user._id }))) {
+    if (
+      user.role === 'teacher' &&
+      !req.body.isActive &&
+      (await Class.exists({ advisor: user._id }))
+    ) {
       return res.status(409).json({
         message: "Reassign this teacher's classes before deactivating the account.",
       })
     }
 
-    user.isActive = false
+    user.isActive = req.body.isActive
     await user.save()
 
-    return res.json({ message: 'User deactivated.', user })
+    return res.json({
+      message: user.isActive ? 'User reactivated.' : 'User suspended.',
+      user,
+    })
+  } catch (error) {
+    return next(error)
+  }
+}
+
+async function resetUserPassword(req, res, next) {
+  try {
+    const user = await User.findById(req.params.id).select('+password')
+    if (!user || !['teacher', 'student'].includes(user.role)) {
+      return res.status(404).json({ message: 'Managed user not found.' })
+    }
+
+    const defaultPassword = createDefaultPassword()
+    user.password = defaultPassword
+    user.isFirstLogin = true
+    await user.save()
+
+    return res.json({
+      message: 'Password reset. Share this temporary password securely.',
+      user: { id: user.id, name: user.name, email: user.email },
+      defaultPassword,
+    })
+  } catch (error) {
+    return next(error)
+  }
+}
+
+async function removeStudentFromClass(req, res, next) {
+  try {
+    const user = await User.findById(req.params.id)
+    if (!user || user.role !== 'student') {
+      return res.status(404).json({ message: 'Student account not found.' })
+    }
+    if (!user.class) {
+      return res.status(400).json({ message: 'This student is not assigned to a class.' })
+    }
+
+    user.class = null
+    user.section = ''
+    user.rollNo = ''
+    await user.save()
+    await user.populate('department', 'name code')
+
+    return res.json({ message: 'Student removed from the class.', user })
   } catch (error) {
     return next(error)
   }
@@ -411,7 +462,9 @@ module.exports = {
   listTeachers,
   createUser,
   updateUser,
-  deactivateUser,
+  setUserStatus,
+  resetUserPassword,
+  removeStudentFromClass,
   uploadStudentsCsv,
   assignClassAdvisor,
 }
