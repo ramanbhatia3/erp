@@ -18,7 +18,7 @@ function App() {
         <Route
           path="/change-password"
           element={
-            <ProtectedRoute allowFirstLogin>
+            <ProtectedRoute allowedRoles={['superadmin']} allowFirstLogin>
               <ChangePasswordPage />
             </ProtectedRoute>
           }

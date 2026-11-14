@@ -80,7 +80,12 @@ function DashboardLayout({ user, role, children }) {
     () => localStorage.getItem('rbpu-theme') === 'dark',
   )
   const location = useLocation()
-  const isDepartmentsPage = location.pathname.endsWith('/departments')
+  const isDepartmentsPage =
+    role === 'superadmin' &&
+    (
+      location.pathname === '/dashboard/superadmin/departments' ||
+      location.pathname.startsWith('/dashboard/superadmin/departments/')
+    )
   const isUsersPage = location.pathname.endsWith('/users')
   const isClassesPage = location.pathname.endsWith('/classes')
   const isSubjectsPage = location.pathname.endsWith('/subjects')

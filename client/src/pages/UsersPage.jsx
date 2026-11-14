@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../services/api'
 import Badge from '../components/ui/Badge'
@@ -20,6 +21,8 @@ const blankForm = {
   class: '',
   section: '',
   rollNo: '',
+  password: '',
+  confirmPassword: '',
 }
 
 function getErrorMessage(error, fallback) {
@@ -27,21 +30,31 @@ function getErrorMessage(error, fallback) {
 }
 
 function UsersPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const isAddingFromClass = searchParams.get('add') === '1'
   const [users, setUsers] = useState([])
   const [departments, setDepartments] = useState([])
   const [classes, setClasses] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [search, setSearch] = useState('')
-  const [roleFilter, setRoleFilter] = useState('')
-  const [departmentFilter, setDepartmentFilter] = useState('')
-  const [classFilter, setClassFilter] = useState('')
-  const [activeFilter, setActiveFilter] = useState('true')
+  const [roleFilter, setRoleFilter] = useState(() => searchParams.get('role') || '')
+  const [departmentFilter, setDepartmentFilter] = useState(() => searchParams.get('department') || '')
+  const [classFilter, setClassFilter] = useState(() => searchParams.get('class') || '')
+  const [activeFilter, setActiveFilter] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
-  const [form, setForm] = useState(blankForm)
+  const [form, setForm] = useState(() => ({
+    ...blankForm,
+    role: searchParams.get('role') || 'teacher',
+    department: searchParams.get('department') || '',
+    class: searchParams.get('class') || '',
+  }))
   const [saving, setSaving] = useState(false)
   const [createdCredentials, setCreatedCredentials] = useState(null)
+  const [passwordUser, setPasswordUser] = useState(null)
+  const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' })
+  const [savingPassword, setSavingPassword] = useState(false)
   const [bulkOpen, setBulkOpen] = useState(false)
   const [bulkFile, setBulkFile] = useState(null)
   const [bulkCredentials, setBulkCredentials] = useState([])
@@ -141,8 +154,24 @@ function UsersPage() {
   function openCreate() {
     setEditingUser(null)
     setCreatedCredentials(null)
-    setForm({ ...blankForm, department: departmentFilter })
+    setForm({
+      ...blankForm,
+      department: departmentFilter,
+      class: classFilter,
+      role: roleFilter || 'teacher',
+    })
     setModalOpen(true)
+  }
+
+  function closeUserModal() {
+    if (saving) return
+    setModalOpen(false)
+    setCreatedCredentials(null)
+    if (searchParams.has('add')) {
+      const nextParams = new URLSearchParams(searchParams)
+      nextParams.delete('add')
+      setSearchParams(nextParams, { replace: true })
+    }
   }
 
   function openEdit(user) {
@@ -156,6 +185,8 @@ function UsersPage() {
       class: user.class?._id || '',
       section: user.section || '',
       rollNo: user.rollNo || '',
+      password: '',
+      confirmPassword: '',
     })
     setModalOpen(true)
   }
@@ -171,6 +202,11 @@ function UsersPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
+    if (!editingUser && form.password !== form.confirmPassword) {
+      toast.error('The passwords do not match.')
+      return
+    }
+
     setSaving(true)
     const payload = {
       name: form.name.trim(),
@@ -194,13 +230,17 @@ function UsersPage() {
           current.map((item) => item._id === editingUser._id ? response.data.user : item),
         )
       } else {
-        const response = await api.post('/users', { ...payload, role: form.role })
+        const response = await api.post('/users', {
+          ...payload,
+          role: form.role,
+          password: form.password,
+        })
         setCreatedCredentials({
           name: response.data.user.name,
           email: response.data.user.email,
-          password: response.data.defaultPassword,
+          password: form.password,
         })
-        toast.success('User created. Copy the default password now.')
+        toast.success('User created.')
         refreshUsers()
       }
     } catch (error) {
@@ -226,19 +266,31 @@ function UsersPage() {
     }
   }
 
-  async function handlePasswordReset(user) {
+  function openSetPassword(user) {
+    setPasswordUser(user)
+    setPasswordForm({ password: '', confirmPassword: '' })
+  }
+
+  async function handleSetPassword(event) {
+    event.preventDefault()
+    if (!passwordUser) return
+    if (passwordForm.password !== passwordForm.confirmPassword) {
+      toast.error('The passwords do not match.')
+      return
+    }
+
+    setSavingPassword(true)
     try {
-      const response = await api.post(`/users/${user._id}/reset-password`)
-      setCreatedCredentials({
-        name: response.data.user.name,
-        email: response.data.user.email,
-        password: response.data.defaultPassword,
+      await api.patch(`/users/${passwordUser._id}/password`, {
+        password: passwordForm.password,
       })
-      setEditingUser(null)
-      setModalOpen(true)
-      toast.success('Temporary password generated.')
+      toast.success(`Password updated for ${passwordUser.name}.`)
+      setPasswordUser(null)
+      setPasswordForm({ password: '', confirmPassword: '' })
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Unable to reset the user password.'))
+      toast.error(getErrorMessage(error, 'Unable to set the user password.'))
+    } finally {
+      setSavingPassword(false)
     }
   }
 
@@ -327,8 +379,8 @@ function UsersPage() {
           <Button className="px-3 py-1.5" variant="secondary" onClick={() => openEdit(user)}>
             Edit
           </Button>
-          <Button className="px-3 py-1.5" variant="secondary" onClick={() => handlePasswordReset(user)}>
-            Reset password
+          <Button className="px-3 py-1.5" variant="secondary" onClick={() => openSetPassword(user)}>
+            Set password
           </Button>
           <Button
             className="px-3 py-1.5"
@@ -436,22 +488,22 @@ function UsersPage() {
       </section>
 
       <Modal
-        isOpen={modalOpen}
-        onClose={() => !saving && (setModalOpen(false), setCreatedCredentials(null))}
-        title={createdCredentials ? 'Temporary password' : editingUser ? 'Edit User' : 'Add User'}
+        isOpen={modalOpen || isAddingFromClass}
+        onClose={closeUserModal}
+        title={createdCredentials ? 'User created' : editingUser ? 'Edit User' : 'Add User'}
       >
         {createdCredentials ? (
           <div className="space-y-4">
             <p className="text-sm text-slate-600">
-              Copy this temporary password now. It will not be shown again.
+              Share this password securely. Only an admin can change it later.
             </p>
             <div className="space-y-2 rounded-lg bg-slate-50 p-4 text-sm">
               <p><span className="font-medium">Name:</span> {createdCredentials.name}</p>
               <p><span className="font-medium">Email:</span> {createdCredentials.email}</p>
-              <p className="break-all"><span className="font-medium">Default password:</span> <code>{createdCredentials.password}</code></p>
+              <p className="break-all"><span className="font-medium">Initial password:</span> <code>{createdCredentials.password}</code></p>
             </div>
             <div className="flex justify-end">
-              <Button onClick={() => { setCreatedCredentials(null); setModalOpen(false) }}>Done</Button>
+              <Button onClick={closeUserModal}>Done</Button>
             </div>
           </div>
         ) : (
@@ -508,16 +560,93 @@ function UsersPage() {
               </>
             )}
             {!editingUser && (
-              <p className="text-xs text-slate-500">
-                A random default password will be generated and shown once after creation.
-              </p>
+              <>
+                <Input
+                  id="managed-user-password"
+                  label="Initial password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  maxLength={72}
+                  value={form.password}
+                  onChange={updateForm}
+                  required
+                />
+                <Input
+                  id="managed-user-confirm-password"
+                  label="Confirm password"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  maxLength={72}
+                  value={form.confirmPassword}
+                  onChange={updateForm}
+                  required
+                />
+              </>
             )}
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="secondary" onClick={() => setModalOpen(false)} disabled={saving}>Cancel</Button>
+              <Button variant="secondary" onClick={closeUserModal} disabled={saving}>Cancel</Button>
               <Button type="submit" disabled={saving}>{saving ? 'Saving...' : editingUser ? 'Save changes' : 'Create user'}</Button>
             </div>
           </form>
         )}
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(passwordUser)}
+        onClose={() => {
+          if (!savingPassword) {
+            setPasswordUser(null)
+            setPasswordForm({ password: '', confirmPassword: '' })
+          }
+        }}
+        title={`Set password for ${passwordUser?.name || 'user'}`}
+      >
+        <form className="space-y-4" onSubmit={handleSetPassword}>
+          <p className="text-sm text-slate-600">
+            Choose the password to assign. Only an admin can change it later.
+          </p>
+          <Input
+            id="new-user-password"
+            label="New password"
+            type="password"
+            autoComplete="new-password"
+            minLength={8}
+            maxLength={72}
+            value={passwordForm.password}
+            onChange={(event) => setPasswordForm((current) => ({ ...current, password: event.target.value }))}
+            required
+          />
+          <Input
+            id="confirm-user-password"
+            label="Confirm password"
+            type="password"
+            autoComplete="new-password"
+            minLength={8}
+            maxLength={72}
+            value={passwordForm.confirmPassword}
+            onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))}
+            required
+          />
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setPasswordUser(null)
+                setPasswordForm({ password: '', confirmPassword: '' })
+              }}
+              disabled={savingPassword}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={savingPassword}>
+              {savingPassword ? 'Saving...' : 'Set password'}
+            </Button>
+          </div>
+        </form>
       </Modal>
 
       <Modal

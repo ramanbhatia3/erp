@@ -7,6 +7,7 @@ import EmptyState from '../../components/ui/EmptyState'
 import Loader from '../../components/ui/Loader'
 import StatCard from '../../components/ui/StatCard'
 import DashboardWelcome from '../../components/dashboard/DashboardWelcome'
+import { formatClassLabel, sortClassesBySemester } from '../../utils/classDisplay'
 
 function SuperAdminDashboard({ user }) {
   const [overview, setOverview] = useState(null)
@@ -82,16 +83,16 @@ function SuperAdminDashboard({ user }) {
             {departments.length ? (
               <div className="grid gap-4 xl:grid-cols-2">
                 {departments.map((department) => {
-                  const departmentClasses = classes.filter(
+                  const departmentClasses = sortClassesBySemester(classes.filter(
                     (schoolClass) => schoolClass.department?._id === department._id,
-                  )
+                  ))
                   return (
                     <Card key={department._id} className="space-y-4">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <Link
                             className="text-lg font-bold text-blue-800 hover:underline"
-                            to="/dashboard/superadmin/departments"
+                            to={`/dashboard/superadmin/departments?department=${department._id}`}
                           >
                             {department.name}
                           </Link>
@@ -116,7 +117,7 @@ function SuperAdminDashboard({ user }) {
                               <div className="py-3 first:pt-0 last:pb-0" key={schoolClass._id}>
                                 <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 text-sm">
                                   <span className="font-semibold text-slate-800">
-                                    {schoolClass.name} · {schoolClass.section}
+                                    {formatClassLabel(schoolClass)}
                                   </span>
                                   <span className="text-slate-600">
                                     Incharge: {schoolClass.advisor?.name || 'Not assigned'}

@@ -28,6 +28,14 @@ const emailValidation = body('email')
   .normalizeEmail()
   .isEmail()
   .withMessage('Enter a valid email address.')
+const passwordValidation = body('password')
+  .isString()
+  .withMessage('Password must be text.')
+  .bail()
+  .isLength({ min: 8 })
+  .withMessage('Password must be at least 8 characters.')
+  .custom((password) => Buffer.byteLength(password, 'utf8') <= 72)
+  .withMessage('Password must be no more than 72 bytes.')
 
 router.get(
   '/',
@@ -75,6 +83,7 @@ router.post(
   emailValidation,
   body('role').isIn(['teacher', 'student']).withMessage('Role must be teacher or student.'),
   body('department').isMongoId().withMessage('Select a valid department.'),
+  passwordValidation,
   body('class')
     .if(body('role').equals('student'))
     .isMongoId()
@@ -109,12 +118,13 @@ router.put(
   userController.updateUser,
 )
 
-router.post(
-  '/:id/reset-password',
+router.patch(
+  '/:id/password',
   ...superadminOnly,
   param('id').isMongoId().withMessage('User ID is invalid.'),
+  passwordValidation,
   checkValidation,
-  userController.resetUserPassword,
+  userController.setUserPassword,
 )
 
 router.patch(

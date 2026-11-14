@@ -3,7 +3,7 @@ const Class = require('../models/Class')
 const Department = require('../models/Department')
 const User = require('../models/User')
 
-const userFields = 'name email role department class section rollNo isActive isFirstLogin'
+const userFields = 'name email role department class section rollNo isActive'
 
 function createDefaultPassword() {
   return crypto.randomBytes(12).toString('base64url')
@@ -83,7 +83,16 @@ async function listTeachers(req, res, next) {
 
 async function createUser(req, res, next) {
   try {
-    const { name, email, role, department, class: classId, section, rollNo } = req.body
+    const {
+      name,
+      email,
+      role,
+      department,
+      class: classId,
+      section,
+      rollNo,
+      password,
+    } = req.body
 
     if (!['teacher', 'student'].includes(role)) {
       return res.status(400).json({ message: 'Only teacher and student accounts can be created here.' })
@@ -96,14 +105,14 @@ async function createUser(req, res, next) {
     })
     if (relationError) return res.status(400).json({ message: relationError })
 
-    const defaultPassword = createDefaultPassword()
     const user = await User.create({
       name,
       email,
       role,
       department,
       ...(role === 'student' ? { class: classId, section, rollNo } : {}),
-      password: defaultPassword,
+      password,
+      isFirstLogin: false,
     })
     await user.populate([
       { path: 'department', select: 'name code' },
@@ -112,7 +121,6 @@ async function createUser(req, res, next) {
 
     return res.status(201).json({
       user,
-      defaultPassword,
     })
   } catch (error) {
     return sendUserError(error, res, next)
@@ -208,22 +216,20 @@ async function setUserStatus(req, res, next) {
   }
 }
 
-async function resetUserPassword(req, res, next) {
+async function setUserPassword(req, res, next) {
   try {
-    const user = await User.findById(req.params.id).select('+password')
+    const user = await User.findById(req.params.id)
     if (!user || !['teacher', 'student'].includes(user.role)) {
       return res.status(404).json({ message: 'Managed user not found.' })
     }
 
-    const defaultPassword = createDefaultPassword()
-    user.password = defaultPassword
-    user.isFirstLogin = true
+    user.password = req.body.password
+    user.isFirstLogin = false
     await user.save()
 
     return res.json({
-      message: 'Password reset. Share this temporary password securely.',
+      message: 'Password updated by an administrator.',
       user: { id: user.id, name: user.name, email: user.email },
-      defaultPassword,
     })
   } catch (error) {
     return next(error)
@@ -400,6 +406,7 @@ async function uploadStudentsCsv(req, res, next) {
         section: row.section,
         rollNo: row.rollNo,
         password: defaultPassword,
+        isFirstLogin: false,
       })
       createdUsers.push({
         id: user.id,
@@ -463,7 +470,7 @@ module.exports = {
   createUser,
   updateUser,
   setUserStatus,
-  resetUserPassword,
+  setUserPassword,
   removeStudentFromClass,
   uploadStudentsCsv,
   assignClassAdvisor,

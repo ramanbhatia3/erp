@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../services/api'
 import Badge from '../components/ui/Badge'
@@ -27,21 +28,31 @@ function messageFrom(error, fallback) {
 
 function SubjectsPage() {
   const { user } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const isCreatingFromClass = searchParams.get('create') === '1'
   const canManage = user.role === 'superadmin'
   const [departments, setDepartments] = useState([])
   const [classes, setClasses] = useState([])
   const [subjects, setSubjects] = useState([])
   const [teachers, setTeachers] = useState([])
   const [teachersForDepartment, setTeachersForDepartment] = useState('')
-  const [departmentId, setDepartmentId] = useState(user.department || '')
-  const [classId, setClassId] = useState('')
+  const [departmentId, setDepartmentId] = useState(
+    () => searchParams.get('department') || user.department || '',
+  )
+  const [classId, setClassId] = useState(() => searchParams.get('class') || '')
   const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(
+    () => !canManage || Boolean(searchParams.get('class')),
+  )
   const [loadError, setLoadError] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingSubject, setEditingSubject] = useState(null)
-  const [form, setForm] = useState(blankForm)
+  const [form, setForm] = useState(() => ({
+    ...blankForm,
+    department: searchParams.get('department') || user.department || '',
+    class: searchParams.get('class') || '',
+  }))
   const [saving, setSaving] = useState(false)
   const [deletingSubject, setDeletingSubject] = useState(null)
   const [deleting, setDeleting] = useState(false)
@@ -91,6 +102,8 @@ function SubjectsPage() {
 
   useEffect(() => {
     let active = true
+    if (canManage && !classId) return undefined
+
     const params = {}
     if (departmentId) params.department = departmentId
     if (classId) params.class = classId
@@ -116,7 +129,7 @@ function SubjectsPage() {
     return () => {
       active = false
     }
-  }, [departmentId, classId, reloadKey])
+  }, [canManage, departmentId, classId, reloadKey])
 
   useEffect(() => {
     let active = true
@@ -162,21 +175,23 @@ function SubjectsPage() {
   }, [subjects, search])
 
   function chooseDepartment(value) {
-    setLoading(true)
+    setLoading(!canManage)
     setLoadError('')
     setDepartmentId(value)
     setClassId('')
+    if (canManage) setSubjects([])
   }
 
   function chooseClass(value) {
-    setLoading(true)
+    setLoading(!canManage || Boolean(value))
     setLoadError('')
     setClassId(value)
+    if (canManage && !value) setSubjects([])
   }
 
   function openCreate() {
     setEditingSubject(null)
-    setForm({ ...blankForm, department: departmentId })
+    setForm({ ...blankForm, department: departmentId, class: classId })
     setModalOpen(true)
   }
 
@@ -190,6 +205,15 @@ function SubjectsPage() {
       teacher: item.teacher?._id || item.teacher,
     })
     setModalOpen(true)
+  }
+
+  function closeSubjectModal() {
+    setModalOpen(false)
+    if (searchParams.has('create')) {
+      const nextParams = new URLSearchParams(searchParams)
+      nextParams.delete('create')
+      setSearchParams(nextParams, { replace: true })
+    }
   }
 
   function updateForm(event) {
@@ -219,7 +243,7 @@ function SubjectsPage() {
         await api.post('/subjects', payload)
         toast.success('Subject created.')
       }
-      setModalOpen(false)
+      closeSubjectModal()
       setLoading(true)
       setReloadKey((key) => key + 1)
     } catch (error) {
@@ -292,7 +316,11 @@ function SubjectsPage() {
             {canManage ? 'Assign subjects to classes and teachers.' : 'Subjects offered by your department.'}
           </p>
         </div>
-        {canManage && <Button onClick={openCreate}>Add Subject</Button>}
+        {canManage && (
+          <Button onClick={openCreate} disabled={!classId}>
+            Add Subject
+          </Button>
+        )}
       </div>
 
       <Card className="grid gap-4 sm:grid-cols-3">
@@ -354,21 +382,30 @@ function SubjectsPage() {
             </Button>
           }
         />
+      ) : canManage && !classId ? (
+        <EmptyState
+          title="Choose a class"
+          message="Select a department and class to view or manage that class's subjects."
+        />
       ) : filteredSubjects.length ? (
         <Card className="overflow-hidden p-0">
           <Table columns={columns} rows={filteredSubjects} getRowKey={(item) => item._id} />
         </Card>
       ) : (
         <EmptyState
-          title={search || classId || departmentId ? 'No matching subjects' : 'No subjects yet'}
-          message="Subjects matching these filters will appear here."
-          action={canManage && !search ? <Button onClick={openCreate}>Add Subject</Button> : null}
+          title={search ? 'No matching subjects' : classId ? 'No subjects in this class' : 'No subjects yet'}
+          message={search
+            ? 'Try another search.'
+            : classId
+              ? 'Add subjects for this class and choose each teacher explicitly.'
+              : 'Subjects matching these filters will appear here.'}
+          action={canManage && classId && !search ? <Button onClick={openCreate}>Add Subject</Button> : null}
         />
       )}
 
       <Modal
-        isOpen={modalOpen}
-        onClose={() => !saving && setModalOpen(false)}
+        isOpen={modalOpen || isCreatingFromClass}
+        onClose={() => !saving && closeSubjectModal()}
         title={editingSubject ? 'Edit Subject' : 'Add Subject'}
       >
         <form className="space-y-4" onSubmit={handleSubmit}>
@@ -431,7 +468,7 @@ function SubjectsPage() {
             ]}
           />
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="secondary" onClick={() => setModalOpen(false)} disabled={saving}>Cancel</Button>
+            <Button variant="secondary" onClick={closeSubjectModal} disabled={saving}>Cancel</Button>
             <Button type="submit" disabled={saving}>{saving ? 'Saving...' : editingSubject ? 'Save changes' : 'Create subject'}</Button>
           </div>
         </form>

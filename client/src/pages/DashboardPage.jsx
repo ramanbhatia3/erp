@@ -38,7 +38,10 @@ function DashboardPage() {
   const RoleDashboard = dashboards[dashboardRole]
   const isDepartmentsPage =
     dashboardRole === 'superadmin' &&
-    location.pathname === '/dashboard/superadmin/departments'
+    (
+      location.pathname === '/dashboard/superadmin/departments' ||
+      location.pathname.startsWith('/dashboard/superadmin/departments/')
+    )
   const isUsersPage =
     dashboardRole === 'superadmin' &&
     location.pathname === '/dashboard/superadmin/users'

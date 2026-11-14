@@ -1,7 +1,7 @@
 const express = require('express')
 const { body } = require('express-validator')
 const authController = require('../controllers/authController')
-const { protect } = require('../middleware/authMiddleware')
+const { protect, authorizeRoles } = require('../middleware/authMiddleware')
 const checkValidation = require('../utils/authValidation')
 
 const router = express.Router()
@@ -23,6 +23,7 @@ router.get('/me', protect, authController.getMe)
 router.put(
   '/change-password',
   protect,
+  authorizeRoles('superadmin'),
   body('currentPassword')
     .isString()
     .notEmpty()

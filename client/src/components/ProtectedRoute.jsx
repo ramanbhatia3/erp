@@ -18,19 +18,19 @@ function ProtectedRoute({ children, allowedRoles = [], allowFirstLogin = false }
     return <Navigate to="/login" replace state={{ from: location }} />
   }
 
-  if (user.isFirstLogin && !allowFirstLogin) {
-    return <Navigate to="/change-password" replace />
-  }
-
-  if (!user.isFirstLogin && allowFirstLogin) {
-    return <Navigate to={getDashboardPath(user)} replace />
-  }
-
   if (
     allowedRoles.length > 0 &&
     !allowedRoles.includes(getDashboardRole(user))
   ) {
     return <Navigate to="/unauthorized" replace />
+  }
+
+  if (user.role === 'superadmin' && user.isFirstLogin && !allowFirstLogin) {
+    return <Navigate to="/change-password" replace />
+  }
+
+  if (user.role === 'superadmin' && !user.isFirstLogin && allowFirstLogin) {
+    return <Navigate to={getDashboardPath(user)} replace />
   }
 
   return children

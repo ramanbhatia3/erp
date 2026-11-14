@@ -15,7 +15,7 @@ function LoginPage() {
   if (user) {
     return (
       <Navigate
-      to={user.isFirstLogin ? '/change-password' : getDashboardPath(user)}
+      to={user.role === 'superadmin' && user.isFirstLogin ? '/change-password' : getDashboardPath(user)}
         replace
       />
     )
@@ -30,7 +30,7 @@ function LoginPage() {
       const loggedInUser = await login(email, password)
       toast.success(`Welcome, ${loggedInUser.name}.`)
       navigate(
-        loggedInUser.isFirstLogin
+        loggedInUser.role === 'superadmin' && loggedInUser.isFirstLogin
           ? '/change-password'
           : getDashboardPath(loggedInUser),
         { replace: true },
