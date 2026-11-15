@@ -3,7 +3,8 @@ import { useLocation } from 'react-router-dom'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
 import useAuth from '../context/useAuth'
 import DepartmentsPage from './DepartmentsPage'
-import UsersPage from './UsersPage'
+import TeacherUsersPage from './TeacherUsersPage'
+import StudentUsersPage from './StudentUsersPage'
 import ClassesPage from './ClassesPage'
 import SubjectsPage from './SubjectsPage'
 import SettingsPage from './SettingsPage'
@@ -42,9 +43,25 @@ function DashboardPage() {
       location.pathname === '/dashboard/superadmin/departments' ||
       location.pathname.startsWith('/dashboard/superadmin/departments/')
     )
+  const isTeachersPage =
+    dashboardRole === 'superadmin' &&
+    (
+      location.pathname === '/dashboard/superadmin/teachers' ||
+      location.pathname.startsWith('/dashboard/superadmin/teachers/')
+    )
+  const isStudentsPage =
+    dashboardRole === 'superadmin' &&
+    (
+      location.pathname === '/dashboard/superadmin/students' ||
+      location.pathname.startsWith('/dashboard/superadmin/students/')
+    )
   const isUsersPage =
     dashboardRole === 'superadmin' &&
-    location.pathname === '/dashboard/superadmin/users'
+    (
+      location.pathname === '/dashboard/superadmin/users' ||
+      isTeachersPage ||
+      isStudentsPage
+    )
   const isClassesPage = location.pathname.endsWith('/classes')
   const isSubjectsPage = location.pathname.endsWith('/subjects')
   const isSettingsPage =
@@ -70,7 +87,7 @@ function DashboardPage() {
     location.pathname === `/dashboard/${dashboardRole}/timetable`
   const isAdminPage =
     dashboardRole === 'superadmin' &&
-    [isDepartmentsPage, isUsersPage, isClassesPage, isSubjectsPage, isSettingsPage]
+    [isDepartmentsPage, isTeachersPage, isStudentsPage, isClassesPage, isSubjectsPage, isSettingsPage]
       .some(Boolean)
   const isRolePage =
     dashboardRole === 'teacher'
@@ -99,8 +116,10 @@ function DashboardPage() {
         <AnnouncementsPage />
       ) : isDepartmentsPage ? (
         <DepartmentsPage />
-      ) : isUsersPage ? (
-        <UsersPage />
+      ) : isTeachersPage ? (
+        <TeacherUsersPage />
+      ) : isStudentsPage ? (
+        <StudentUsersPage />
       ) : isClassesPage ? (
         <ClassesPage />
       ) : isSubjectsPage ? (

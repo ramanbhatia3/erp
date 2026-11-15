@@ -48,7 +48,8 @@ const roleMenus = {
   superadmin: [
     ['Overview', 'OV'],
     ['Departments', 'DP'],
-    ['Users', 'US'],
+    ['Teachers', 'US'],
+    ['Students', 'US'],
     ['Classes', 'CL'],
     ['Subjects', 'SB'],
     ['Timetable', 'TM'],
@@ -86,7 +87,19 @@ function DashboardLayout({ user, role, children }) {
       location.pathname === '/dashboard/superadmin/departments' ||
       location.pathname.startsWith('/dashboard/superadmin/departments/')
     )
-  const isUsersPage = location.pathname.endsWith('/users')
+  const isTeachersPage =
+    role === 'superadmin' &&
+    (
+      location.pathname === '/dashboard/superadmin/teachers' ||
+      location.pathname.startsWith('/dashboard/superadmin/teachers/')
+    )
+  const isStudentsPage =
+    role === 'superadmin' &&
+    (
+      location.pathname === '/dashboard/superadmin/students' ||
+      location.pathname.startsWith('/dashboard/superadmin/students/')
+    )
+  const isUsersPage = role === 'superadmin' && (location.pathname.endsWith('/users') || isTeachersPage || isStudentsPage)
   const isClassesPage = location.pathname.endsWith('/classes')
   const isSubjectsPage = location.pathname.endsWith('/subjects')
   const isAttendancePage =
@@ -115,10 +128,14 @@ function DashboardLayout({ user, role, children }) {
 
   const activeMenu = isDepartmentsPage
     ? 'Departments'
-    : isUsersPage
-      ? 'Users'
-      : isClassesPage
-      ? role === 'superadmin' ? 'Classes' : 'My Classes'
+    : isTeachersPage
+      ? 'Teachers'
+      : isStudentsPage
+        ? 'Students'
+        : isUsersPage
+          ? 'Teachers'
+          : isClassesPage
+            ? role === 'superadmin' ? 'Classes' : 'My Classes'
       : isSubjectsPage
         ? 'Subjects'
         : isTimetablePage
@@ -152,8 +169,13 @@ function DashboardLayout({ user, role, children }) {
       return
     }
 
-    if (role === 'superadmin' && label === 'Users') {
-      navigate('/dashboard/superadmin/users')
+    if (role === 'superadmin' && label === 'Teachers') {
+      navigate('/dashboard/superadmin/teachers')
+      return
+    }
+
+    if (role === 'superadmin' && label === 'Students') {
+      navigate('/dashboard/superadmin/students')
       return
     }
 
@@ -366,7 +388,7 @@ function DashboardLayout({ user, role, children }) {
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="mx-auto max-w-[1440px]">
-            {isDepartmentsPage || isUsersPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isSettingsPage || isAnnouncementsPage || isEventsPage || isTimetablePage ? (
+            {isDepartmentsPage || isTeachersPage || isStudentsPage || isUsersPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isSettingsPage || isAnnouncementsPage || isEventsPage || isTimetablePage ? (
               children
             ) : activeMenu === 'Overview' ? (
               children

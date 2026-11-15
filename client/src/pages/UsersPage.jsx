@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../services/api'
 import Badge from '../components/ui/Badge'
@@ -31,6 +31,7 @@ function getErrorMessage(error, fallback) {
 
 function UsersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
   const isAddingFromClass = searchParams.get('add') === '1'
   const [users, setUsers] = useState([])
   const [departments, setDepartments] = useState([])
@@ -38,18 +39,29 @@ function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [search, setSearch] = useState('')
-  const [roleFilter, setRoleFilter] = useState(() => searchParams.get('role') || '')
+  const [roleFilter, setRoleFilter] = useState(() => {
+    const paramRole = searchParams.get('role')
+    if (paramRole) return paramRole
+    const pathname = location.pathname
+    if (pathname.endsWith('/teachers')) return 'teacher'
+    if (pathname.endsWith('/students')) return 'student'
+    return ''
+  })
   const [departmentFilter, setDepartmentFilter] = useState(() => searchParams.get('department') || '')
   const [classFilter, setClassFilter] = useState(() => searchParams.get('class') || '')
   const [activeFilter, setActiveFilter] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
-  const [form, setForm] = useState(() => ({
-    ...blankForm,
-    role: searchParams.get('role') || 'teacher',
-    department: searchParams.get('department') || '',
-    class: searchParams.get('class') || '',
-  }))
+  const [form, setForm] = useState(() => {
+    const pathname = location.pathname
+    const defaultRole = searchParams.get('role') || (pathname.endsWith('/students') ? 'student' : 'teacher')
+    return {
+      ...blankForm,
+      role: defaultRole,
+      department: searchParams.get('department') || '',
+      class: searchParams.get('class') || '',
+    }
+  })
   const [saving, setSaving] = useState(false)
   const [createdCredentials, setCreatedCredentials] = useState(null)
   const [passwordUser, setPasswordUser] = useState(null)
@@ -64,6 +76,20 @@ function UsersPage() {
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [removingStudent, setRemovingStudent] = useState(null)
   const [removingFromClass, setRemovingFromClass] = useState(false)
+
+  const pageRole = useMemo(() => {
+    const paramRole = searchParams.get('role')
+    if (paramRole === 'teacher' || paramRole === 'student') return paramRole
+    if (location.pathname.endsWith('/teachers')) return 'teacher'
+    if (location.pathname.endsWith('/students')) return 'student'
+    return roleFilter
+  }, [location.pathname, searchParams, roleFilter])
+
+  useEffect(() => {
+    if (pageRole && pageRole !== roleFilter) {
+      setRoleFilter(pageRole)
+    }
+  }, [pageRole, roleFilter])
 
   const userParams = useMemo(() => {
     const params = {}
@@ -158,7 +184,7 @@ function UsersPage() {
       ...blankForm,
       department: departmentFilter,
       class: classFilter,
-      role: roleFilter || 'teacher',
+      role: isStudentsSection ? 'student' : (roleFilter || 'teacher'),
     })
     setModalOpen(true)
   }
@@ -202,7 +228,8 @@ function UsersPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    if (!editingUser && form.password !== form.confirmPassword) {
+    const hasPasswordInput = Boolean(form.password || form.confirmPassword)
+    if (editingUser ? hasPasswordInput && form.password !== form.confirmPassword : form.password !== form.confirmPassword) {
       toast.error('The passwords do not match.')
       return
     }
@@ -212,6 +239,7 @@ function UsersPage() {
       name: form.name.trim(),
       email: form.email.trim(),
       department: form.department,
+      ...(editingUser && form.password ? { password: form.password } : {}),
       ...(form.role === 'student' && form.class
         ? {
             class: form.class,
@@ -220,6 +248,8 @@ function UsersPage() {
           }
         : {}),
     }
+
+    const finalRole = isStudentsSection ? 'student' : form.role
 
     try {
       if (editingUser) {
@@ -232,7 +262,7 @@ function UsersPage() {
       } else {
         const response = await api.post('/users', {
           ...payload,
-          role: form.role,
+          role: finalRole,
           password: form.password,
         })
         setCreatedCredentials({
@@ -337,31 +367,38 @@ function UsersPage() {
     }
   }
 
+  const isTeachersSection = pageRole === 'teacher'
+  const isStudentsSection = pageRole === 'student'
+  const pageTitle = isStudentsSection ? 'Student Management' : 'Teacher Management'
+  const addButtonLabel = isStudentsSection ? 'Add Student' : 'Add Teacher'
+  const sectionLabel = isStudentsSection ? 'Student' : 'Teacher'
+
+  const showRoleColumn = !isStudentsSection
+  const showRoleFilter = !pageRole
+  const showSuspendAction = !isStudentsSection
+
   const columns = [
     { key: 'name', label: 'Name' },
     { key: 'email', label: 'Email' },
-    {
+    ...(showRoleColumn ? [{
       key: 'role',
       label: 'Role',
       render: (user) => <Badge color={user.role === 'teacher' ? 'purple' : 'blue'}>{user.role}</Badge>,
-    },
+    }] : []),
     {
       key: 'department',
       label: 'Department',
       render: (user) => user.department?.name || '—',
     },
-    {
+    ...(isStudentsSection ? [{
       key: 'class',
       label: 'Class / Section',
-      render: (user) => user.role === 'student'
-        ? `${user.class?.name || '—'} / ${user.section || '—'}`
-        : '—',
-    },
-    {
+      render: (user) => `${user.class?.name || '—'} / ${user.section || '—'}`,
+    }, {
       key: 'rollNo',
       label: 'Roll No.',
-      render: (user) => user.role === 'student' ? user.rollNo : '—',
-    },
+      render: (user) => user.rollNo || '—',
+    }] : []),
     {
       key: 'status',
       label: 'Status',
@@ -379,16 +416,15 @@ function UsersPage() {
           <Button className="px-3 py-1.5" variant="secondary" onClick={() => openEdit(user)}>
             Edit
           </Button>
-          <Button className="px-3 py-1.5" variant="secondary" onClick={() => openSetPassword(user)}>
-            Set password
-          </Button>
-          <Button
-            className="px-3 py-1.5"
-            variant={user.isActive ? 'danger' : 'secondary'}
-            onClick={() => setStatusUser(user)}
-          >
-            {user.isActive ? 'Suspend' : 'Reactivate'}
-          </Button>
+          {showSuspendAction && (
+            <Button
+              className="px-3 py-1.5"
+              variant={user.isActive ? 'danger' : 'secondary'}
+              onClick={() => setStatusUser(user)}
+            >
+              {user.isActive ? 'Suspend' : 'Reactivate'}
+            </Button>
+          )}
           {user.role === 'student' && user.class && (
             <Button className="px-3 py-1.5" variant="danger" onClick={() => setRemovingStudent(user)}>
               Remove from class
@@ -404,32 +440,38 @@ function UsersPage() {
       <section className="space-y-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">User Management</h1>
+            <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
             <p className="mt-1 text-sm text-slate-500">
-              Create and manage teacher and student accounts.
+              {isStudentsSection
+                ? 'Create and manage student accounts.'
+                : 'Create and manage teacher accounts.'}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => { setBulkOpen(true); setBulkCredentials([]); setBulkError('') }}>
-              Bulk upload students
-            </Button>
-            <Button onClick={openCreate}>Add User</Button>
+            {isStudentsSection && (
+              <Button variant="secondary" onClick={() => { setBulkOpen(true); setBulkCredentials([]); setBulkError('') }}>
+                Bulk upload students
+              </Button>
+            )}
+            <Button onClick={openCreate}>{addButtonLabel}</Button>
           </div>
         </div>
 
         <Card className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Input id="user-search" label="Search" type="search" placeholder="Name, email, roll no..." value={search} onChange={(event) => updateFilter(setSearch, event.target.value)} />
-          <Select
-            id="user-role-filter"
-            label="Role"
-            value={roleFilter}
-            onChange={(event) => updateFilter(setRoleFilter, event.target.value)}
-            options={[
-              { value: '', label: 'All roles' },
-              { value: 'teacher', label: 'Teacher' },
-              { value: 'student', label: 'Student' },
-            ]}
-          />
+          <Input id="user-search" label="Search" type="search" placeholder={isStudentsSection ? 'Name, email, roll no...' : 'Name, email, department...'} value={search} onChange={(event) => updateFilter(setSearch, event.target.value)} />
+          {showRoleFilter && (
+            <Select
+              id="user-role-filter"
+              label="Role"
+              value={roleFilter}
+              onChange={(event) => updateFilter(setRoleFilter, event.target.value)}
+              options={[
+                { value: '', label: 'All roles' },
+                { value: 'teacher', label: 'Teacher' },
+                { value: 'student', label: 'Student' },
+              ]}
+            />
+          )}
           <Select
             id="user-department-filter"
             label="Department"
@@ -481,8 +523,8 @@ function UsersPage() {
           </Card>
         ) : (
           <EmptyState
-            title="No users found"
-            message="Try adjusting the filters or add a new teacher or student."
+            title={isStudentsSection ? 'No students found' : 'No teachers found'}
+            message={isStudentsSection ? 'Try adjusting the filters or add a new student.' : 'Try adjusting the filters or add a new teacher.'}
           />
         )}
       </section>
@@ -490,7 +532,7 @@ function UsersPage() {
       <Modal
         isOpen={modalOpen || isAddingFromClass}
         onClose={closeUserModal}
-        title={createdCredentials ? 'User created' : editingUser ? 'Edit User' : 'Add User'}
+        title={createdCredentials ? `${sectionLabel} created` : editingUser ? `Edit ${sectionLabel}` : `Add ${sectionLabel}`}
       >
         {createdCredentials ? (
           <div className="space-y-4">
@@ -510,7 +552,7 @@ function UsersPage() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             <Input id="managed-user-name" label="Full name" name="name" value={form.name} onChange={updateForm} required maxLength={100} />
             <Input id="managed-user-email" label="Email" name="email" type="email" value={form.email} onChange={updateForm} required />
-            {!editingUser && (
+            {!editingUser && !isStudentsSection && (
               <Select
                 id="managed-user-role"
                 label="Role"
@@ -522,6 +564,34 @@ function UsersPage() {
                   { value: 'student', label: 'Student' },
                 ]}
               />
+            )}
+            {editingUser && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  id="managed-user-edit-password"
+                  label="New password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  maxLength={72}
+                  value={form.password}
+                  onChange={updateForm}
+                  placeholder="Leave blank to keep current password"
+                />
+                <Input
+                  id="managed-user-edit-confirm-password"
+                  label="Confirm password"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  minLength={8}
+                  maxLength={72}
+                  value={form.confirmPassword}
+                  onChange={updateForm}
+                  placeholder="Leave blank to keep current password"
+                />
+              </div>
             )}
             <Select
               id="managed-user-department"
