@@ -59,6 +59,12 @@ export function AuthProvider({ children }) {
     return response.data.user
   }
 
+  async function updateStudentProfile(studentProfile) {
+    const response = await api.patch('/auth/profile', { studentProfile })
+    setUser(response.data.user)
+    return response.data.user
+  }
+
   function logout() {
     localStorage.removeItem(TOKEN_KEY)
     setUser(null)
@@ -66,7 +72,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, changePassword, loading }}
+      value={{ user, login, logout, changePassword, updateStudentProfile, loading }}
     >
       {children}
     </AuthContext.Provider>

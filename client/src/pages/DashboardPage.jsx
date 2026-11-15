@@ -12,6 +12,8 @@ import TeacherAttendancePage from './TeacherAttendancePage'
 import StudentAttendancePage from './StudentAttendancePage'
 import TeacherMarksPage from './TeacherMarksPage'
 import StudentMarksPage from './StudentMarksPage'
+import StudentTimetablePage from './StudentTimetablePage'
+import StudentServicePage from './StudentServicePage'
 import AnnouncementsPage from './AnnouncementsPage'
 import EventsPage from './EventsPage'
 import TimetablePage from './TimetablePage'
@@ -76,6 +78,12 @@ function DashboardPage() {
   const isStudentMarksPage =
     dashboardRole === 'student' &&
     location.pathname === '/dashboard/student/results'
+  const isStudentFeesPage =
+    dashboardRole === 'student' &&
+    location.pathname === '/dashboard/student/fees'
+  const isStudentHostelPage =
+    dashboardRole === 'student' &&
+    location.pathname === '/dashboard/student/hostel'
   const isTeacherMarksPage =
     dashboardRole === 'teacher' &&
     location.pathname === '/dashboard/teacher/marks'
@@ -94,7 +102,13 @@ function DashboardPage() {
       ? [isClassesPage, isSubjectsPage, isTimetablePage, isTeacherAttendancePage,
           isTeacherMarksPage, isAnnouncementsPage, isEventsPage].some(Boolean)
       : dashboardRole === 'student'
-        ? [isStudentAttendancePage, isStudentMarksPage].some(Boolean)
+        ? [
+            isStudentAttendancePage,
+            isStudentMarksPage,
+            isTimetablePage,
+            isStudentFeesPage,
+            isStudentHostelPage,
+          ].some(Boolean)
         : dashboardRole === 'superadmin'
           ? [isAdminPage, isTimetablePage, isAnnouncementsPage, isEventsPage].some(Boolean)
           : false
@@ -109,7 +123,7 @@ function DashboardPage() {
   return (
     <DashboardLayout user={user} role={dashboardRole}>
       {isTimetablePage ? (
-        <TimetablePage />
+        dashboardRole === 'student' ? <StudentTimetablePage /> : <TimetablePage />
       ) : isEventsPage ? (
         <EventsPage />
       ) : isAnnouncementsPage ? (
@@ -134,6 +148,10 @@ function DashboardPage() {
         <TeacherMarksPage />
       ) : isStudentMarksPage ? (
         <StudentMarksPage />
+      ) : isStudentFeesPage ? (
+        <StudentServicePage service="Fees" />
+      ) : isStudentHostelPage ? (
+        <StudentServicePage service="Hostel" />
       ) : <RoleDashboard user={user} />}
     </DashboardLayout>
   )

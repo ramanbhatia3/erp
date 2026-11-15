@@ -184,7 +184,7 @@ async function getStudentMarks(req, res, next) {
   try {
     const settings = await getMarksSettings()
     const marks = await Marks.find({ student: req.user._id })
-      .populate('subject', 'name code')
+      .populate('subject', 'name code type')
       .populate('class', 'name section semester academicYear')
       .populate('enteredBy', 'name')
       .sort({ academicYear: -1, semester: 1, subject: 1 })

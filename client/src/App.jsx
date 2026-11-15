@@ -1,5 +1,6 @@
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { MotionConfig } from 'motion/react'
 import ProtectedRoute from './components/ProtectedRoute'
 import DashboardPage from './pages/DashboardPage'
 import ChangePasswordPage from './pages/ChangePasswordPage'
@@ -10,7 +11,7 @@ import { dashboardRoles, getDashboardPath } from './utils/dashboardPath'
 
 function App() {
   return (
-    <>
+    <MotionConfig reducedMotion="user" transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}>
       <Toaster position="top-right" />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
@@ -42,7 +43,7 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
-    </>
+    </MotionConfig>
   )
 }
 

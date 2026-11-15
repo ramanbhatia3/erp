@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import universityLogo from '../assets/rbpulogo.webp'
 import useAuth from '../context/useAuth'
 import { getDashboardPath } from '../utils/dashboardPath'
 
@@ -64,11 +65,15 @@ function ChangePasswordPage() {
         onSubmit={handleSubmit}
       >
         <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-700 text-lg font-bold text-white">
-            RB
+          <div className="mx-auto inline-flex rounded-xl bg-[#171b20] px-4 py-3">
+            <img
+              alt="Rayat Bahra Professional University"
+              className="h-8 w-auto object-contain"
+              src={universityLogo}
+            />
           </div>
           <p className="mt-3 text-sm font-semibold uppercase tracking-widest text-blue-700">
-            RBPU Hub
+            Account security
           </p>
           <h1 className="mt-2 text-2xl font-bold text-slate-900">
             Change your password

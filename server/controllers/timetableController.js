@@ -137,7 +137,9 @@ async function getClassTimetableData(req, res, next) {
         .populate('teacher', 'name email department')
         .populate('department', 'name code')
         .sort({ name: 1 }),
-      Room.find({ isAvailable: true }).sort({ type: 1, capacity: -1, name: 1 }),
+      req.user.role === 'student'
+        ? Promise.resolve([])
+        : Room.find({ isAvailable: true }).sort({ type: 1, capacity: -1, name: 1 }),
       Timetable.find({ classId: req.params.classId })
         .populate('subjectId', 'name code')
         .populate('teacherId', 'name email')

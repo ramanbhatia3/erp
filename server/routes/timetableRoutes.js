@@ -31,7 +31,8 @@ router.get(
 
 router.get(
   '/classes/:classId/data',
-  ...canRead,
+  protect,
+  authorizeRoles('superadmin', 'teacher', 'student'),
   param('classId').isMongoId().withMessage('Class ID is invalid.'),
   checkValidation,
   timetableController.getClassTimetableData,

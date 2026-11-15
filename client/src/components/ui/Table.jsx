@@ -8,12 +8,12 @@ function Table({ columns = [], rows = [], getRowKey, emptyMessage = 'No records 
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200">
-      <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-        <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+    <div className="overflow-x-auto rounded-xl border border-slate-200/80">
+      <table className="table-row-hover min-w-full divide-y divide-slate-200 text-left text-sm">
+        <thead className="bg-slate-50/90 text-[11px] uppercase tracking-[0.1em] text-slate-500">
           <tr>
             {columns.map((column) => (
-              <th className="px-4 py-3 font-semibold" key={column.key}>
+              <th className="px-4 py-3.5 font-bold" key={column.key}>
                 {column.label}
               </th>
             ))}
@@ -23,7 +23,7 @@ function Table({ columns = [], rows = [], getRowKey, emptyMessage = 'No records 
           {rows.map((row, index) => (
             <tr key={getRowKey ? getRowKey(row) : row.id || index}>
               {columns.map((column) => (
-                <td className="px-4 py-3" key={column.key}>
+                <td className="px-4 py-3.5" key={column.key}>
                   {column.render ? column.render(row) : row[column.key]}
                 </td>
               ))}

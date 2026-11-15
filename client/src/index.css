@@ -33,29 +33,30 @@
 @layer base {
   :root {
     color-scheme: light;
-    --ink: #172033;
-    --paper: #f3f6fb;
-    --cream: #e9eef6;
-    --border: #e1e7f0;
-    --muted: #718096;
+    font-size: 90%;
+    --ink: #171b23;
+    --paper: #f1f3f6;
+    --cream: #e9edf2;
+    --border: #e4e8ee;
+    --muted: #737d8c;
     --bg-main: var(--paper);
     --bg-card: #ffffff;
-    --sidebar-bg: #111a2b;
+    --sidebar-bg: #1b1e20;
     --text-main: var(--ink);
     --text-muted: var(--muted);
     --border-color: var(--border);
 
-    --color-slate-50: #f7f9fc;
-    --color-slate-100: #eef2f8;
-    --color-slate-200: #e1e7f0;
-    --color-slate-300: #cbd5e1;
-    --color-slate-400: #94a3b8;
-    --color-slate-500: #718096;
-    --color-slate-600: #526179;
-    --color-slate-700: #394860;
-    --color-slate-800: #25334a;
-    --color-slate-900: #172033;
-    --color-slate-950: #111a2b;
+    --color-slate-50: #f7f8fa;
+    --color-slate-100: #eff1f4;
+    --color-slate-200: #e4e8ee;
+    --color-slate-300: #d3d9e2;
+    --color-slate-400: #98a2b2;
+    --color-slate-500: #737d8c;
+    --color-slate-600: #566171;
+    --color-slate-700: #414b59;
+    --color-slate-800: #2b333e;
+    --color-slate-900: #171b23;
+    --color-slate-950: #11151a;
 
     --color-blue-50: #eff6ff;
     --color-blue-100: #dbeafe;
@@ -117,6 +118,26 @@
     color: var(--text-main);
     font-family: var(--font-sans);
     transition: background-color 0.25s ease, color 0.25s ease;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.035em;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  :focus-visible {
+    outline: 3px solid rgb(37 99 235 / 0.42);
+    outline-offset: 2px;
   }
 
   ::selection {
@@ -127,14 +148,83 @@
 
 .app-canvas {
   background:
-    radial-gradient(ellipse at 86% 0%, rgb(219 234 254 / 0.58), transparent 34rem),
-    linear-gradient(135deg, #f8faff 0%, #f2f5fa 52%, #edf2f8 100%);
+    radial-gradient(ellipse at 85% 0%, rgb(255 255 255 / 0.72), transparent 34rem),
+    linear-gradient(135deg, #f5f6f8 0%, #f1f3f6 55%, #eceff3 100%);
 }
 
 .dark .app-canvas {
   background:
     radial-gradient(ellipse at 86% 0%, rgb(37 99 235 / 0.13), transparent 34rem),
     linear-gradient(135deg, #111b2b 0%, #101827 54%, #0c1421 100%);
+}
+
+.dashboard-sidebar {
+  background:
+    radial-gradient(ellipse at 0% 0%, rgb(16 185 129 / 0.08), transparent 22rem),
+    #1b1e20;
+}
+
+.dashboard-sidebar button[aria-current="page"] {
+  position: relative;
+}
+
+.dashboard-sidebar button[aria-current="page"]::before {
+  position: absolute;
+  inset-block: 10px;
+  inset-inline-start: -12px;
+  width: 3px;
+  border-radius: 0 999px 999px 0;
+  background: #10b981;
+  content: "";
+}
+
+.bg-blue-700 {
+  background-color: #171b20;
+}
+
+.hover\:bg-blue-800:hover {
+  background-color: #292e32;
+}
+
+.page-content {
+  transform-origin: top center;
+}
+
+.login-frame {
+  height: auto;
+}
+
+@media (min-width: 48rem) {
+  .login-frame {
+    height: min(42rem, calc(100svh - 2rem));
+  }
+}
+
+@media (max-height: 42rem) and (min-width: 48rem) {
+  .login-frame {
+    height: auto;
+    min-height: calc(100svh - 2rem);
+  }
+
+  .login-form {
+    padding-block: 1.25rem;
+  }
+
+  .login-heading {
+    margin-bottom: 0.75rem;
+  }
+}
+
+.table-row-hover tbody tr {
+  transition: background-color 160ms ease;
+}
+
+.table-row-hover tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.dark .table-row-hover tbody tr:hover {
+  background-color: rgb(255 255 255 / 0.035);
 }
 
 .dark .dashboard-sidebar {
@@ -179,4 +269,15 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

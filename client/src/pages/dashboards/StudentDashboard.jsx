@@ -1,91 +1,108 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import toast from 'react-hot-toast'
 import api from '../../services/api'
-import Card from '../../components/ui/Card'
-import EmptyState from '../../components/ui/EmptyState'
-import Loader from '../../components/ui/Loader'
-import StatCard from '../../components/ui/StatCard'
+import StudentProfileCard from '../../components/dashboard/StudentProfileCard'
 import DashboardWelcome from '../../components/dashboard/DashboardWelcome'
 
+function getErrorMessage(error) {
+  return error.response?.data?.message || 'Class details are unavailable.'
+}
+
+function getSemesterOrdinal(value) {
+  const semester = Number(value)
+  const lastTwoDigits = semester % 100
+  const suffix =
+    lastTwoDigits >= 11 && lastTwoDigits <= 13
+      ? 'th'
+      : ({ 1: 'st', 2: 'nd', 3: 'rd' }[semester % 10] || 'th')
+  return `${semester}${suffix}`
+}
+
+function getStudentClassLabel(classRecord) {
+  if (!classRecord) return 'Class not assigned'
+
+  const course = classRecord.department?.code ||
+    classRecord.department?.name ||
+    classRecord.name
+  const section = classRecord.section ? ` ${classRecord.section}` : ''
+  const semester = classRecord.semester
+    ? ` ${getSemesterOrdinal(classRecord.semester)} Semester`
+    : ''
+
+  return `${course || 'Class'}${section}${semester}`
+}
+
 function StudentDashboard({ user }) {
-  const [summary, setSummary] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const classId = typeof user.class === 'string' ? user.class : user.class?._id
+  const [classDetails, setClassDetails] = useState({
+    classRecord: typeof user.class === 'object' ? user.class : null,
+    error: '',
+  })
 
   useEffect(() => {
+    if (!classId) return undefined
+
     let active = true
-    Promise.all([
-      api.get('/attendance/student/me'),
-      api.get('/marks/student/me'),
-    ])
-      .then(([attendanceResponse, marksResponse]) => {
-        if (!active) return
-        setSummary({
-          attendance: attendanceResponse.data,
-          marks: marksResponse.data.marks,
-        })
-        setError('')
+    api.get(`/timetable/classes/${classId}/data`)
+      .then(({ data }) => {
+        if (active) setClassDetails({ classRecord: data.class, error: '' })
       })
-      .catch((requestError) => {
+      .catch((error) => {
         if (active) {
-          const message = requestError.response?.data?.message || 'Unable to load your attendance and marks.'
-          setError(message)
-          toast.error(message)
+          setClassDetails({ classRecord: null, error: getErrorMessage(error) })
         }
-      })
-      .finally(() => {
-        if (active) setLoading(false)
       })
 
     return () => {
       active = false
     }
-  }, [])
+  }, [classId])
+
+  const fullName = user.name
+  const initials = fullName
+    .split(/\s+/)
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
   return (
     <div className="space-y-6">
       <DashboardWelcome
         title="Student"
         user={user}
-        subtitle="View your attendance and marks."
+        subtitle="Your academic progress, at a glance."
       />
-      {loading ? (
-        <Card><Loader label="Loading your academic summary..." /></Card>
-      ) : error ? (
-        <EmptyState title="Academic summary unavailable" message={error} />
-      ) : (
-        <>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <StatCard
-              label="Attendance"
-              value={`${summary.attendance.overall.percentage}%`}
-              detail={`${summary.attendance.overall.present} present of ${summary.attendance.overall.total} classes`}
-            />
-            <StatCard label="Marks available" value={summary.marks.length} />
+
+      <section className="relative overflow-hidden rounded-[1.6rem] bg-[#171b22] px-6 py-6 text-white shadow-[0_20px_45px_rgba(17,24,39,0.14)] sm:px-8">
+        <div aria-hidden="true" className="absolute -right-20 -top-32 h-80 w-80 rounded-full border-[42px] border-white/[0.035]" />
+        <div className="relative flex flex-wrap items-center gap-x-8 gap-y-5">
+          <div className="flex min-w-0 flex-1 items-center gap-4">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-lime-300 text-lg font-extrabold text-slate-950">
+              {initials}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-xl font-bold tracking-tight">{fullName}</p>
+              <p className="mt-1 truncate text-sm text-slate-300">
+                {classDetails.error
+                  ? 'Class details unavailable'
+                  : getStudentClassLabel(classDetails.classRecord)}
+              </p>
+            </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Card className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="font-semibold text-slate-900">Attendance</h2>
-                <p className="mt-1 text-sm text-slate-500">Review your subject attendance and history.</p>
-              </div>
-              <Link className="shrink-0 rounded-lg bg-blue-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800" to="/dashboard/student/attendance">
-                View
-              </Link>
-            </Card>
-            <Card className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="font-semibold text-slate-900">Marks</h2>
-                <p className="mt-1 text-sm text-slate-500">Review your assignment and MST marks.</p>
-              </div>
-              <Link className="shrink-0 rounded-lg bg-blue-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800" to="/dashboard/student/results">
-                View
-              </Link>
-            </Card>
+          <div className="min-w-28">
+            <p className="text-xs font-medium text-slate-400">Roll no</p>
+            <p className="mt-1 text-base font-semibold">{user.rollNo || '—'}</p>
           </div>
-        </>
-      )}
+        </div>
+        {classDetails.error && (
+          <p className="relative mt-2 text-xs text-amber-200">{classDetails.error}</p>
+        )}
+        <div className="relative mt-5 border-t border-dashed border-white/20 pt-4 text-sm text-slate-300">
+          Rayat Bahra Professional University
+        </div>
+      </section>
+
+      <StudentProfileCard />
     </div>
   )
 }

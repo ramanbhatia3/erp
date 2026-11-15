@@ -28,7 +28,7 @@ function getMetricIcon(label = '') {
 function StatCard({ label, value, detail, icon }) {
   return (
     <Card className="group relative overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-400" />
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-emerald-300 to-slate-200" />
       <div className="flex items-start justify-between gap-3 pt-1">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
@@ -41,7 +41,7 @@ function StatCard({ label, value, detail, icon }) {
             <p className="mt-2 text-xs font-medium text-slate-500">{detail}</p>
           )}
         </div>
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 ring-1 ring-blue-100 transition duration-200 group-hover:scale-105 group-hover:bg-blue-100">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition duration-200 group-hover:scale-105 group-hover:bg-emerald-50 group-hover:text-emerald-700">
           {icon || (
             <svg
               aria-hidden="true"

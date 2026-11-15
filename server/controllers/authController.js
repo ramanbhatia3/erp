@@ -19,6 +19,13 @@ async function getUserInfo(user) {
     isFirstLogin: user.isFirstLogin,
     isActive: user.isActive,
     isClassAdvisor,
+    ...(user.role === 'student'
+      ? {
+          studentProfile: user.studentProfile
+            ? user.studentProfile.toObject()
+            : {},
+        }
+      : {}),
   }
 }
 
@@ -62,6 +69,50 @@ async function getMe(req, res, next) {
   }
 }
 
+async function updateStudentProfile(req, res, next) {
+  try {
+    if (req.user.role !== 'student') {
+      return res.status(403).json({ message: 'Only students can update student profile details.' })
+    }
+
+    const fields = [
+      'mobileNumber',
+      'dateOfBirth',
+      'currentAddress',
+      'permanentAddress',
+      'fatherName',
+      'motherName',
+      'guardianName',
+      'guardianPhone',
+      'bloodGroup',
+      'class10Board',
+      'class10Percentage',
+      'class12Board',
+      'class12Percentage',
+      'favoriteSports',
+      'hobbies',
+    ]
+    const studentProfile = req.user.studentProfile?.toObject() || {}
+
+    fields.forEach((field) => {
+      if (Object.hasOwn(req.body.studentProfile, field)) {
+        const value = req.body.studentProfile[field]
+        studentProfile[field] = value === '' || value === null ? undefined : value
+      }
+    })
+
+    req.user.studentProfile = studentProfile
+    await req.user.save()
+
+    return res.json({
+      message: 'Student profile updated successfully.',
+      user: await getUserInfo(req.user),
+    })
+  } catch (error) {
+    return next(error)
+  }
+}
+
 async function changePassword(req, res, next) {
   try {
     const user = await User.findById(req.user.id).select('+password')
@@ -93,4 +144,4 @@ async function changePassword(req, res, next) {
   }
 }
 
-module.exports = { login, getMe, changePassword }
+module.exports = { login, getMe, updateStudentProfile, changePassword }
