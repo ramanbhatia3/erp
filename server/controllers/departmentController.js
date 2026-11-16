@@ -126,7 +126,7 @@ async function updateDepartment(req, res, next) {
     const department = await Department.findByIdAndUpdate(
       req.params.id,
       updates,
-      { new: true, runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     ).populate('hod', 'name email')
 
     if (!department) {

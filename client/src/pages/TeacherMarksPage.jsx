@@ -9,6 +9,7 @@ import Select from '../components/ui/Select'
 import { getSemesterTerm } from '../utils/classDisplay'
 
 const EMPTY_MARKS = []
+const PROGRAM_CODES = new Set(['CSE', 'IT', 'ME', 'CE'])
 
 function getId(value) {
   return String(value?._id || value || '')
@@ -18,6 +19,11 @@ function getErrorMessage(error, fallback) {
   return error.response?.data?.errors?.[0]?.msg ||
     error.response?.data?.message ||
     fallback
+}
+
+function getProgramCode(value) {
+  const code = String(value || '').trim().toUpperCase()
+  return PROGRAM_CODES.has(code) ? code : ''
 }
 
 function TeacherMarksPage({ isAdmin = false }) {
@@ -96,16 +102,24 @@ function TeacherMarksPage({ isAdmin = false }) {
       ? api.get('/users', {
           params: {
             role: 'student',
-            department: getId(selectedClass.department),
           },
         }).then((response) => response.data.users.filter((student) => {
-          const currentlyAssigned = getId(student.class) === classId
-          const semesterMatches =
-            student.academicStatus === 'studying' &&
-            Number(student.currentSemester) === Number(selectedClass.semester)
-          return currentlyAssigned ||
-            student.academicStatus === 'alumni' ||
-            semesterMatches
+          const studentClassName =
+            typeof student.class === 'object' ? student.class.name : ''
+          const studentDepartmentCode = student.department?.code
+          const studentProgram =
+            getProgramCode(student.program) ||
+            getProgramCode(studentClassName) ||
+            (studentDepartmentCode === 'AS'
+              ? ''
+              : getProgramCode(studentDepartmentCode))
+          const classProgram =
+            getProgramCode(selectedClass.name) ||
+            (selectedClass.department?.code === 'AS'
+              ? ''
+              : getProgramCode(selectedClass.department?.code))
+          return getId(student.class) === classId ||
+            Boolean(classProgram && studentProgram === classProgram)
         }))
       : api.get(`/attendance/class/${classId}/students`)
         .then((response) => response.data.students)
@@ -371,7 +385,9 @@ function TeacherMarksPage({ isAdmin = false }) {
         ) : students.length === 0 ? (
           <EmptyState
             title="No eligible students"
-            message="There are no students in this class and semester, or alumni from this department."
+            message={isAdmin
+              ? 'There are no students from this program available for the selected class.'
+              : 'There are no active students currently assigned to this class.'}
           />
         ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-200">

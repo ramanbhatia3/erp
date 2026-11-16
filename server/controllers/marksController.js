@@ -7,7 +7,7 @@ const {
   calculateMarks,
   calculatePerformance,
 } = require('../utils/calculations')
-const { getStudentAcademicProgress } = require('../utils/studentAcademic')
+const { isStudentEligibleForClass } = require('../utils/marksEligibility')
 
 function getId(value) {
   return String(value?._id || value)
@@ -31,14 +31,18 @@ async function validateMarkRelations({ studentId, subject, enteredByRole }) {
   const student = await User.findOne({
     _id: studentId,
     role: 'student',
-  }).select('_id class department startingYear isActive')
+  })
+    .select('_id class department program isActive')
+    .populate('department', 'code')
+    .populate('class', 'name')
 
   if (!student) {
     return { error: 'The selected student was not found.' }
   }
 
   const classRecord = await Class.findById(subject.class)
-    .select('department semester academicYear')
+    .select('department semester academicYear name')
+    .populate('department', 'code')
   if (!classRecord) {
     return { error: 'The subject class was not found.' }
   }
@@ -51,21 +55,9 @@ async function validateMarkRelations({ studentId, subject, enteredByRole }) {
     if (!belongsToClass) {
       return { error: 'The selected student must belong to the subject class.' }
     }
-  } else if (!belongsToClass) {
-    const progress = getStudentAcademicProgress(student.startingYear)
-    const isEligibleForClass =
-      getId(student.department) === getId(classRecord.department) &&
-      (
-        progress.academicStatus === 'alumni' ||
-        (
-          progress.academicStatus === 'studying' &&
-          progress.currentSemester === classRecord.semester
-        )
-      )
-    if (!isEligibleForClass) {
-      return {
-        error: 'Choose a current student from this department and semester, or a passed-out alumnus from this department.',
-      }
+  } else if (!belongsToClass && !isStudentEligibleForClass(student, classRecord)) {
+    return {
+      error: 'Choose a student from this program for the subject class.',
     }
   }
 

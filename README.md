@@ -9,7 +9,7 @@ RBPU Hub is a role-based university portal for managing academic operations in o
 - **Sign-in and account protection:** JWT-backed login, current-user lookup, role-aware routes, and a forced password-change flow for first-time accounts.
 - **University setup:** Superadmins can manage departments, semester-specific classes (Semesters 1–8), subjects and their teachers, academic settings, and user accounts. The academic year is calculated automatically on a July–June cycle (for example, November 2026 is 2026-27 and March 2025 is 2024-25); new classes inherit the current year. Subjects are assigned to a class and inherit its semester. Student accounts store their program and the year their first semester starts; their department and class are automatically assigned from that program and calculated semester.
 - **Attendance:** Teachers can record and edit attendance for their assigned classes. Students can review their own attendance.
-- **Marks:** Teachers and superadmins can record and edit two MSTs, three assignments, attendance, and final exam marks. MST and assignment averages are rounded up; results total 100 marks. Superadmins can also enter marks for inactive students and alumni.
+- **Marks:** Teachers and superadmins can record and edit two MSTs, three assignments, attendance, and final exam marks. MST and assignment averages are rounded up; results total 100 marks. Superadmins can enter marks for students across every semester in their program, including inactive students and alumni.
 - **Fees and hostels:** Superadmins assign one of four hostels and a room, record transport usage, and maintain fee payments across eight semesters. Students can view all semester fees separately from their hostel and room assignment; payments are not processed in the app.
 - **Announcements and events:** Superadmins can publish announcements and manage events. Teachers can view relevant announcements and events but cannot post or edit them.
 - **Timetables:** Superadmins can generate class schedules. Teachers can view their personal timetable.
@@ -84,6 +84,7 @@ Run these commands from their respective package directories:
 | `client` | `npm run lint` | Run Oxlint |
 | `server` | `npm run dev` | Start the API with Nodemon |
 | `server` | `npm start` | Start the API with Node.js |
+| `server` | `npm test` | Run the server's built-in Node.js tests |
 | `server` | `npm run seed` | Create the configured initial superadmin |
 
 ## API areas
@@ -116,7 +117,7 @@ The marks formula is: MST average (2 tests, each out of 24), assignment average 
 
 These are recommended next milestones:
 
-1. **Add automated tests:** Cover authentication, role permissions, validation, attendance/marks calculations, and key client flows.
+1. **Expand automated tests:** Add API and client integration coverage for authentication, role permissions, validation, and key user flows.
 2. **Prepare for deployment:** Document production configuration, secure secret management, database backups, logging, and deployment steps.
 
 ## Security notes

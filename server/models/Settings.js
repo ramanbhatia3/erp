@@ -56,7 +56,7 @@ const settingsSchema = new mongoose.Schema(
     },
     currentAcademicYear: {
       type: String,
-      default: getCurrentAcademicYear,
+      default: () => getCurrentAcademicYear(),
       trim: true,
       maxlength: 20,
     },

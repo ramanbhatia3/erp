@@ -32,7 +32,7 @@ async function updateSettings(req, res, next) {
         $setOnInsert: { key: 'university' },
       },
       {
-        new: true,
+        returnDocument: 'after',
         upsert: true,
         runValidators: true,
         setDefaultsOnInsert: true,

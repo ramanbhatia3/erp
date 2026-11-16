@@ -9,7 +9,7 @@ async function getMarksSettings() {
   const settings = await Settings.findOneAndUpdate(
     { key: 'university' },
     { $setOnInsert: { key: 'university' } },
-    { new: true, upsert: true, setDefaultsOnInsert: true },
+    { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true },
   )
 
   if (settings.marksFormulaVersion !== marksFormulaVersion) {

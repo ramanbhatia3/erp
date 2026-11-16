@@ -68,6 +68,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     studentProfile: {
+      gender: {
+        type: String,
+        enum: ['', 'male', 'female'],
+        default: '',
+      },
       mobileNumber: { type: String, trim: true, maxlength: 20 },
       dateOfBirth: { type: Date },
       currentAddress: { type: String, trim: true, maxlength: 500 },

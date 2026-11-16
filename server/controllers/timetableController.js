@@ -35,7 +35,7 @@ async function getDefaultConfiguration() {
   const config = await TimetableConfiguration.findOneAndUpdate(
     { key: 'university' },
     { $setOnInsert: { key: 'university' } },
-    { new: true, upsert: true, setDefaultsOnInsert: true },
+    { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true },
   )
 
   return config
@@ -103,7 +103,7 @@ async function updateConfiguration(req, res, next) {
     const configuration = await TimetableConfiguration.findOneAndUpdate(
       { key: 'university' },
       { $set: payload },
-      { new: true, upsert: true, runValidators: true },
+      { returnDocument: 'after', upsert: true, runValidators: true },
     )
 
     return res.json({ configuration })

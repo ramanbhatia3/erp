@@ -44,7 +44,7 @@ app.use('/api/faculty', facultyRoutes)
 app.use('/api/timetable', timetableRoutes)
 
 app.use((error, req, res, next) => {
-  console.error('Request failed.')
+  console.error(`Request failed: ${req.method} ${req.path}`, error)
   res.status(500).json({ message: 'An unexpected server error occurred.' })
 })
 

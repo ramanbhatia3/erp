@@ -26,7 +26,7 @@ const timetableEntrySchema = new mongoose.Schema(
     academicSession: {
       type: String,
       trim: true,
-      default: getCurrentAcademicYear,
+      default: () => getCurrentAcademicYear(),
     },
     day: {
       type: String,

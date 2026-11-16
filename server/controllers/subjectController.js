@@ -256,7 +256,7 @@ async function updateSubject(req, res, next) {
       subject = await Subject.findByIdAndUpdate(
         req.params.id,
         updates,
-        { new: true, runValidators: true },
+        { returnDocument: 'after', runValidators: true },
       )
     }
 

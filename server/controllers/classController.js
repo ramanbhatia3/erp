@@ -185,7 +185,7 @@ async function updateClass(req, res, next) {
     const updatedClass = await Class.findByIdAndUpdate(
       req.params.id,
       updates,
-      { new: true, runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     ).populate('department', 'name code').populate('advisor', 'name email')
 
     if (!updatedClass) {
