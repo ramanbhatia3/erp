@@ -4,28 +4,13 @@ const Department = require('../models/Department')
 const Subject = require('../models/Subject')
 const User = require('../models/User')
 const Attendance = require('../models/Attendance')
+const { getCurrentAcademicYear } = require('../utils/academicYear')
 
-async function getTeacherScope(req, res) {
+async function getTeacherScope(req) {
   if (req.user.role !== 'teacher') return {}
-
-  if (!req.user.department) {
-    res.status(403).json({
-      message: 'Your account is not assigned to a department.',
-    })
-    return null
-  }
-
-  const departmentId = String(req.user.department)
-  if (req.query.department && req.query.department !== departmentId) {
-    res.status(403).json({
-      message: 'You do not have access to this department.',
-    })
-    return null
-  }
 
   const subjectClasses = await Subject.find({ teacher: req.user._id }).distinct('class')
   return {
-    department: req.user.department,
     $or: [
       { advisor: req.user._id },
       { _id: { $in: subjectClasses } },
@@ -39,8 +24,13 @@ async function validateDepartment(departmentId) {
 
 async function listClasses(req, res, next) {
   try {
-    const filter = await getTeacherScope(req, res)
-    if (!filter) return
+    const currentAcademicYear = getCurrentAcademicYear()
+    await Class.updateMany(
+      { academicYear: { $ne: currentAcademicYear } },
+      { $set: { academicYear: currentAcademicYear } },
+    )
+
+    const filter = await getTeacherScope(req)
 
     if (req.query.department) {
       filter.department = req.query.department
@@ -48,14 +38,10 @@ async function listClasses(req, res, next) {
     if (req.query.semester) {
       filter.semester = Number(req.query.semester)
     }
-    if (req.query.section) {
-      filter.section = req.query.section
-    }
-
     const classes = await Class.find(filter)
       .populate('department', 'name code')
       .populate('advisor', 'name email')
-      .sort({ department: 1, semester: 1, section: 1, name: 1 })
+      .sort({ department: 1, semester: 1, name: 1 })
 
     return res.json({ classes })
   } catch (error) {
@@ -131,7 +117,7 @@ async function getClassFaculty(req, res, next) {
 
 async function createClass(req, res, next) {
   try {
-    const { department, name, semester, section, academicYear } = req.body
+    const { department, name, semester } = req.body
 
     if (!(await validateDepartment(department))) {
       return res.status(400).json({ message: 'Department was not found.' })
@@ -141,8 +127,7 @@ async function createClass(req, res, next) {
       department,
       name,
       semester,
-      section,
-      academicYear,
+      academicYear: getCurrentAcademicYear(),
     })
 
     await newClass.populate('department', 'name code')
@@ -164,7 +149,7 @@ async function updateClass(req, res, next) {
     }
 
     const updates = {}
-    for (const field of ['department', 'name', 'semester', 'section', 'academicYear']) {
+    for (const field of ['department', 'name', 'semester', 'academicYear']) {
       if (req.body[field] !== undefined) updates[field] = req.body[field]
     }
 

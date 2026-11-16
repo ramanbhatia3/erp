@@ -54,6 +54,8 @@ const roleMenus = {
     ['Departments', 'DP'],
     ['Teachers', 'US'],
     ['Students', 'US'],
+    ['Fees & Hostel', 'FI'],
+    ['Marks', 'MK'],
     ['Classes', 'CL'],
     ['Subjects', 'SB'],
     ['Timetable', 'TM'],
@@ -106,6 +108,9 @@ function DashboardLayout({ user, role, children }) {
       location.pathname === '/dashboard/superadmin/students' ||
       location.pathname.startsWith('/dashboard/superadmin/students/')
     )
+  const isFeesHostelPage =
+    role === 'superadmin' &&
+    location.pathname === '/dashboard/superadmin/fees-hostel'
   const isUsersPage = role === 'superadmin' && (location.pathname.endsWith('/users') || isTeachersPage || isStudentsPage)
   const isClassesPage = location.pathname.endsWith('/classes')
   const isSubjectsPage = location.pathname.endsWith('/subjects')
@@ -121,6 +126,8 @@ function DashboardLayout({ user, role, children }) {
     role === 'student' && location.pathname.endsWith('/hostel')
   const isTeacherMarksPage =
     role === 'teacher' && location.pathname.endsWith('/marks')
+  const isAdminMarksPage =
+    role === 'superadmin' && location.pathname === '/dashboard/superadmin/marks'
   const isSettingsPage =
     role === 'superadmin' && location.pathname.endsWith('/settings')
   const isAnnouncementsPage =
@@ -143,6 +150,8 @@ function DashboardLayout({ user, role, children }) {
       ? 'Teachers'
       : isStudentsPage
         ? 'Students'
+        : isFeesHostelPage
+          ? 'Fees & Hostel'
         : isUsersPage
           ? 'Teachers'
           : isClassesPage
@@ -161,7 +170,7 @@ function DashboardLayout({ user, role, children }) {
                   ? 'Fees'
                   : isStudentHostelPage
                     ? 'Hostel'
-                : isTeacherMarksPage
+                : isTeacherMarksPage || isAdminMarksPage
                   ? 'Marks'
                     : isSettingsPage
                       ? 'Settings'
@@ -191,6 +200,16 @@ function DashboardLayout({ user, role, children }) {
 
     if (role === 'superadmin' && label === 'Students') {
       navigate('/dashboard/superadmin/students')
+      return
+    }
+
+    if (role === 'superadmin' && label === 'Fees & Hostel') {
+      navigate('/dashboard/superadmin/fees-hostel')
+      return
+    }
+
+    if (role === 'superadmin' && label === 'Marks') {
+      navigate('/dashboard/superadmin/marks')
       return
     }
 
@@ -419,7 +438,7 @@ function DashboardLayout({ user, role, children }) {
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
           <div className="mx-auto max-w-[82.5rem]">
-            {isDepartmentsPage || isTeachersPage || isStudentsPage || isUsersPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isStudentFeesPage || isStudentHostelPage || isSettingsPage || isAnnouncementsPage || isEventsPage || isTimetablePage ? (
+            {isDepartmentsPage || isTeachersPage || isStudentsPage || isFeesHostelPage || isAdminMarksPage || isUsersPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isStudentFeesPage || isStudentHostelPage || isSettingsPage || isAnnouncementsPage || isEventsPage || isTimetablePage ? (
               <motion.div
                 key={location.pathname}
                 className="page-content"

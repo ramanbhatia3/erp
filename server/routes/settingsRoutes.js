@@ -3,6 +3,7 @@ const { body } = require('express-validator')
 const settingsController = require('../controllers/settingsController')
 const { protect, authorizeRoles } = require('../middleware/authMiddleware')
 const checkValidation = require('../utils/authValidation')
+const { defaultMarksComponents } = require('../utils/markingScheme')
 
 const router = express.Router()
 
@@ -25,30 +26,18 @@ router.put(
     .isFloat({ min: 0, max: 100 })
     .withMessage('Passing percentage must be between 0 and 100.')
     .toFloat(),
-  body('currentAcademicYear')
-    .trim()
-    .notEmpty()
-    .isLength({ max: 20 })
-    .withMessage('Academic year is required and must be 20 characters or fewer.'),
-  body('currentSemester')
-    .isInt({ min: 1, max: 12 })
-    .withMessage('Current semester must be between 1 and 12.')
-    .toInt(),
   body('marksComponents')
-    .isArray({ min: 1, max: 30 })
-    .withMessage('Add between 1 and 30 marks components.'),
-  body('marksComponents.*')
-    .isObject()
-    .withMessage('Each marks component must be an object.'),
-  body('marksComponents.*.name')
-    .trim()
-    .notEmpty()
-    .isLength({ max: 50 })
-    .withMessage('Component names are required and must be 50 characters or fewer.'),
-  body('marksComponents.*.maxMarks')
-    .isFloat({ gt: 0, max: 1000 })
-    .withMessage('Component maximum marks must be greater than 0 and no more than 1000.')
-    .toFloat(),
+    .optional()
+    .custom((components) =>
+      Array.isArray(components) &&
+      components.length === defaultMarksComponents.length &&
+      defaultMarksComponents.every((configured, index) =>
+        components[index]?.name === configured.name &&
+        Number(components[index]?.maxMarks) === configured.maxMarks &&
+        components[index]?.group === configured.group,
+      ),
+    )
+    .withMessage('The 100-mark grading components are fixed and cannot be changed.'),
   checkValidation,
   settingsController.updateSettings,
 )

@@ -1,8 +1,14 @@
 const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const Class = require('../models/Class')
+const { getStudentAcademicProgress } = require('../utils/studentAcademic')
+const { synchronizeStudentPlacement } = require('../utils/studentPlacement')
 
 async function getUserInfo(user) {
+  if (user.role === 'student') {
+    await synchronizeStudentPlacement(user)
+  }
+
   const isClassAdvisor =
     user.role === 'teacher' &&
     Boolean(await Class.exists({ advisor: user._id }))
@@ -21,6 +27,8 @@ async function getUserInfo(user) {
     isClassAdvisor,
     ...(user.role === 'student'
       ? {
+          startingYear: user.startingYear,
+          ...getStudentAcademicProgress(user.startingYear),
           studentProfile: user.studentProfile
             ? user.studentProfile.toObject()
             : {},

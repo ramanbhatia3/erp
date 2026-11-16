@@ -10,17 +10,21 @@ function getSemesterLabel(semester) {
   return `${value}${suffix}`
 }
 
+function getSemesterTerm(semester) {
+  return Number(semester) % 2 === 1
+    ? 'Odd semester · July–December'
+    : 'Even semester · January–June'
+}
+
 function formatClassLabel(classItem) {
-  const section = classItem.section ? ` ${classItem.section}` : ''
-  return `${classItem.name} ${getSemesterLabel(classItem.semester)}${section}`
+  return `${classItem.name} ${getSemesterLabel(classItem.semester)}`
 }
 
 function sortClassesBySemester(classes) {
   return [...classes].sort((first, second) =>
     Number(first.semester) - Number(second.semester) ||
-    String(first.section || '').localeCompare(String(second.section || '')) ||
     String(first.name || '').localeCompare(String(second.name || '')),
   )
 }
 
-export { formatClassLabel, sortClassesBySemester }
+export { formatClassLabel, getSemesterTerm, sortClassesBySemester }

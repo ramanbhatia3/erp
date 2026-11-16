@@ -14,11 +14,12 @@ import Select from '../components/ui/Select'
 import { formatClassLabel, sortClassesBySemester } from '../utils/classDisplay'
 
 const emptyDepartmentForm = { name: '', code: '', hod: '' }
-const emptyClassForm = { name: '', semester: '1', section: '', academicYear: '' }
+const emptyClassForm = { name: '', semester: '1' }
 const emptyStudentForm = {
   name: '',
   email: '',
   rollNo: '',
+  startingYear: '',
   password: '',
   confirmPassword: '',
 }
@@ -275,8 +276,6 @@ function DepartmentsPage() {
     setClassForm({
       name: classItem.name,
       semester: String(classItem.semester),
-      section: classItem.section,
-      academicYear: classItem.academicYear,
     })
     setClassModalOpen(true)
   }
@@ -289,8 +288,6 @@ function DepartmentsPage() {
       name: classForm.name.trim(),
       department: selectedDepartment._id,
       semester: Number(classForm.semester),
-      section: classForm.section.trim(),
-      academicYear: classForm.academicYear.trim(),
     }
 
     try {
@@ -374,8 +371,8 @@ function DepartmentsPage() {
         role: 'student',
         department: selectedDepartment._id,
         class: selectedClass._id,
-        section: selectedClass.section,
         rollNo: studentForm.rollNo.trim(),
+        startingYear: Number(studentForm.startingYear),
         password: studentForm.password,
       })
       setStudentCredentials({
@@ -575,18 +572,19 @@ function DepartmentsPage() {
         <form className="space-y-4" onSubmit={handleClassSubmit}>
           <p className="text-sm text-slate-500">Department: {selectedDepartment?.name || '—'}</p>
           <Input id="class-name" label="Class name" name="name" value={classForm.name} onChange={(event) => updateForm(setClassForm, event)} maxLength={100} required placeholder="e.g. CSE" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Select
-              id="class-semester"
-              label="Semester"
-              name="semester"
-              value={classForm.semester}
-              onChange={(event) => updateForm(setClassForm, event)}
-              options={Array.from({ length: 12 }, (_, index) => ({ value: String(index + 1), label: `Semester ${index + 1}` }))}
-            />
-            <Input id="class-section" label="Section" name="section" value={classForm.section} onChange={(event) => updateForm(setClassForm, event)} maxLength={20} required placeholder="e.g. A" />
-          </div>
-          <Input id="class-academic-year" label="Academic year" name="academicYear" value={classForm.academicYear} onChange={(event) => updateForm(setClassForm, event)} maxLength={20} required placeholder="e.g. 2026-27" />
+          <Select
+            id="class-semester"
+            label="Semester"
+            name="semester"
+            value={classForm.semester}
+            onChange={(event) => updateForm(setClassForm, event)}
+            options={Array.from({ length: 8 }, (_, index) => ({ value: String(index + 1), label: `Semester ${index + 1}` }))}
+          />
+          {!editingClass && (
+            <p className="text-sm text-slate-500">
+              The current academic year from Settings will be assigned automatically.
+            </p>
+          )}
           <div className="flex justify-end gap-3">
             <Button variant="secondary" onClick={() => setClassModalOpen(false)} disabled={savingClass}>Cancel</Button>
             <Button type="submit" disabled={savingClass}>{savingClass ? 'Saving...' : editingClass ? 'Save changes' : 'Create class'}</Button>
@@ -616,6 +614,7 @@ function DepartmentsPage() {
             <Input id="student-name" label="Full name" name="name" value={studentForm.name} onChange={(event) => updateForm(setStudentForm, event)} maxLength={100} required />
             <Input id="student-email" label="Email" name="email" type="email" value={studentForm.email} onChange={(event) => updateForm(setStudentForm, event)} required />
             <Input id="student-roll" label="Roll number" name="rollNo" value={studentForm.rollNo} onChange={(event) => updateForm(setStudentForm, event)} maxLength={30} required />
+            <Input id="student-starting-year" label="Year semester 1 starts (August)" name="startingYear" type="number" min="2000" max="2100" step="1" value={studentForm.startingYear} onChange={(event) => updateForm(setStudentForm, event)} required />
             <Input id="student-password" label="Initial password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={72} value={studentForm.password} onChange={(event) => updateForm(setStudentForm, event)} required />
             <Input id="student-confirm-password" label="Confirm password" name="confirmPassword" type="password" autoComplete="new-password" minLength={8} maxLength={72} value={studentForm.confirmPassword} onChange={(event) => updateForm(setStudentForm, event)} required />
             <p className="text-sm text-slate-500">

@@ -32,11 +32,11 @@ function TimetablePage() {
           })
       : Promise.all([
           api.get('/departments'),
-          api.get('/timetable/config'),
+          api.get('/settings'),
         ]).then(([departmentsResponse, configResponse]) => {
           if (!active) return
           setDepartments(departmentsResponse.data.departments || [])
-          setConfig(configResponse.data.configuration)
+          setConfig(configResponse.data.settings)
         })
 
     request
@@ -133,7 +133,7 @@ function TimetablePage() {
     try {
       const response = await api.post('/timetable/generate', {
         classId: selectedClassId,
-        academicSession: config?.currentAcademicYear || '2026-27',
+        academicSession: config?.currentAcademicYear || classData?.class?.academicYear,
       })
 
       if (response.data.schedule) {
@@ -201,7 +201,7 @@ function TimetablePage() {
                     <td className="px-3 py-3">{entry.period}</td>
                     <td className="px-3 py-3">{entry.startTime}-{entry.endTime}</td>
                     <td className="px-3 py-3">
-                      {entry.classId?.name} · {entry.classId?.section}
+                      {entry.classId?.name} · Semester {entry.classId?.semester}
                     </td>
                     <td className="px-3 py-3">{entry.subjectId?.name}</td>
                     <td className="px-3 py-3">{entry.roomId?.name || '—'}</td>
@@ -261,7 +261,7 @@ function TimetablePage() {
             <option value="">Select class</option>
             {classes.map((schoolClass) => (
               <option key={schoolClass._id} value={schoolClass._id}>
-                {schoolClass.name} · {schoolClass.section}
+                {schoolClass.name} · Semester {schoolClass.semester}
               </option>
             ))}
           </select>

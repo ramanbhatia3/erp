@@ -6,6 +6,7 @@ import Card from '../components/ui/Card'
 import EmptyState from '../components/ui/EmptyState'
 import Loader from '../components/ui/Loader'
 import Table from '../components/ui/Table'
+import { getSemesterTerm } from '../utils/classDisplay'
 
 function getErrorMessage(error) {
   return error.response?.data?.message || 'Unable to load attendance.'
@@ -228,7 +229,7 @@ function StudentAttendancePage() {
           <option value="all">Full Semester</option>
           {semesters.map((value) => (
             <option key={value} value={String(value)}>
-              {getSemesterOrdinal(value)} Semester
+              {getSemesterOrdinal(value)} Semester · {getSemesterTerm(value)}
             </option>
           ))}
         </select>

@@ -70,7 +70,7 @@ async function createAttendance(req, res, next) {
     })
 
     await attendance.populate([
-      { path: 'class', select: 'name section semester academicYear' },
+      { path: 'class', select: 'name semester academicYear' },
       { path: 'subject', select: 'name code' },
       { path: 'markedBy', select: 'name' },
       { path: 'records.student', select: 'name rollNo' },
@@ -115,7 +115,7 @@ async function updateAttendance(req, res, next) {
     attendance.editedAt = new Date()
     await attendance.save()
     await attendance.populate([
-      { path: 'class', select: 'name section semester academicYear' },
+      { path: 'class', select: 'name semester academicYear' },
       { path: 'subject', select: 'name code' },
       { path: 'markedBy', select: 'name' },
       { path: 'editedBy', select: 'name' },
@@ -132,7 +132,7 @@ async function listClassAttendance(req, res, next) {
   try {
     const { classId } = req.params
     const { subject: subjectId, date } = req.query
-    const classRecord = await Class.findById(classId).select('department advisor')
+    const classRecord = await Class.findById(classId).select('advisor')
 
     if (!classRecord) {
       return res.status(404).json({ message: 'Class not found.' })
@@ -140,10 +140,12 @@ async function listClassAttendance(req, res, next) {
 
     const isClassAdvisor =
       classRecord.advisor && getId(classRecord.advisor) === getId(req.user._id)
-    const inDepartment =
-      req.user.department && getId(classRecord.department) === getId(req.user.department)
+    const teachesClass = await Subject.exists({
+      class: classId,
+      teacher: req.user._id,
+    })
 
-    if (!isClassAdvisor && !inDepartment) {
+    if (!isClassAdvisor && !teachesClass) {
       return res.status(403).json({ message: 'You do not have access to this class.' })
     }
 
@@ -237,7 +239,7 @@ async function getStudentAttendance(req, res, next) {
     const [attendanceRecords, settings] = await Promise.all([
       Attendance.find({ 'records.student': studentId })
         .populate('subject', 'name code')
-        .populate('class', 'name section semester academicYear')
+        .populate('class', 'name semester academicYear')
         .sort({ date: -1, lectureNo: 1 }),
       Settings.findOne({ key: 'university' }).select('attendanceThreshold'),
     ])

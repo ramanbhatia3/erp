@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { getCurrentAcademicYear } = require('../utils/academicYear')
 
 const timetableEntrySchema = new mongoose.Schema(
   {
@@ -25,7 +26,7 @@ const timetableEntrySchema = new mongoose.Schema(
     academicSession: {
       type: String,
       trim: true,
-      default: '2026-27',
+      default: getCurrentAcademicYear,
     },
     day: {
       type: String,

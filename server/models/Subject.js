@@ -29,6 +29,11 @@ const subjectSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    sharedGroupId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+      index: true,
+    },
     type: {
       type: String,
       enum: ['Theory', 'Practical', 'Lab', 'Elective'],

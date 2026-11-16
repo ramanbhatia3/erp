@@ -492,7 +492,7 @@ function UsersPage() {
               { value: '', label: departmentFilter ? 'All classes' : 'Choose department first' },
               ...filteredClasses.map((item) => ({
                 value: item._id,
-                label: `${item.name} · Sem ${item.semester} · ${item.section}`,
+                label: `${item.name} · Sem ${item.semester}`,
               })),
             ]}
           />
@@ -619,12 +619,12 @@ function UsersPage() {
                     { value: '', label: 'Select class' },
                     ...classesForForm.map((item) => ({
                       value: item._id,
-                      label: `${item.name} · Sem ${item.semester} · ${item.section}`,
+                      label: `${item.name} · Sem ${item.semester}`,
                     })),
                   ]}
                 />
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Input id="managed-user-section" label="Section" name="section" value={form.section} onChange={updateForm} required={!editingUser || Boolean(editingUser.class)} maxLength={20} />
+                  <Input id="managed-user-section" label="Student section (optional)" name="section" value={form.section} onChange={updateForm} maxLength={20} />
                   <Input id="managed-user-roll" label="Roll number" name="rollNo" value={form.rollNo} onChange={updateForm} required={!editingUser || Boolean(editingUser.class)} maxLength={30} />
                 </div>
               </>
@@ -751,7 +751,7 @@ function UsersPage() {
                 name,email,departmentCode,className,semester,section,academicYear,rollNo
               </code>
               <p className="mt-2">
-                Use an existing department code and class name. The class is matched by department, name, semester, section, and academic year. One student per row; maximum 500 rows.
+                Use an existing department code and class name. The class is matched by department, name, semester, and academic year. The optional section is student information. One student per row; maximum 500 rows.
               </p>
             </div>
             <Input

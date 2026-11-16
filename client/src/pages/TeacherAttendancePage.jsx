@@ -386,7 +386,7 @@ function TeacherAttendancePage() {
               }}
               options={classes.map((item) => ({
                 value: getId(item),
-                label: `${item.name} - Section ${item.section}`,
+                label: `${item.name} · Semester ${item.semester}`,
               }))}
             />
             <Select
@@ -511,7 +511,7 @@ function TeacherAttendancePage() {
               }}
               options={classes.map((item) => ({
                 value: getId(item),
-                label: `${item.name} - Section ${item.section}`,
+                label: `${item.name} · Semester ${item.semester}`,
               }))}
             />
             <Select

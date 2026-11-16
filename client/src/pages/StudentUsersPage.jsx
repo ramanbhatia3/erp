@@ -12,6 +12,7 @@ import Loader from '../components/ui/Loader'
 import Modal from '../components/ui/Modal'
 import Select from '../components/ui/Select'
 import Table from '../components/ui/Table'
+import { getSemesterTerm } from '../utils/classDisplay'
 
 const blankForm = {
   name: '',
@@ -21,6 +22,7 @@ const blankForm = {
   class: '',
   section: '',
   rollNo: '',
+  startingYear: '',
   password: '',
   confirmPassword: '',
 }
@@ -173,6 +175,7 @@ function StudentUsersPage() {
       class: user.class?._id || '',
       section: user.section || '',
       rollNo: user.rollNo || '',
+      startingYear: String(user.startingYear || ''),
       password: '',
       confirmPassword: '',
     })
@@ -196,8 +199,8 @@ function StudentUsersPage() {
       return
     }
 
-    if (!form.class || !form.section.trim() || !form.rollNo.trim()) {
-      toast.error('Select a class, section, and roll number.')
+    if (!form.class || !form.rollNo.trim()) {
+      toast.error('Select a class and enter the student roll number.')
       return
     }
 
@@ -207,8 +210,9 @@ function StudentUsersPage() {
       email: form.email.trim(),
       department: form.department,
       class: form.class,
-      section: form.section.trim(),
+      ...(form.section.trim() ? { section: form.section.trim() } : {}),
       rollNo: form.rollNo.trim(),
+      startingYear: Number(form.startingYear),
       ...(editingUser && form.password ? { password: form.password } : {}),
     }
 
@@ -299,6 +303,17 @@ function StudentUsersPage() {
       render: (user) => user.rollNo || '—',
     },
     {
+      key: 'academicProgress',
+      label: 'Academic progress',
+      render: (user) => user.academicStatus === 'alumni'
+        ? <Badge color="blue">Alumni · Sem 8 complete</Badge>
+        : user.academicStatus === 'notStarted'
+          ? `Semester 1 starts August ${user.startingYear}`
+        : user.currentSemester
+          ? `Semester ${user.currentSemester} · Started ${user.startingYear}`
+          : 'Starting year unavailable',
+    },
+    {
       key: 'status',
       label: 'Status',
       render: (user) => (
@@ -331,7 +346,9 @@ function StudentUsersPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Student Management</h1>
-            <p className="mt-1 text-sm text-slate-500">Create and manage student accounts.</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Semester 1 starts in August; students advance each January and July and become alumni after semester 8.
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="secondary" onClick={() => { setBulkOpen(true); setBulkCredentials([]); setBulkError('') }}>
@@ -361,7 +378,10 @@ function StudentUsersPage() {
             disabled={!departmentFilter}
             options={[
               { value: '', label: departmentFilter ? 'All classes' : 'Choose department first' },
-              ...filteredClasses.map((item) => ({ value: item._id, label: `${item.name} · Sem ${item.semester} · ${item.section}` })),
+              ...filteredClasses.map((item) => ({
+                value: item._id,
+                label: `${item.name} · Sem ${item.semester} · ${getSemesterTerm(item.semester)}`,
+              })),
             ]}
           />
           <Select
@@ -439,13 +459,31 @@ function StudentUsersPage() {
               disabled={!form.department}
               options={[
                 { value: '', label: 'Select class' },
-                ...classesForForm.map((item) => ({ value: item._id, label: `${item.name} · Sem ${item.semester} · ${item.section}` })),
+                ...classesForForm.map((item) => ({
+                  value: item._id,
+                  label: `${item.name} · Sem ${item.semester} · ${getSemesterTerm(item.semester)}`,
+                })),
               ]}
             />
+            <p className="text-sm text-slate-500">
+              The selected class identifies the program. The student’s starting year determines their semester and assigned class.
+            </p>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Input id="managed-student-section" label="Section" name="section" value={form.section} onChange={updateForm} required={!editingUser || Boolean(editingUser.class)} maxLength={20} />
+              <Input id="managed-student-section" label="Student section (optional)" name="section" value={form.section} onChange={updateForm} maxLength={20} />
               <Input id="managed-student-roll" label="Roll number" name="rollNo" value={form.rollNo} onChange={updateForm} required={!editingUser || Boolean(editingUser.class)} maxLength={30} />
             </div>
+            <Input
+              id="managed-student-starting-year"
+              label="Year semester 1 starts (August)"
+              name="startingYear"
+              type="number"
+              min="2000"
+              max="2100"
+              step="1"
+              value={form.startingYear}
+              onChange={updateForm}
+              required
+            />
             {!editingUser && (
               <>
                 <Input id="managed-student-password" label="Initial password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={72} value={form.password} onChange={updateForm} required />
@@ -487,9 +525,9 @@ function StudentUsersPage() {
               <p className="font-semibold text-slate-800">CSV format</p>
               <p className="mt-1">Use this exact header row:</p>
               <code className="mt-2 block overflow-x-auto whitespace-nowrap text-xs">
-                name,email,departmentCode,className,semester,section,academicYear,rollNo
+                name,email,departmentCode,className,semester,section,academicYear,rollNo,startingYear
               </code>
-              <p className="mt-2">Use an existing department code and class name. The class is matched by department, name, semester, section, and academic year. One student per row; maximum 500 rows.</p>
+              <p className="mt-2">Use an existing department code and class name. Semester must be 1–8; startingYear is the calendar year in which semester 1 begins in August. The class is matched by department, name, semester, and academic year; the student is then assigned to the class matching their starting-year semester and program. The optional section is student information. One student per row; maximum 500 rows.</p>
             </div>
             <Input id="student-csv-file" label="Student CSV file" type="file" accept=".csv,text/csv" onChange={(event) => { setBulkFile(event.target.files?.[0] || null); setBulkError('') }} required />
             {bulkError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">{bulkError}</p>}

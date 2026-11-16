@@ -17,6 +17,10 @@ const marksComponentSchema = new mongoose.Schema(
       required: true,
       min: 0.01,
     },
+    group: {
+      type: String,
+      enum: ['mst', 'assignment', 'attendance', 'final'],
+    },
   },
   { _id: false },
 )
@@ -43,7 +47,7 @@ const marksSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 1,
-      max: 12,
+      max: 8,
     },
     academicYear: {
       type: String,

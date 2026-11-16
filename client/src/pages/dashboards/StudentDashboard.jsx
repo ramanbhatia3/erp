@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../../services/api'
 import StudentProfileCard from '../../components/dashboard/StudentProfileCard'
 import DashboardWelcome from '../../components/dashboard/DashboardWelcome'
+import { getSemesterTerm } from '../../utils/classDisplay'
 
 function getErrorMessage(error) {
   return error.response?.data?.message || 'Class details are unavailable.'
@@ -17,18 +18,19 @@ function getSemesterOrdinal(value) {
   return `${semester}${suffix}`
 }
 
-function getStudentClassLabel(classRecord) {
-  if (!classRecord) return 'Class not assigned'
+function getStudentClassLabel(classRecord, user) {
+  if (!classRecord && user.academicStatus !== 'alumni') return 'Class not assigned'
 
-  const course = classRecord.department?.code ||
-    classRecord.department?.name ||
-    classRecord.name
-  const section = classRecord.section ? ` ${classRecord.section}` : ''
-  const semester = classRecord.semester
-    ? ` ${getSemesterOrdinal(classRecord.semester)} Semester`
-    : ''
+  const course = classRecord?.department?.code ||
+    classRecord?.department?.name ||
+    classRecord?.name
+  const semester = user.academicStatus === 'alumni'
+    ? ' · Alumni (semester 8 completed)'
+    : user.currentSemester
+      ? ` · ${getSemesterOrdinal(user.currentSemester)} Semester · ${getSemesterTerm(user.currentSemester)}`
+      : ''
 
-  return `${course || 'Class'}${section}${semester}`
+  return `${course || 'Class'}${semester}`
 }
 
 function StudentDashboard({ user }) {
@@ -85,7 +87,7 @@ function StudentDashboard({ user }) {
               <p className="mt-1 truncate text-sm text-slate-300">
                 {classDetails.error
                   ? 'Class details unavailable'
-                  : getStudentClassLabel(classDetails.classRecord)}
+                  : getStudentClassLabel(classDetails.classRecord, user)}
               </p>
             </div>
           </div>

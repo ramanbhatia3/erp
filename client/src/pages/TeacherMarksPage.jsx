@@ -6,6 +6,7 @@ import Card from '../components/ui/Card'
 import EmptyState from '../components/ui/EmptyState'
 import Loader from '../components/ui/Loader'
 import Select from '../components/ui/Select'
+import { getSemesterTerm } from '../utils/classDisplay'
 
 const EMPTY_MARKS = []
 
@@ -19,7 +20,7 @@ function getErrorMessage(error, fallback) {
     fallback
 }
 
-function TeacherMarksPage() {
+function TeacherMarksPage({ isAdmin = false }) {
   const [classes, setClasses] = useState([])
   const [subjects, setSubjects] = useState([])
   const [components, setComponents] = useState([])
@@ -85,17 +86,35 @@ function TeacherMarksPage() {
   )
     ? subjectId
     : getId(classSubjects[0])
+  const selectedClass = classes.find((item) => getId(item) === classId)
 
   useEffect(() => {
-    if (!classId) return undefined
+    if (!classId || (isAdmin && !selectedClass)) return undefined
 
     let active = true
-    api.get(`/attendance/class/${classId}/students`)
+    const rosterRequest = isAdmin
+      ? api.get('/users', {
+          params: {
+            role: 'student',
+            department: getId(selectedClass.department),
+          },
+        }).then((response) => response.data.users.filter((student) => {
+          const currentlyAssigned = getId(student.class) === classId
+          const semesterMatches =
+            student.academicStatus === 'studying' &&
+            Number(student.currentSemester) === Number(selectedClass.semester)
+          return currentlyAssigned ||
+            student.academicStatus === 'alumni' ||
+            semesterMatches
+        }))
+      : api.get(`/attendance/class/${classId}/students`)
+        .then((response) => response.data.students)
+    rosterRequest
       .then((response) => {
         if (!active) return
         setRosterResult({
           classId,
-          students: response.data.students,
+          students: response,
           error: '',
         })
       })
@@ -110,7 +129,7 @@ function TeacherMarksPage() {
     return () => {
       active = false
     }
-  }, [classId])
+  }, [classId, isAdmin, selectedClass])
 
   const marksRequestKey = JSON.stringify([classId, selectedSubjectId, reloadKey])
   useEffect(() => {
@@ -178,9 +197,7 @@ function TeacherMarksPage() {
     const studentValues = values[studentId] || {}
     for (const component of components) {
       const value = studentValues[component.name]
-      if (value === undefined || value === '') {
-        throw new Error(`Enter marks for ${component.name}.`)
-      }
+      if (value === undefined || value === '') continue
 
       const marksObtained = Number(value)
       if (
@@ -197,28 +214,39 @@ function TeacherMarksPage() {
     return {
       student: studentId,
       subject: selectedSubjectId,
-      components: components.map((component) => ({
-        name: component.name,
-        marksObtained: Number(studentValues[component.name]),
-        maxMarks: component.maxMarks,
-      })),
+      components: components
+        .filter((component) => {
+          const value = studentValues[component.name]
+          return value !== undefined && value !== ''
+        })
+        .map((component) => ({
+          name: component.name,
+          marksObtained: Number(studentValues[component.name]),
+          maxMarks: component.maxMarks,
+        })),
     }
   }
 
   async function saveStudent(studentId) {
     const payload = buildPayload(studentId)
+    if (payload.components.length === 0) return false
     const existing = markByStudent.get(studentId)
     if (existing) {
       await api.put(`/marks/${existing._id}`, { components: payload.components })
     } else {
       await api.post('/marks', payload)
     }
+    return true
   }
 
   async function saveOne(studentId) {
     setSavingStudentId(studentId)
     try {
-      await saveStudent(studentId)
+      const saved = await saveStudent(studentId)
+      if (!saved) {
+        toast.error('Enter at least one marks component for this student.')
+        return
+      }
       toast.success('Student marks saved.')
       setReloadKey((key) => key + 1)
     } catch (error) {
@@ -239,8 +267,7 @@ function TeacherMarksPage() {
 
     for (const student of students) {
       try {
-        await saveStudent(getId(student))
-        savedCount += 1
+        if (await saveStudent(getId(student))) savedCount += 1
       } catch (error) {
         failures.push(
           `${student.name}: ${
@@ -255,6 +282,8 @@ function TeacherMarksPage() {
     if (savedCount > 0) {
       toast.success(`Saved marks for ${savedCount} student${savedCount === 1 ? '' : 's'}.`)
       setReloadKey((key) => key + 1)
+    } else if (failures.length === 0) {
+      toast.error('Enter marks for at least one student before saving.')
     }
     if (failures.length > 0) {
       toast.error(`${failures.length} row(s) need attention. ${failures[0]}`)
@@ -273,10 +302,14 @@ function TeacherMarksPage() {
   if (classes.length === 0 || components.length === 0) {
     return (
       <EmptyState
-        title={classes.length === 0 ? 'No assigned subjects' : 'No marks components configured'}
+        title={classes.length === 0
+          ? isAdmin ? 'No subjects available' : 'No assigned subjects'
+          : 'No marks components configured'}
         message={
           classes.length === 0
-            ? 'Marks entry is available for classes where you teach an assigned subject.'
+            ? isAdmin
+              ? 'Add a class and at least one subject before entering marks.'
+              : 'Marks entry is available for classes where you teach an assigned subject.'
             : 'Ask a superadmin to configure marks components in Settings.'
         }
       />
@@ -289,7 +322,7 @@ function TeacherMarksPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Enter Marks</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Enter marks for configured assessment components.
+            Enter any available marks and leave unmarked components blank. Partial results stay in progress; category averages are rounded up.
           </p>
         </div>
         <Button
@@ -313,7 +346,7 @@ function TeacherMarksPage() {
           }}
           options={classes.map((item) => ({
             value: getId(item),
-            label: `${item.name} - Section ${item.section}`,
+            label: `${item.name} · Semester ${item.semester} (${getSemesterTerm(item.semester)})`,
           }))}
         />
         <Select
@@ -337,8 +370,8 @@ function TeacherMarksPage() {
           <EmptyState title="Unable to load marks" message={marksError} />
         ) : students.length === 0 ? (
           <EmptyState
-            title="No active students"
-            message="There are no active student accounts in this class."
+            title="No eligible students"
+            message="There are no students in this class and semester, or alumni from this department."
           />
         ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-200">
@@ -347,6 +380,7 @@ function TeacherMarksPage() {
                 <tr>
                   <th className="px-4 py-3 font-semibold">Student</th>
                   <th className="px-4 py-3 font-semibold">Roll number</th>
+                  {isAdmin && <th className="px-4 py-3 font-semibold">Section</th>}
                   {components.map((component) => (
                     <th className="min-w-36 px-4 py-3 font-semibold" key={component.name}>
                       {component.name} <span className="normal-case">/ {component.maxMarks}</span>
@@ -363,10 +397,24 @@ function TeacherMarksPage() {
                     <tr key={studentId}>
                       <td className="whitespace-nowrap px-4 py-3 font-medium">
                         {student.name}
+                        {isAdmin && (
+                          <p className="mt-1 text-xs font-normal text-slate-500">
+                            {student.academicStatus === 'alumni'
+                              ? 'Alumni · Semester 8 completed'
+                              : `Semester ${student.currentSemester || '—'} · ${
+                                  student.isActive ? 'Account active' : 'Account inactive'
+                                }`}
+                          </p>
+                        )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3">
                         {student.rollNo || '—'}
                       </td>
+                      {isAdmin && (
+                        <td className="whitespace-nowrap px-4 py-3">
+                          {student.section || '—'}
+                        </td>
+                      )}
                       {components.map((component) => (
                         <td className="px-4 py-3" key={component.name}>
                           <input

@@ -53,7 +53,7 @@ router.get(
 router.get(
   '/teachers',
   ...superadminOnly,
-  query('department').isMongoId().withMessage('Select a valid department.'),
+  query('department').optional().isMongoId().withMessage('Department ID is invalid.'),
   checkValidation,
   subjectController.listTeachers,
 )

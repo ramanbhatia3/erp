@@ -1,6 +1,21 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 
+const semesterFeeSchema = new mongoose.Schema(
+  {
+    semester: { type: Number, required: true, min: 1, max: 8 },
+    academicPaid: { type: Number, default: 0, min: 0 },
+    hostelPaid: { type: Number, default: 0, min: 0 },
+    transportationPaid: { type: Number, default: 0, min: 0 },
+    examPaid: { type: Number, default: 0, min: 0 },
+    assessedAcademic: { type: Number, min: 0 },
+    assessedHostel: { type: Number, min: 0 },
+    assessedTransportation: { type: Number, min: 0 },
+    assessedExam: { type: Number, min: 0 },
+  },
+  { _id: false },
+)
+
 // Stores login details and the user's place in the university.
 const userSchema = new mongoose.Schema(
   {
@@ -34,6 +49,16 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Class',
     },
+    program: {
+      type: String,
+      enum: ['', 'CSE', 'IT', 'ME', 'CE'],
+      default: '',
+    },
+    startingYear: {
+      type: Number,
+      min: 2000,
+      max: 2100,
+    },
     section: {
       type: String,
       trim: true,
@@ -61,6 +86,16 @@ const userSchema = new mongoose.Schema(
       class12Percentage: { type: Number, min: 0, max: 100 },
       favoriteSports: { type: String, trim: true, maxlength: 200 },
       hobbies: { type: String, trim: true, maxlength: 200 },
+    },
+    studentServices: {
+      hostel: {
+        type: String,
+        enum: ['', 'girls-hostel-a', 'girls-hostel-b', 'boys-hostel-a', 'boys-hostel-b'],
+        default: '',
+      },
+      hostelRoom: { type: String, trim: true, maxlength: 30, default: '' },
+      usesTransport: { type: Boolean, default: false },
+      semesterFees: { type: [semesterFeeSchema], default: [] },
     },
     isFirstLogin: {
       type: Boolean,

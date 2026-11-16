@@ -12,13 +12,12 @@ import Modal from '../components/ui/Modal'
 import Select from '../components/ui/Select'
 import Table from '../components/ui/Table'
 import useAuth from '../context/useAuth'
+import { getSemesterTerm } from '../utils/classDisplay'
 
 const blankForm = {
   name: '',
   department: '',
   semester: '1',
-  section: '',
-  academicYear: '',
 }
 
 function messageFrom(error, fallback) {
@@ -30,7 +29,9 @@ function ClassesPage() {
   const canManage = user.role === 'superadmin'
   const [departments, setDepartments] = useState([])
   const [classes, setClasses] = useState([])
-  const [departmentId, setDepartmentId] = useState(user.department || '')
+  const [departmentId, setDepartmentId] = useState(
+    () => canManage ? user.department || '' : '',
+  )
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
@@ -93,7 +94,7 @@ function ClassesPage() {
     if (!value) return classes
 
     return classes.filter((item) =>
-      `${item.name} ${item.section} ${item.semester} ${item.academicYear} ${item.department?.name || ''}`
+      `${item.name} ${item.semester} ${item.academicYear} ${item.department?.name || ''}`
         .toLowerCase()
         .includes(value),
     )
@@ -117,8 +118,6 @@ function ClassesPage() {
       name: item.name,
       department: item.department?._id || item.department,
       semester: String(item.semester),
-      section: item.section,
-      academicYear: item.academicYear,
     })
     setModalOpen(true)
   }
@@ -134,8 +133,6 @@ function ClassesPage() {
       ...form,
       name: form.name.trim(),
       semester: Number(form.semester),
-      section: form.section.trim(),
-      academicYear: form.academicYear.trim(),
     }
 
     try {
@@ -180,9 +177,13 @@ function ClassesPage() {
     {
       key: 'semester',
       label: 'Semester',
-      render: (item) => <Badge color="blue">{item.semester}</Badge>,
+      render: (item) => (
+        <div>
+          <Badge color="blue">Semester {item.semester}</Badge>
+          <p className="mt-1 text-xs text-slate-500">{getSemesterTerm(item.semester)}</p>
+        </div>
+      ),
     },
-    { key: 'section', label: 'Section' },
     { key: 'academicYear', label: 'Academic year' },
     ...(canManage
       ? [{
@@ -204,7 +205,9 @@ function ClassesPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Classes</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {canManage ? 'Manage classes by department and academic year.' : 'Classes in your department.'}
+            {canManage
+              ? 'Create one class for each program semester (1–8), then assign that semester’s subjects to the class.'
+              : 'Program classes and their semester-specific subjects.'}
           </p>
         </div>
         {canManage && <Button onClick={openCreate}>Add Class</Button>}
@@ -224,9 +227,9 @@ function ClassesPage() {
           />
         ) : (
           <div className="text-sm text-slate-600">
-            Department
+            Assigned classes
             <p className="mt-2 font-semibold text-slate-900">
-              {departments[0]?.name || 'Your department'}
+              All departments
             </p>
           </div>
         )}
@@ -234,7 +237,7 @@ function ClassesPage() {
           id="class-search"
           label="Search classes"
           type="search"
-          placeholder="Name, section, semester..."
+          placeholder="Name, semester, academic year..."
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -275,7 +278,7 @@ function ClassesPage() {
         title={editingClass ? 'Edit Class' : 'Add Class'}
       >
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <Input id="class-name" label="Class name" name="name" value={form.name} onChange={updateForm} required maxLength={100} placeholder="e.g. B.Tech" />
+          <Input id="class-name" label="Class name" name="name" value={form.name} onChange={updateForm} required maxLength={100} placeholder="e.g. CSE 3rd Year" />
           <Select
             id="class-department"
             label="Department"
@@ -288,21 +291,22 @@ function ClassesPage() {
               ...departments.map((item) => ({ value: item._id, label: item.name })),
             ]}
           />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Select
-              id="class-semester"
-              label="Semester"
-              name="semester"
-              value={form.semester}
-              onChange={updateForm}
-              options={Array.from({ length: 12 }, (_, index) => ({
-                value: String(index + 1),
-                label: `Semester ${index + 1}`,
-              }))}
-            />
-            <Input id="class-section" label="Section" name="section" value={form.section} onChange={updateForm} required maxLength={20} placeholder="e.g. A" />
-          </div>
-          <Input id="academic-year" label="Academic year" name="academicYear" value={form.academicYear} onChange={updateForm} required maxLength={20} placeholder="e.g. 2025-26" />
+          <Select
+            id="class-semester"
+            label="Semester"
+            name="semester"
+            value={form.semester}
+            onChange={updateForm}
+            options={Array.from({ length: 8 }, (_, index) => ({
+              value: String(index + 1),
+              label: `Semester ${index + 1} · ${getSemesterTerm(index + 1)}`,
+            }))}
+          />
+          {!editingClass && (
+            <p className="text-sm text-slate-500">
+              The current academic year from Settings will be assigned automatically.
+            </p>
+          )}
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="secondary" onClick={() => setModalOpen(false)} disabled={saving}>Cancel</Button>
             <Button type="submit" disabled={saving}>{saving ? 'Saving...' : editingClass ? 'Save changes' : 'Create class'}</Button>

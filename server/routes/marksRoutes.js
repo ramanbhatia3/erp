@@ -5,11 +5,11 @@ const { protect, authorizeRoles } = require('../middleware/authMiddleware')
 const checkValidation = require('../utils/authValidation')
 
 const router = express.Router()
-const teachersOnly = [protect, authorizeRoles('teacher')]
+const canManageMarks = [protect, authorizeRoles('teacher', 'superadmin')]
 
 const componentArrayValidation = body('components')
   .isArray({ min: 1, max: 30 })
-  .withMessage('Provide marks for the configured components.')
+  .withMessage('Provide marks for at least one component.')
 const componentNameValidation = body('components.*.name')
   .trim()
   .notEmpty()
@@ -26,7 +26,7 @@ const componentMaxValidation = body('components.*.maxMarks')
 
 router.post(
   '/',
-  ...teachersOnly,
+  ...canManageMarks,
   body('student').isMongoId().withMessage('Select a valid student.'),
   body('subject').isMongoId().withMessage('Select a valid subject.'),
   componentArrayValidation,
@@ -39,7 +39,7 @@ router.post(
 
 router.put(
   '/:id',
-  ...teachersOnly,
+  ...canManageMarks,
   param('id').isMongoId().withMessage('Marks ID is invalid.'),
   componentArrayValidation,
   componentNameValidation,
@@ -51,7 +51,7 @@ router.put(
 
 router.get(
   '/class/:classId/subject/:subjectId',
-  ...teachersOnly,
+  ...canManageMarks,
   param('classId').isMongoId().withMessage('Class ID is invalid.'),
   param('subjectId').isMongoId().withMessage('Subject ID is invalid.'),
   checkValidation,

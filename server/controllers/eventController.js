@@ -150,7 +150,7 @@ async function listEvents(req, res, next) {
 
     const events = await Event.find(filter)
       .populate('department', 'name code')
-      .populate('class', 'name section semester')
+      .populate('class', 'name semester')
       .populate('createdBy', 'name role')
       .sort({ date: 1, createdAt: -1 })
 
@@ -179,7 +179,7 @@ async function createEvent(req, res, next) {
     })
     await event.populate([
       { path: 'department', select: 'name code' },
-      { path: 'class', select: 'name section semester' },
+      { path: 'class', select: 'name semester' },
       { path: 'createdBy', select: 'name role' },
     ])
 
@@ -227,7 +227,7 @@ async function updateEvent(req, res, next) {
     await event.save()
     await event.populate([
       { path: 'department', select: 'name code' },
-      { path: 'class', select: 'name section semester' },
+      { path: 'class', select: 'name semester' },
       { path: 'createdBy', select: 'name role' },
     ])
 

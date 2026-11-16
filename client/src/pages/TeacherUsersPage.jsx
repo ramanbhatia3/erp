@@ -306,7 +306,7 @@ function TeacherUsersPage() {
             disabled={!departmentFilter}
             options={[
               { value: '', label: departmentFilter ? 'All classes' : 'Choose department first' },
-              ...filteredClasses.map((item) => ({ value: item._id, label: `${item.name} · Sem ${item.semester} · ${item.section}` })),
+              ...filteredClasses.map((item) => ({ value: item._id, label: `${item.name} · Sem ${item.semester}` })),
             ]}
           />
           <Select

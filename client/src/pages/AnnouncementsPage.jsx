@@ -153,7 +153,7 @@ function AnnouncementsPage() {
       return announcement.department?.name || 'Department'
     }
     const className = announcement.class
-      ? `${announcement.class.name} · ${announcement.class.section}`
+      ? `${announcement.class.name} · Semester ${announcement.class.semester}`
       : 'Class'
     return className
   }
@@ -242,7 +242,7 @@ function AnnouncementsPage() {
                     },
                     ...classes.map((item) => ({
                       value: item._id,
-                      label: `${item.name} · ${item.section} · ${item.department?.name || ''}`,
+                      label: `${item.name} · Semester ${item.semester} · ${item.department?.name || ''}`,
                     })),
                   ]}
                   required

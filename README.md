@@ -7,9 +7,10 @@ RBPU Hub is a role-based university portal for managing academic operations in o
 ## What works today
 
 - **Sign-in and account protection:** JWT-backed login, current-user lookup, role-aware routes, and a forced password-change flow for first-time accounts.
-- **University setup:** Superadmins can manage departments, HODs, classes and class incharges, subjects and their teachers, academic settings, and user accounts. Student accounts can be imported from CSV; admins can edit, suspend/reactivate, reset passwords, or remove students from a class without deleting their academic history.
+- **University setup:** Superadmins can manage departments, semester-specific classes (Semesters 1–8), subjects and their teachers, academic settings, and user accounts. The academic year is calculated automatically on a July–June cycle (for example, November 2026 is 2026-27 and March 2025 is 2024-25); new classes inherit the current year. Subjects are assigned to a class and inherit its semester. Student accounts store their program and the year their first semester starts; their department and class are automatically assigned from that program and calculated semester.
 - **Attendance:** Teachers can record and edit attendance for their assigned classes. Students can review their own attendance.
-- **Marks:** Teachers can record and edit marks using configured assessment components. Students can view their own results.
+- **Marks:** Teachers and superadmins can record and edit two MSTs, three assignments, attendance, and final exam marks. MST and assignment averages are rounded up; results total 100 marks. Superadmins can also enter marks for inactive students and alumni.
+- **Fees and hostels:** Superadmins assign one of four hostels and a room, record transport usage, and maintain fee payments across eight semesters. Students can view all semester fees separately from their hostel and room assignment; payments are not processed in the app.
 - **Announcements and events:** Superadmins can publish announcements and manage events. Teachers can view relevant announcements and events but cannot post or edit them.
 - **Timetables:** Superadmins can generate class schedules. Teachers can view their personal timetable.
 - **Health check:** `GET /api/health` reports whether the API process is responding.
@@ -69,7 +70,7 @@ You will need Node.js/npm and a MongoDB instance.
 
    The client defaults to `http://localhost:5173` and uses `VITE_API_URL` (default: `http://localhost:5000/api`) to locate the API.
 
-Log in with the superadmin email and password configured in `server/.env`. The superadmin can then set up departments, classes, subjects, and accounts.
+Log in with the superadmin email and password configured in `server/.env`. The superadmin can then set up departments, semester-specific classes, subjects, and accounts. Existing student accounts without a starting year are assigned 2023 (Semester 1 began August 2023); new students must have their own starting year.
 
 ## Available scripts
 
@@ -97,14 +98,19 @@ All API routes are under `/api`:
 | Classes | `/classes` | Class setup and listing |
 | Subjects | `/subjects` | Subject and teacher assignments |
 | Users | `/users` | User administration, advisor assignment, student CSV import |
-| Settings | `/settings` | Academic year, semester, attendance threshold, marks components |
+| Student services | `/users/me/services`, `/users/:id/services`, `/users/:id/fees/:semester` | Student fee/hostel views and superadmin hostel, room, transport, and payment records |
+| Settings | `/settings` | Academic year, attendance threshold, passing threshold, and the fixed marks formula |
 | Attendance | `/attendance` | Attendance entry, review, and student summaries |
-| Marks | `/marks` | Marks entry and student results |
+| Marks | `/marks` | Teacher/superadmin marks entry and student results |
 | Announcements | `/announcements` | Scoped announcements |
 | Events | `/events` | Scoped academic event calendar and management |
 | Timetable | `/timetable` | Timetable configuration, room data, validation, and class schedule generation |
 
 Most endpoints require authentication; write and administrative access is restricted by role. Request validation is applied to the API inputs.
+
+Semesters 1, 3, 5, and 7 are odd semesters (July–December); semesters 2, 4, 6, and 8 are even semesters (January–June). Semester 1 begins in August, then a student's calculated semester advances in January and July. A student becomes an alumnus after completing Semester 8. Student CSV imports require the `startingYear` column, which is the year Semester 1 starts in August.
+
+The marks formula is: MST average (2 tests, each out of 24), assignment average (3 assignments, each out of 10), attendance (out of 6), and final exam (out of 60). Each displayed category score is rounded up to a whole mark. Each semester's academic fee is ₹40,000 and exam fee is ₹1,500. Hostel students pay an additional ₹20,000, and students marked as using university transport pay an additional ₹15,000 per semester. Superadmins record cumulative amounts paid against each applicable fee.
 
 ## What’s next
 

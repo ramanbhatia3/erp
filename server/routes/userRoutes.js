@@ -38,6 +38,13 @@ const passwordValidation = body('password')
   .withMessage('Password must be no more than 72 bytes.')
 
 router.get(
+  '/me/services',
+  protect,
+  authorizeRoles('student'),
+  userController.getMyStudentServices,
+)
+
+router.get(
   '/',
   ...superadminOnly,
   query('role').optional().isIn(['teacher', 'student']).withMessage('Role filter is invalid.'),
@@ -76,6 +83,55 @@ router.put(
   userController.assignClassAdvisor,
 )
 
+router.patch(
+  '/:id/services',
+  ...superadminOnly,
+  param('id').isMongoId().withMessage('User ID is invalid.'),
+  body().custom((value) =>
+    value && (
+      Object.hasOwn(value, 'hostel') ||
+      Object.hasOwn(value, 'hostelRoom') ||
+      Object.hasOwn(value, 'usesTransport')
+    ),
+  ).withMessage('Provide a hostel, room, or transport assignment to update.'),
+  body('hostel')
+    .optional({ nullable: true })
+    .isIn(['', 'girls-hostel-a', 'girls-hostel-b', 'boys-hostel-a', 'boys-hostel-b'])
+    .withMessage('Choose one of the available hostels or leave the hostel unassigned.'),
+  body('usesTransport')
+    .optional()
+    .isBoolean()
+    .withMessage('Transport use must be true or false.')
+    .toBoolean(),
+  body('hostelRoom')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ max: 30 })
+    .withMessage('Hostel room must be 30 characters or fewer.'),
+  checkValidation,
+  userController.updateStudentServices,
+)
+
+router.patch(
+  '/:id/fees/:semester',
+  ...superadminOnly,
+  param('id').isMongoId().withMessage('User ID is invalid.'),
+  param('semester')
+    .isInt({ min: 1, max: 8 })
+    .withMessage('Semester must be between 1 and 8.')
+    .toInt(),
+  body('paid').isObject().withMessage('Provide paid amounts for all fee types.'),
+  ...['academic', 'hostel', 'transportation', 'exam'].map((fee) =>
+    body(`paid.${fee}`)
+      .isFloat({ min: 0, max: 100000 })
+      .withMessage(`${fee} paid amount must be between 0 and 100000.`)
+      .toFloat(),
+  ),
+  checkValidation,
+  userController.updateStudentSemesterFees,
+)
+
 router.post(
   '/',
   ...superadminOnly,
@@ -90,16 +146,21 @@ router.post(
     .withMessage('Select a valid class for the student.'),
   body('section')
     .if(body('role').equals('student'))
+    .optional({ values: 'falsy' })
     .trim()
-    .notEmpty()
     .isLength({ max: 20 })
-    .withMessage('Student section is required and must be 20 characters or fewer.'),
+    .withMessage('Student section must be 20 characters or fewer.'),
   body('rollNo')
     .if(body('role').equals('student'))
     .trim()
     .notEmpty()
     .isLength({ max: 30 })
     .withMessage('Student roll number is required and must be 30 characters or fewer.'),
+  body('startingYear')
+    .if(body('role').equals('student'))
+    .isInt({ min: 2000, max: 2100 })
+    .withMessage('Student starting year must be between 2000 and 2100.')
+    .toInt(),
   checkValidation,
   userController.createUser,
 )
@@ -114,6 +175,11 @@ router.put(
   body('class').optional().isMongoId().withMessage('Select a valid class.'),
   body('section').optional().trim().notEmpty().isLength({ max: 20 }),
   body('rollNo').optional().trim().notEmpty().isLength({ max: 30 }),
+  body('startingYear')
+    .optional()
+    .isInt({ min: 2000, max: 2100 })
+    .withMessage('Student starting year must be between 2000 and 2100.')
+    .toInt(),
   checkValidation,
   userController.updateUser,
 )

@@ -17,12 +17,7 @@ const classSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 1,
-      max: 12,
-    },
-    section: {
-      type: String,
-      required: true,
-      trim: true,
+      max: 8,
     },
     academicYear: {
       type: String,

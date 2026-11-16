@@ -4,6 +4,7 @@ const Subject = require('../models/Subject')
 const Room = require('../models/Room')
 const Timetable = require('../models/Timetable')
 const TimetableConfiguration = require('../models/TimetableConfiguration')
+const { getCurrentAcademicYear } = require('../utils/academicYear')
 
 function timeToMinutes(value) {
   if (!value || typeof value !== 'string') return 0
@@ -302,7 +303,7 @@ async function generateClassTimetable(req, res, next) {
           subjectId: subject._id,
           teacherId: subject.teacher,
           roomId: selectedRoom._id,
-          academicSession: academicSession || classRecord.academicYear || '2026-27',
+          academicSession: academicSession || getCurrentAcademicYear(),
           day: slot.day,
           period: slot.period,
           startTime: slot.startTime,
@@ -326,7 +327,10 @@ async function generateClassTimetable(req, res, next) {
       })
     }
 
-    await Timetable.deleteMany({ classId: classRecord._id, academicSession: academicSession || classRecord.academicYear || '2026-27' })
+    await Timetable.deleteMany({
+      classId: classRecord._id,
+      academicSession: academicSession || getCurrentAcademicYear(),
+    })
     const createdEntries = await Timetable.insertMany(generatedEntries)
 
     return res.status(201).json({
@@ -392,7 +396,7 @@ async function listFacultyTimetable(req, res, next) {
     }
 
     const entries = await Timetable.find({ teacherId: req.params.facultyId })
-      .populate('classId', 'name section semester academicYear')
+      .populate('classId', 'name semester academicYear')
       .populate('subjectId', 'name code')
       .populate('roomId', 'name type')
       .sort({ day: 1, period: 1 })

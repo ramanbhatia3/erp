@@ -1,4 +1,6 @@
 const mongoose = require('mongoose')
+const { defaultMarksComponents } = require('../utils/markingScheme')
+const { getCurrentAcademicYear } = require('../utils/academicYear')
 
 const marksComponentSchema = new mongoose.Schema(
   {
@@ -13,6 +15,11 @@ const marksComponentSchema = new mongoose.Schema(
       required: true,
       min: 0.01,
       max: 1000,
+    },
+    group: {
+      type: String,
+      enum: ['mst', 'assignment', 'attendance', 'final'],
+      required: true,
     },
   },
   { _id: false },
@@ -35,13 +42,7 @@ const settingsSchema = new mongoose.Schema(
     },
     marksComponents: {
       type: [marksComponentSchema],
-      default: () => [
-        { name: 'MST-1', maxMarks: 24 },
-        { name: 'MST-2', maxMarks: 24 },
-        { name: 'Assignment', maxMarks: 10 },
-        { name: 'Attendance', maxMarks: 6 },
-        { name: 'Final', maxMarks: 100 },
-      ],
+      default: () => defaultMarksComponents,
       validate: {
         validator: (components) => components.length > 0,
         message: 'At least one marks component is required.',
@@ -55,15 +56,13 @@ const settingsSchema = new mongoose.Schema(
     },
     currentAcademicYear: {
       type: String,
-      default: '2026-27',
+      default: getCurrentAcademicYear,
       trim: true,
       maxlength: 20,
     },
-    currentSemester: {
+    marksFormulaVersion: {
       type: Number,
-      default: 1,
-      min: 1,
-      max: 12,
+      default: 0,
     },
   },
   { timestamps: true },

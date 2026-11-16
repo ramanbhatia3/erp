@@ -44,7 +44,7 @@ async function createAnnouncement(req, res, next) {
 
     await announcement.populate([
       { path: 'department', select: 'name code' },
-      { path: 'class', select: 'name section semester' },
+      { path: 'class', select: 'name semester' },
       { path: 'createdBy', select: 'name role' },
     ])
 
@@ -93,7 +93,7 @@ async function listAnnouncements(req, res, next) {
     const requestedLimit = Number(req.query.limit) || 100
     const announcements = await Announcement.find(filter)
       .populate('department', 'name code')
-      .populate('class', 'name section semester')
+      .populate('class', 'name semester')
       .populate('createdBy', 'name role')
       .sort({ createdAt: -1 })
       .limit(requestedLimit)

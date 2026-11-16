@@ -337,7 +337,7 @@ function EventsPage() {
       return event.department?.name || 'Department'
     }
     return event.class
-      ? `${event.class.name} · ${event.class.section}`
+      ? `${event.class.name} · Semester ${event.class.semester}`
       : 'Class'
   }
 
@@ -768,7 +768,7 @@ function EventsPage() {
                     { value: '', label: 'Select a department' },
                     ...departments.map((item) => ({
                       value: item._id,
-                      label: item.name,
+                      label: `${item.name} · Semester ${item.semester}`,
                     })),
                   ]}
                   required
@@ -791,7 +791,7 @@ function EventsPage() {
                     },
                     ...classes.map((item) => ({
                       value: item._id,
-                      label: `${item.name} · ${item.section}`,
+                      label: item.name,
                     })),
                   ]}
                   required

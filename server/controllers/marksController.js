@@ -7,6 +7,7 @@ const {
   calculateMarks,
   calculatePerformance,
 } = require('../utils/calculations')
+const { getStudentAcademicProgress } = require('../utils/studentAcademic')
 
 function getId(value) {
   return String(value?._id || value)
@@ -14,31 +15,58 @@ function getId(value) {
 
 function formatMark(mark, settings) {
   const record = mark.toObject ? mark.toObject() : mark
+  const calculation = calculateMarks(record.components, settings, {
+    allowHistorical: true,
+  })
   return {
     ...record,
-    calculation: calculateMarks(record.components, settings, {
-      allowHistorical: true,
-    }),
+    calculation: {
+      ...calculation,
+      components: calculation.displayComponents,
+    },
   }
 }
 
-async function validateMarkRelations({ studentId, subject }) {
+async function validateMarkRelations({ studentId, subject, enteredByRole }) {
   const student = await User.findOne({
     _id: studentId,
     role: 'student',
-    isActive: true,
-  }).select('_id class')
+  }).select('_id class department startingYear isActive')
 
   if (!student) {
-    return { error: 'The selected student is not an active student.' }
-  }
-  if (getId(student.class) !== getId(subject.class)) {
-    return { error: 'The selected student must belong to the subject class.' }
+    return { error: 'The selected student was not found.' }
   }
 
-  const classRecord = await Class.findById(subject.class).select('semester academicYear')
+  const classRecord = await Class.findById(subject.class)
+    .select('department semester academicYear')
   if (!classRecord) {
     return { error: 'The subject class was not found.' }
+  }
+
+  const belongsToClass = getId(student.class) === getId(subject.class)
+  if (enteredByRole === 'teacher') {
+    if (!student.isActive) {
+      return { error: 'Teachers can only enter marks for active students.' }
+    }
+    if (!belongsToClass) {
+      return { error: 'The selected student must belong to the subject class.' }
+    }
+  } else if (!belongsToClass) {
+    const progress = getStudentAcademicProgress(student.startingYear)
+    const isEligibleForClass =
+      getId(student.department) === getId(classRecord.department) &&
+      (
+        progress.academicStatus === 'alumni' ||
+        (
+          progress.academicStatus === 'studying' &&
+          progress.currentSemester === classRecord.semester
+        )
+      )
+    if (!isEligibleForClass) {
+      return {
+        error: 'Choose a current student from this department and semester, or a passed-out alumnus from this department.',
+      }
+    }
   }
 
   return { student, classRecord }
@@ -46,20 +74,22 @@ async function validateMarkRelations({ studentId, subject }) {
 
 async function createMarks(req, res, next) {
   try {
-    const subject = await Subject.findOne({
-      _id: req.body.subject,
-      teacher: req.user._id,
-    }).select('class name code')
+    const subjectFilter = { _id: req.body.subject }
+    if (req.user.role === 'teacher') subjectFilter.teacher = req.user._id
+    const subject = await Subject.findOne(subjectFilter).select('class name code')
 
     if (!subject) {
       return res.status(403).json({
-        message: 'You can only enter marks for subjects assigned to you.',
+        message: req.user.role === 'teacher'
+          ? 'You can only enter marks for subjects assigned to you.'
+          : 'The selected subject was not found.',
       })
     }
 
     const relations = await validateMarkRelations({
       studentId: req.body.student,
       subject,
+      enteredByRole: req.user.role,
     })
     if (relations.error) {
       return res.status(400).json({ message: relations.error })
@@ -68,7 +98,9 @@ async function createMarks(req, res, next) {
     const settings = await getMarksSettings()
     let calculation
     try {
-      calculation = calculateMarks(req.body.components, settings)
+      calculation = calculateMarks(req.body.components, settings, {
+        allowPartial: true,
+      })
     } catch (error) {
       return res.status(400).json({ message: error.message })
     }
@@ -86,12 +118,12 @@ async function createMarks(req, res, next) {
     await mark.populate([
       { path: 'student', select: 'name email rollNo' },
       { path: 'subject', select: 'name code' },
-      { path: 'class', select: 'name section semester academicYear' },
+      { path: 'class', select: 'name semester academicYear' },
       { path: 'enteredBy', select: 'name' },
     ])
 
     return res.status(201).json({
-      mark: { ...formatMark(mark, settings), calculation },
+      mark: formatMark(mark, settings),
     })
   } catch (error) {
     if (error.code === 11000) {
@@ -110,21 +142,26 @@ async function updateMarks(req, res, next) {
       return res.status(404).json({ message: 'Marks record not found.' })
     }
 
-    const subject = await Subject.findOne({
+    const subjectFilter = {
       _id: mark.subject,
       class: mark.class,
-      teacher: req.user._id,
-    })
+    }
+    if (req.user.role === 'teacher') subjectFilter.teacher = req.user._id
+    const subject = await Subject.findOne(subjectFilter)
     if (!subject) {
       return res.status(403).json({
-        message: 'You can only edit marks for subjects currently assigned to you.',
+        message: req.user.role === 'teacher'
+          ? 'You can only edit marks for subjects currently assigned to you.'
+          : 'The subject for this marks record was not found.',
       })
     }
 
     const settings = await getMarksSettings()
     let calculation
     try {
-      calculation = calculateMarks(req.body.components, settings)
+      calculation = calculateMarks(req.body.components, settings, {
+        allowPartial: true,
+      })
     } catch (error) {
       return res.status(400).json({ message: error.message })
     }
@@ -135,12 +172,12 @@ async function updateMarks(req, res, next) {
     await mark.populate([
       { path: 'student', select: 'name email rollNo' },
       { path: 'subject', select: 'name code' },
-      { path: 'class', select: 'name section semester academicYear' },
+      { path: 'class', select: 'name semester academicYear' },
       { path: 'enteredBy', select: 'name' },
     ])
 
     return res.json({
-      mark: { ...formatMark(mark, settings), calculation },
+      mark: formatMark(mark, settings),
     })
   } catch (error) {
     return next(error)
@@ -150,15 +187,18 @@ async function updateMarks(req, res, next) {
 async function listClassSubjectMarks(req, res, next) {
   try {
     const { classId, subjectId } = req.params
-    const subject = await Subject.findOne({
+    const subjectFilter = {
       _id: subjectId,
       class: classId,
-      teacher: req.user._id,
-    })
+    }
+    if (req.user.role === 'teacher') subjectFilter.teacher = req.user._id
+    const subject = await Subject.findOne(subjectFilter)
 
     if (!subject) {
       return res.status(403).json({
-        message: 'You can only view marks for your assigned subjects.',
+        message: req.user.role === 'teacher'
+          ? 'You can only view marks for your assigned subjects.'
+          : 'The selected subject was not found for this class.',
       })
     }
 
@@ -185,7 +225,7 @@ async function getStudentMarks(req, res, next) {
     const settings = await getMarksSettings()
     const marks = await Marks.find({ student: req.user._id })
       .populate('subject', 'name code type')
-      .populate('class', 'name section semester academicYear')
+      .populate('class', 'name semester academicYear')
       .populate('enteredBy', 'name')
       .sort({ academicYear: -1, semester: 1, subject: 1 })
 

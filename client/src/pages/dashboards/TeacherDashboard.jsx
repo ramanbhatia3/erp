@@ -92,7 +92,7 @@ function TeacherDashboard({ user }) {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <h3 className="text-lg font-bold text-slate-900">
-                            {schoolClass.name} · {schoolClass.section}
+                            {schoolClass.name}
                           </h3>
                           <p className="text-sm text-slate-500">
                             {schoolClass.department?.name} · Semester {schoolClass.semester}

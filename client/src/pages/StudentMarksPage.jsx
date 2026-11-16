@@ -6,6 +6,7 @@ import Card from '../components/ui/Card'
 import EmptyState from '../components/ui/EmptyState'
 import Loader from '../components/ui/Loader'
 import Table from '../components/ui/Table'
+import { getSemesterTerm } from '../utils/classDisplay'
 
 function getErrorMessage(error) {
   return error.response?.data?.message || 'Unable to load your marks.'
@@ -94,12 +95,19 @@ function StudentMarksPage() {
   const passedCount = visibleMarks.filter(
     (mark) => mark.calculation.result === 'pass',
   ).length
-  const failedCount = visibleMarks.length - passedCount
+  const failedCount = visibleMarks.filter(
+    (mark) => mark.calculation.result === 'fail',
+  ).length
+  const incompleteCount = visibleMarks.filter(
+    (mark) => mark.calculation.result === 'incomplete',
+  ).length
   const resultLabel = !visibleMarks.length
     ? 'Not published'
-    : failedCount
-      ? 'Reappear'
-      : 'Passed'
+    : incompleteCount
+      ? 'In Progress'
+      : failedCount
+        ? 'Reappear'
+        : 'Passed'
   const componentNames = [...new Set(
     visibleMarks.flatMap((mark) =>
       (mark.calculation.components || []).map((component) => component.name),
@@ -153,17 +161,29 @@ function StudentMarksPage() {
       key: 'result',
       label: 'Result',
       render: (mark) => (
-        <Badge color={mark.calculation.result === 'pass' ? 'green' : 'red'}>
-          {mark.calculation.result === 'pass' ? 'Pass' : 'Reappear'}
+        <Badge color={
+          mark.calculation.result === 'pass'
+            ? 'green'
+            : mark.calculation.result === 'incomplete'
+              ? 'yellow'
+              : 'red'
+        }>
+          {mark.calculation.result === 'pass'
+            ? 'Pass'
+            : mark.calculation.result === 'incomplete'
+              ? 'In progress'
+              : 'Reappear'}
         </Badge>
       ),
     },
     {
       key: 'remarks',
       label: 'Remarks',
-      render: (mark) => mark.calculation.result === 'pass'
-        ? 'Pass mark achieved'
-        : `Below the ${passingPercentage}% pass mark`,
+      render: (mark) => mark.calculation.result === 'incomplete'
+        ? 'Marks are still being entered'
+        : mark.calculation.result === 'pass'
+          ? 'Pass mark achieved'
+          : `Below the ${passingPercentage}% pass mark`,
     },
   ]
 
@@ -203,8 +223,10 @@ function StudentMarksPage() {
               role="tab"
               type="button"
             >
-              {getSemesterOrdinal(item.semester)} Semester
-              <span className="ml-2 text-xs opacity-70">{item.academicYear}</span>
+              <span>{getSemesterOrdinal(item.semester)} Semester</span>
+              <span className="ml-2 text-xs opacity-70">
+                {getSemesterTerm(item.semester)} · {item.academicYear}
+              </span>
             </button>
           ))}
         </div>
@@ -219,16 +241,22 @@ function StudentMarksPage() {
                 ? 'text-red-700'
                 : resultLabel === 'Passed'
                   ? 'text-emerald-600'
-                  : 'text-slate-500'
+                  : resultLabel === 'In Progress'
+                    ? 'text-amber-700'
+                    : 'text-slate-500'
             }`}>
               {resultLabel}
             </h2>
             <p className="mt-4 text-sm leading-6 text-slate-600">
               {failedCount > 0
-                ? `${failedCount} subject${failedCount === 1 ? '' : 's'} to clear again.`
-                : visibleMarks.length
-                  ? 'All published subject marks meet the pass threshold.'
-                  : 'Your results will appear here after marks are published.'}
+                ? incompleteCount
+                  ? `${failedCount} subject${failedCount === 1 ? '' : 's'} below the pass mark; ${incompleteCount} result${incompleteCount === 1 ? ' is' : 's are'} still being entered.`
+                  : `${failedCount} subject${failedCount === 1 ? '' : 's'} to clear again.`
+                : incompleteCount
+                  ? `${incompleteCount} subject result${incompleteCount === 1 ? ' is' : 's are'} still being entered.`
+                  : visibleMarks.length
+                    ? 'All published subject marks meet the pass threshold.'
+                    : 'Your results will appear here after marks are published.'}
             </p>
             <p className="mt-1 text-sm text-slate-500">
               Pass threshold: {passingPercentage}%.
@@ -271,7 +299,7 @@ function StudentMarksPage() {
         <div>
           <h2 className="text-lg font-bold text-slate-950">Subject results</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Component columns follow the marks configured by your university. Letter grades and credits are not configured in the current result data.
+            Complete results are out of 100. Incomplete results show entered categories and remain in progress; fractional category marks are rounded up.
           </p>
         </div>
         <div className="overflow-x-auto">

@@ -14,6 +14,7 @@ import TeacherMarksPage from './TeacherMarksPage'
 import StudentMarksPage from './StudentMarksPage'
 import StudentTimetablePage from './StudentTimetablePage'
 import StudentServicePage from './StudentServicePage'
+import FeesHostelPage from './FeesHostelPage'
 import AnnouncementsPage from './AnnouncementsPage'
 import EventsPage from './EventsPage'
 import TimetablePage from './TimetablePage'
@@ -57,6 +58,12 @@ function DashboardPage() {
       location.pathname === '/dashboard/superadmin/students' ||
       location.pathname.startsWith('/dashboard/superadmin/students/')
     )
+  const isFeesHostelPage =
+    dashboardRole === 'superadmin' &&
+    location.pathname === '/dashboard/superadmin/fees-hostel'
+  const isAdminMarksPage =
+    dashboardRole === 'superadmin' &&
+    location.pathname === '/dashboard/superadmin/marks'
   const isUsersPage =
     dashboardRole === 'superadmin' &&
     (
@@ -95,7 +102,7 @@ function DashboardPage() {
     location.pathname === `/dashboard/${dashboardRole}/timetable`
   const isAdminPage =
     dashboardRole === 'superadmin' &&
-    [isDepartmentsPage, isTeachersPage, isStudentsPage, isClassesPage, isSubjectsPage, isSettingsPage]
+    [isDepartmentsPage, isTeachersPage, isStudentsPage, isFeesHostelPage, isAdminMarksPage, isClassesPage, isSubjectsPage, isSettingsPage]
       .some(Boolean)
   const isRolePage =
     dashboardRole === 'teacher'
@@ -134,6 +141,10 @@ function DashboardPage() {
         <TeacherUsersPage />
       ) : isStudentsPage ? (
         <StudentUsersPage />
+      ) : isFeesHostelPage ? (
+        <FeesHostelPage />
+      ) : isAdminMarksPage ? (
+        <TeacherMarksPage isAdmin />
       ) : isClassesPage ? (
         <ClassesPage />
       ) : isSubjectsPage ? (

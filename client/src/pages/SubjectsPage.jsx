@@ -13,6 +13,7 @@ import Modal from '../components/ui/Modal'
 import Select from '../components/ui/Select'
 import Table from '../components/ui/Table'
 import useAuth from '../context/useAuth'
+import { getSemesterTerm } from '../utils/classDisplay'
 
 const blankForm = {
   name: '',
@@ -37,7 +38,7 @@ function SubjectsPage() {
   const [teachers, setTeachers] = useState([])
   const [teachersForDepartment, setTeachersForDepartment] = useState('')
   const [departmentId, setDepartmentId] = useState(
-    () => searchParams.get('department') || user.department || '',
+    () => canManage ? searchParams.get('department') || user.department || '' : '',
   )
   const [classId, setClassId] = useState(() => searchParams.get('class') || '')
   const [search, setSearch] = useState('')
@@ -50,7 +51,7 @@ function SubjectsPage() {
   const [editingSubject, setEditingSubject] = useState(null)
   const [form, setForm] = useState(() => ({
     ...blankForm,
-    department: searchParams.get('department') || user.department || '',
+    department: canManage ? searchParams.get('department') || user.department || '' : '',
     class: searchParams.get('class') || '',
   }))
   const [saving, setSaving] = useState(false)
@@ -78,7 +79,7 @@ function SubjectsPage() {
 
   useEffect(() => {
     let active = true
-    const params = departmentId ? { department: departmentId } : {}
+    const params = canManage && departmentId ? { department: departmentId } : {}
 
     api.get('/classes', { params })
       .then((response) => {
@@ -98,14 +99,14 @@ function SubjectsPage() {
     return () => {
       active = false
     }
-  }, [departmentId])
+  }, [canManage, departmentId])
 
   useEffect(() => {
     let active = true
     if (canManage && !classId) return undefined
 
     const params = {}
-    if (departmentId) params.department = departmentId
+    if (canManage && departmentId) params.department = departmentId
     if (classId) params.class = classId
 
     api.get('/subjects', { params })
@@ -137,7 +138,7 @@ function SubjectsPage() {
       return undefined
     }
 
-    api.get('/subjects/teachers', { params: { department: form.department } })
+    api.get('/subjects/teachers')
       .then((response) => {
         if (active) {
           setTeachers(response.data.teachers)
@@ -154,21 +155,27 @@ function SubjectsPage() {
   }, [modalOpen, canManage, form.department])
 
   const visibleClasses = useMemo(
-    () => classes.filter((item) => !departmentId || item.department?._id === departmentId),
-    [classes, departmentId],
+    () => classes.filter((item) =>
+      !canManage || !departmentId || item.department?._id === departmentId,
+    ),
+    [canManage, classes, departmentId],
   )
 
   const formClasses = useMemo(
     () => classes.filter((item) => item.department?._id === form.department),
     [classes, form.department],
   )
+  const selectedFormClass = formClasses.find((item) => item._id === form.class)
+  const isAppliedScienceFoundationClass =
+    departments.some((item) => item._id === form.department && item.code === 'AS') &&
+    [1, 2].includes(Number(selectedFormClass?.semester))
 
   const filteredSubjects = useMemo(() => {
     const value = search.trim().toLowerCase()
     if (!value) return subjects
 
     return subjects.filter((item) =>
-      `${item.name} ${item.code} ${item.class?.name || ''} ${item.class?.section || ''} ${item.teacher?.name || ''}`
+      `${item.name} ${item.code} ${item.class?.name || ''} ${item.teacher?.name || ''}`
         .toLowerCase()
         .includes(value),
     )
@@ -280,7 +287,7 @@ function SubjectsPage() {
       key: 'class',
       label: 'Class',
       render: (item) => item.class
-        ? `${item.class.name} · Sem ${item.class.semester} · ${item.class.section}`
+        ? `${item.class.name} · Sem ${item.class.semester} · ${getSemesterTerm(item.class.semester)}`
         : '—',
     },
     {
@@ -313,7 +320,7 @@ function SubjectsPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Subjects</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {canManage ? 'Assign subjects to classes and teachers.' : 'Subjects offered by your department.'}
+            {canManage ? 'Assign subjects to classes and teachers.' : 'Subjects assigned to you across departments.'}
           </p>
         </div>
         {canManage && (
@@ -337,8 +344,8 @@ function SubjectsPage() {
           />
         ) : (
           <div className="text-sm text-slate-600">
-            Department
-            <p className="mt-2 font-semibold text-slate-900">{departments[0]?.name || 'Your department'}</p>
+            Teaching assignments
+            <p className="mt-2 font-semibold text-slate-900">All departments</p>
           </div>
         )}
         <Select
@@ -346,12 +353,12 @@ function SubjectsPage() {
           label="Class"
           value={classId}
           onChange={(event) => chooseClass(event.target.value)}
-          disabled={!departmentId}
+          disabled={canManage && !departmentId}
           options={[
-            { value: '', label: departmentId ? 'All classes' : 'Select a department first' },
+            { value: '', label: canManage && !departmentId ? 'Select a department first' : 'All assigned classes' },
             ...visibleClasses.map((item) => ({
               value: item._id,
-              label: `${item.name} · Sem ${item.semester} · ${item.section}`,
+              label: `${item.name} · Sem ${item.semester} · ${getSemesterTerm(item.semester)}`,
             })),
           ]}
         />
@@ -435,7 +442,7 @@ function SubjectsPage() {
               { value: '', label: 'Select class' },
               ...formClasses.map((item) => ({
                 value: item._id,
-                label: `${item.name} · Sem ${item.semester} · ${item.section}`,
+                label: `${item.name} · Sem ${item.semester} · ${getSemesterTerm(item.semester)}`,
               })),
             ]}
           />
@@ -467,6 +474,15 @@ function SubjectsPage() {
               })),
             ]}
           />
+          {editingSubject?.sharedGroupId ? (
+            <p className="text-sm text-blue-700">
+              This subject is shared across the Applied Sciences classes in this semester. Changes apply to all of them.
+            </p>
+          ) : !editingSubject && isAppliedScienceFoundationClass ? (
+            <p className="text-sm text-blue-700">
+              This subject will be added to CSE, IT, ME, and CE in Applied Sciences for this semester.
+            </p>
+          ) : null}
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="secondary" onClick={closeSubjectModal} disabled={saving}>Cancel</Button>
             <Button type="submit" disabled={saving}>{saving ? 'Saving...' : editingSubject ? 'Save changes' : 'Create subject'}</Button>

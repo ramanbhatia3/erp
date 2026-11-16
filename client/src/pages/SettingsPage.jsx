@@ -9,17 +9,15 @@ import Loader from '../components/ui/Loader'
 
 const defaultSettings = {
   attendanceThreshold: 75,
-  marksComponents: [
-    { name: 'MST-1', maxMarks: 24 },
-    { name: 'MST-2', maxMarks: 24 },
-    { name: 'Assignment', maxMarks: 10 },
-    { name: 'Attendance', maxMarks: 6 },
-    { name: 'Final', maxMarks: 100 },
-  ],
   passingPercentage: 40,
-  currentAcademicYear: '2026-27',
-  currentSemester: 1,
 }
+
+const marksFormula = [
+  { name: 'MST average', detail: 'Average of MST 1 and MST 2; rounded up', maxMarks: 24 },
+  { name: 'Assignment average', detail: 'Average of 3 assignments; rounded up', maxMarks: 10 },
+  { name: 'Attendance', detail: 'Attendance score; rounded up', maxMarks: 6 },
+  { name: 'Final exam', detail: 'Final exam score; rounded up', maxMarks: 60 },
+]
 
 function SettingsPage() {
   const [settings, setSettings] = useState(defaultSettings)
@@ -59,47 +57,14 @@ function SettingsPage() {
     setSettings((current) => ({ ...current, [name]: value }))
   }
 
-  function updateComponent(index, field, value) {
-    setSettings((current) => ({
-      ...current,
-      marksComponents: current.marksComponents.map((component, componentIndex) =>
-        componentIndex === index
-          ? { ...component, [field]: value }
-          : component,
-      ),
-    }))
-  }
-
-  function addComponent() {
-    setSettings((current) => ({
-      ...current,
-      marksComponents: [...current.marksComponents, { name: '', maxMarks: 100 }],
-    }))
-  }
-
-  function removeComponent(index) {
-    setSettings((current) => ({
-      ...current,
-      marksComponents: current.marksComponents.filter(
-        (_, componentIndex) => componentIndex !== index,
-      ),
-    }))
-  }
-
   async function handleSubmit(event) {
     event.preventDefault()
     setSaving(true)
 
     try {
       const payload = {
-        ...settings,
         attendanceThreshold: Number(settings.attendanceThreshold),
         passingPercentage: Number(settings.passingPercentage),
-        currentSemester: Number(settings.currentSemester),
-        marksComponents: settings.marksComponents.map((component) => ({
-          name: component.name.trim(),
-          maxMarks: Number(component.maxMarks),
-        })),
       }
       const response = await api.put('/settings', payload)
       setSettings(response.data.settings)
@@ -156,7 +121,7 @@ function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900">University Settings</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Configure academic defaults and marks components.
+          Configure academic defaults and review the fixed 100-mark grading formula.
         </p>
       </div>
 
@@ -188,89 +153,42 @@ function SettingsPage() {
               onChange={updateField}
               required
             />
-            <Input
-              id="academic-year"
-              name="currentAcademicYear"
-              label="Current academic year"
-              placeholder="e.g. 2026-27"
-              maxLength={20}
-              value={settings.currentAcademicYear}
-              onChange={updateField}
-              required
-            />
-            <Input
-              id="current-semester"
-              name="currentSemester"
-              label="Current semester"
-              type="number"
-              min="1"
-              max="12"
-              step="1"
-              value={settings.currentSemester}
-              onChange={updateField}
-              required
-            />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-slate-700">Current academic year</p>
+              <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900">
+                {settings.currentAcademicYear}
+              </p>
+              <p className="text-xs text-slate-500">
+                Calculated automatically for the July–June academic cycle.
+              </p>
+            </div>
           </div>
         </Card>
 
         <Card className="space-y-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">Marks components</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Add or remove assessment components and their maximum marks.
-              </p>
-            </div>
-            <Button onClick={addComponent} disabled={settings.marksComponents.length >= 30}>
-              Add component
-            </Button>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Marks formula</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Marks are rounded up to the next whole number, including fractional scores.
+            </p>
           </div>
-
-          <div className="space-y-3">
-            {settings.marksComponents.map((component, index) => (
-              <div
-                className="grid gap-3 rounded-lg border border-slate-200 p-4 sm:grid-cols-[1fr_180px_auto] sm:items-end"
-                key={index}
-              >
-                <Input
-                  id={`component-name-${index}`}
-                  label="Component name"
-                  value={component.name}
-                  onChange={(event) =>
-                    updateComponent(index, 'name', event.target.value)
-                  }
-                  maxLength={50}
-                  required
-                />
-                <Input
-                  id={`component-marks-${index}`}
-                  label="Maximum marks"
-                  type="number"
-                  min="0.01"
-                  max="1000"
-                  step="0.01"
-                  value={component.maxMarks}
-                  onChange={(event) =>
-                    updateComponent(index, 'maxMarks', event.target.value)
-                  }
-                  required
-                />
-                <Button
-                  className="w-full sm:w-auto"
-                  variant="danger"
-                  onClick={() => removeComponent(index)}
-                  disabled={settings.marksComponents.length <= 1}
-                >
-                  Remove
-                </Button>
+          <div className="divide-y divide-slate-100">
+            {marksFormula.map((item) => (
+              <div className="flex items-center justify-between gap-4 py-3" key={item.name}>
+                <div>
+                  <p className="font-medium text-slate-800">{item.name}</p>
+                  <p className="mt-1 text-sm text-slate-500">{item.detail}</p>
+                </div>
+                <p className="whitespace-nowrap font-semibold text-slate-900">
+                  {item.maxMarks} marks
+                </p>
               </div>
             ))}
+            <div className="flex items-center justify-between py-3 font-semibold text-slate-900">
+              <p>Total</p>
+              <p>100 marks</p>
+            </div>
           </div>
-          {settings.marksComponents.length <= 1 && (
-            <p className="text-xs text-slate-500">
-              At least one marks component is required.
-            </p>
-          )}
         </Card>
 
         <div className="flex justify-end">
