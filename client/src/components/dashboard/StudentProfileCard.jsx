@@ -100,11 +100,11 @@ function StudentProfileCard() {
   function renderField(field) {
     const value = profile[field.key] ?? ''
     const controlClassName =
-      'mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
+      'mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6]'
 
     return (
       <label
-        className={`block text-sm font-medium text-slate-700 ${field.wide ? 'sm:col-span-2' : ''}`}
+        className={`block text-sm font-medium text-slate-700 dark:text-[#d1d6e0] ${field.wide ? 'sm:col-span-2' : ''}`}
         htmlFor={`student-profile-${field.key}`}
         key={field.key}
       >
@@ -162,7 +162,7 @@ function StudentProfileCard() {
                   : `${profileFields.length - completedCount} details left to complete your profile.`}
               </p>
             </div>
-            <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+            <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 dark:bg-[#1f2229] dark:text-[#d1d6e0]">
               {completion}%
             </span>
           </div>
@@ -171,7 +171,7 @@ function StudentProfileCard() {
             aria-valuemax={100}
             aria-valuemin={0}
             aria-valuenow={completion}
-            className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100"
+            className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-[#181b22]"
             role="progressbar"
           >
             <div className="h-full rounded-full bg-emerald-500 transition-[width] duration-300" style={{ width: `${completion}%` }} />
@@ -201,12 +201,12 @@ function StudentProfileCard() {
 
             return (
               <section className="space-y-3" key={title}>
-                <h3 className="text-sm font-semibold text-slate-700">{title}</h3>
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-[#d1d6e0]">{title}</h3>
                 <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {filledFields.map(({ key, label }) => (
-                    <div className="rounded-xl bg-slate-50 p-3" key={key}>
-                      <dt className="text-xs font-medium text-slate-500">{label}</dt>
-                      <dd className="mt-1 break-words text-sm font-semibold text-slate-900">
+                    <div className="rounded-xl bg-slate-50 p-3 dark:border dark:border-[#20232a] dark:bg-[#101216]" key={key}>
+                      <dt className="text-xs font-medium text-slate-500 dark:text-[#8a919e]">{label}</dt>
+                      <dd className="mt-1 break-words text-sm font-semibold text-slate-900 dark:text-[#f1f3f6]">
                         {displayProfileValue(key, profile[key])}
                       </dd>
                     </div>
@@ -224,18 +224,18 @@ function StudentProfileCard() {
         onClose={() => setIsOpen(false)}
         title="Student details"
       >
-        <p className="mb-5 text-sm text-slate-500">
+        <p className="mb-5 text-sm text-slate-500 dark:text-[#8a919e]">
           Add your contact, family, education, and interests. You can save what you have and complete the rest later.
         </p>
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <h3 className="mb-3 text-sm font-bold text-slate-800">Personal and family</h3>
+            <h3 className="mb-3 text-sm font-bold text-slate-800 dark:text-[#f1f3f6]">Personal and family</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               {profileFields.slice(0, 9).map(renderField)}
             </div>
           </div>
           <div>
-            <h3 className="mb-3 text-sm font-bold text-slate-800">Education and interests</h3>
+            <h3 className="mb-3 text-sm font-bold text-slate-800 dark:text-[#f1f3f6]">Education and interests</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               {profileFields.slice(9).map(renderField)}
             </div>

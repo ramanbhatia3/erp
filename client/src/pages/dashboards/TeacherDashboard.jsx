@@ -81,7 +81,7 @@ function TeacherDashboard({ user }) {
           </div>
           {classes.length ? (
             <section className="space-y-4">
-              <h2 className="text-xl font-bold text-slate-900">Assigned classes</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-[#f1f3f6]">Assigned classes</h2>
               <div className="grid gap-4 xl:grid-cols-2">
                 {classes.map((schoolClass) => {
                   const classSubjects = subjects.filter(
@@ -91,25 +91,25 @@ function TeacherDashboard({ user }) {
                     <Card className="space-y-3" key={schoolClass._id}>
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <h3 className="text-lg font-bold text-slate-900">
+                          <h3 className="text-lg font-bold text-slate-900 dark:text-[#f1f3f6]">
                             {schoolClass.name}
                           </h3>
-                          <p className="text-sm text-slate-500">
+                          <p className="text-sm text-slate-500 dark:text-[#8a919e]">
                             {schoolClass.department?.name} · Semester {schoolClass.semester}
                           </p>
                         </div>
-                        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
+                        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800 dark:border dark:border-blue-500/35 dark:bg-blue-500/15 dark:text-blue-300">
                           {schoolClass.studentsCount} students
                         </span>
                       </div>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-slate-600 dark:text-[#b5bcc9]">
                         Subjects: {classSubjects.map((subject) => subject.name).join(', ') || 'None assigned'}
                       </p>
                       <div className="flex flex-wrap gap-2 pt-1">
-                        <Link className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800" to="/dashboard/teacher/attendance">
+                        <Link className="rounded-lg bg-blue-700 px-3 py-2 text-sm font-medium text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500" to="/dashboard/teacher/attendance">
                           Mark attendance
                         </Link>
-                        <Link className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" to="/dashboard/teacher/marks">
+                        <Link className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-[#2b2e36] dark:bg-[#181b22] dark:text-[#e2e6ed] dark:hover:bg-[#22252c] dark:hover:border-[#383c46]" to="/dashboard/teacher/marks">
                           Enter marks
                         </Link>
                       </div>

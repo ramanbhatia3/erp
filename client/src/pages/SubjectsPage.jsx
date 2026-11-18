@@ -318,8 +318,8 @@ function SubjectsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Subjects</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">Subjects</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
             {canManage ? 'Assign subjects to classes and teachers.' : 'Subjects assigned to you across departments.'}
           </p>
         </div>
@@ -343,9 +343,9 @@ function SubjectsPage() {
             ]}
           />
         ) : (
-          <div className="text-sm text-slate-600">
+          <div className="text-sm text-slate-600 dark:text-[#b5bcc9]">
             Teaching assignments
-            <p className="mt-2 font-semibold text-slate-900">All departments</p>
+            <p className="mt-2 font-semibold text-slate-900 dark:text-[#f1f3f6]">All departments</p>
           </div>
         )}
         <Select

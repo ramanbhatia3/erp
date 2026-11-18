@@ -161,10 +161,10 @@ function AnnouncementsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">
           Announcements
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
           {canPost
             ? 'Share updates with the right university community.'
             : 'Announcements relevant to you.'}
@@ -173,7 +173,7 @@ function AnnouncementsPage() {
 
       {canPost && (
         <Card>
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">
+          <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-[#f1f3f6]">
             Post an announcement
           </h2>
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -187,12 +187,12 @@ function AnnouncementsPage() {
               onChange={updateForm}
             />
             <label
-              className="block text-sm font-medium text-slate-700"
+              className="block text-sm font-medium text-slate-700 dark:text-[#d1d6e0]"
               htmlFor="announcement-message"
             >
               Message
               <textarea
-                className="mt-1 min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6] dark:placeholder-[#68707f] dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
                 id="announcement-message"
                 name="message"
                 maxLength={5000}
@@ -266,13 +266,13 @@ function AnnouncementsPage() {
       )}
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold text-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-[#f1f3f6]">
           Recent announcements
         </h2>
         {loading ? (
           <Loader />
         ) : loadError ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+          <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-300" role="alert">
             {loadError}
           </p>
         ) : sortedAnnouncements.length === 0 ? (
@@ -285,10 +285,10 @@ function AnnouncementsPage() {
             <Card key={announcement._id}>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-900">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-[#f1f3f6]">
                     {announcement.title}
                   </h3>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-[#8a919e]">
                     Posted by {announcement.createdBy?.name || 'University'}
                     {' · '}
                     <time dateTime={announcement.createdAt}>
@@ -298,7 +298,7 @@ function AnnouncementsPage() {
                 </div>
                 <Badge color="blue">{scopeLabel(announcement)}</Badge>
               </div>
-              <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+              <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-700 dark:text-[#d1d6e0]">
                 {announcement.message}
               </p>
             </Card>

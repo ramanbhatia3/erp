@@ -28,20 +28,20 @@ function getMetricIcon(label = '') {
 function StatCard({ label, value, detail, icon }) {
   return (
     <Card className="group relative overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-emerald-300 to-slate-200" />
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-emerald-300 to-slate-200 dark:to-[#242730]" />
       <div className="flex items-start justify-between gap-3 pt-1">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-[#8a919e]">
             {label}
           </p>
-          <p className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">
+          <p className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-[#f1f3f6]">
             {value}
           </p>
           {detail && (
-            <p className="mt-2 text-xs font-medium text-slate-500">{detail}</p>
+            <p className="mt-2 text-xs font-medium text-slate-500 dark:text-[#8a919e]">{detail}</p>
           )}
         </div>
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition duration-200 group-hover:scale-105 group-hover:bg-emerald-50 group-hover:text-emerald-700">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition duration-200 group-hover:scale-105 group-hover:bg-emerald-50 group-hover:text-emerald-700 dark:bg-[#181b22] dark:text-[#d1d6e0] dark:ring-[#2b2e36] dark:group-hover:bg-emerald-950/40 dark:group-hover:text-emerald-400">
           {icon || (
             <svg
               aria-hidden="true"

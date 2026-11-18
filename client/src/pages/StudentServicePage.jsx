@@ -30,8 +30,8 @@ function FeeStatement({ semesters }) {
       label: 'Semester',
       render: (semester) => (
         <div className="min-w-40">
-          <p className="font-bold text-slate-950">Semester {semester.semester}</p>
-          <p className="mt-1 text-xs text-slate-500">{getSemesterTerm(semester.semester)}</p>
+          <p className="font-bold text-slate-950 dark:text-[#f1f3f6]">Semester {semester.semester}</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-[#8a919e]">{getSemesterTerm(semester.semester)}</p>
         </div>
       ),
     },
@@ -40,10 +40,10 @@ function FeeStatement({ semesters }) {
       label,
       render: (semester) => (
         <div className="min-w-28">
-          <p className="font-semibold text-slate-800">
+          <p className="font-semibold text-slate-800 dark:text-[#f1f3f6]">
             {formatCurrency(semester.fees[key].amount)}
           </p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-[#8a919e]">
             Paid {formatCurrency(semester.fees[key].paid)}
           </p>
         </div>
@@ -63,7 +63,7 @@ function FeeStatement({ semesters }) {
       key: 'balance',
       label: 'Balance',
       render: (semester) => (
-        <span className="font-bold text-slate-950">
+        <span className="font-bold text-slate-950 dark:text-[#f1f3f6]">
           {formatCurrency(semester.balance)}
         </span>
       ),
@@ -89,31 +89,31 @@ function FeeStatement({ semesters }) {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-slate-950">My Fees</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-[#f1f3f6]">My Fees</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
           Fee amounts and payments across all eight semesters. Payments are recorded by university administration; there is no in-app payment option.
         </p>
       </div>
 
       <Card className="grid gap-5 sm:grid-cols-3">
         <div>
-          <p className="text-sm font-medium text-slate-500">Fees due · 8 semesters</p>
-          <p className="mt-2 text-2xl font-extrabold text-slate-950">{formatCurrency(totals.due)}</p>
+          <p className="text-sm font-medium text-slate-500 dark:text-[#8a919e]">Fees due · 8 semesters</p>
+          <p className="mt-2 text-2xl font-extrabold text-slate-950 dark:text-[#f1f3f6]">{formatCurrency(totals.due)}</p>
         </div>
         <div>
-          <p className="text-sm font-medium text-slate-500">Recorded as paid</p>
-          <p className="mt-2 text-2xl font-extrabold text-emerald-700">{formatCurrency(totals.paid)}</p>
+          <p className="text-sm font-medium text-slate-500 dark:text-[#8a919e]">Recorded as paid</p>
+          <p className="mt-2 text-2xl font-extrabold text-emerald-700 dark:text-emerald-400">{formatCurrency(totals.paid)}</p>
         </div>
         <div>
-          <p className="text-sm font-medium text-slate-500">Outstanding balance</p>
-          <p className="mt-2 text-2xl font-extrabold text-amber-700">{formatCurrency(totals.balance)}</p>
+          <p className="text-sm font-medium text-slate-500 dark:text-[#8a919e]">Outstanding balance</p>
+          <p className="mt-2 text-2xl font-extrabold text-amber-700 dark:text-amber-400">{formatCurrency(totals.balance)}</p>
         </div>
       </Card>
 
       <Card className="space-y-4">
         <div>
-          <h2 className="text-lg font-bold text-slate-950">Semester fee details</h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <h2 className="text-lg font-bold text-slate-950 dark:text-[#f1f3f6]">Semester fee details</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
             Odd semesters run July–December; even semesters run January–June.
           </p>
         </div>
@@ -136,30 +136,30 @@ function HostelAssignment({ services }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-950">My Hostel</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-[#f1f3f6]">My Hostel</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
           Your hostel and room allocation from university administration.
         </p>
       </div>
       <Card className="max-w-2xl space-y-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-[#8a919e]">
             Assigned hostel
           </p>
-          <p className="mt-2 text-2xl font-extrabold text-slate-950">
+          <p className="mt-2 text-2xl font-extrabold text-slate-950 dark:text-[#f1f3f6]">
             {getHostelLabel(services.hostel)}
           </p>
         </div>
-        <div className="border-t border-slate-100 pt-5">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+        <div className="border-t border-slate-100 dark:border-[#242730] pt-5">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-[#8a919e]">
             Room allocated
           </p>
-          <p className="mt-2 text-xl font-bold text-slate-950">
+          <p className="mt-2 text-xl font-bold text-slate-950 dark:text-[#f1f3f6]">
             {hasHostel && services.hostelRoom ? services.hostelRoom : 'Not assigned'}
           </p>
         </div>
         {!hasHostel && (
-          <p className="border-t border-slate-100 pt-4 text-sm text-slate-500">
+          <p className="border-t border-slate-100 dark:border-[#242730] pt-4 text-sm text-slate-500 dark:text-[#8a919e]">
             Contact the university administration if you need a hostel allocation.
           </p>
         )}

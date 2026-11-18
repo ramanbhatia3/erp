@@ -342,18 +342,18 @@ function TeacherAttendancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Attendance</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">Attendance</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
           Mark attendance for your classes and review previous lectures.
         </p>
       </div>
 
-      <div className="flex gap-2 border-b border-slate-200">
+      <div className="flex gap-2 border-b border-slate-200 dark:border-[#242730]">
         <button
           className={`border-b-2 px-4 py-2 text-sm font-medium ${
             activeTab === 'mark'
-              ? 'border-blue-700 text-blue-700'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'border-blue-700 text-blue-700 dark:border-blue-400 dark:text-blue-400'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-[#8a919e] dark:hover:text-[#f1f3f6]'
           }`}
           type="button"
           onClick={() => setActiveTab('mark')}
@@ -363,8 +363,8 @@ function TeacherAttendancePage() {
         <button
           className={`border-b-2 px-4 py-2 text-sm font-medium ${
             activeTab === 'history'
-              ? 'border-blue-700 text-blue-700'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'border-blue-700 text-blue-700 dark:border-blue-400 dark:text-blue-400'
+              : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-[#8a919e] dark:hover:text-[#f1f3f6]'
           }`}
           type="button"
           onClick={() => setActiveTab('history')}
@@ -422,8 +422,8 @@ function TeacherAttendancePage() {
           <Card className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Student list</h2>
-                <p className="text-sm text-slate-500">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-[#f1f3f6]">Student list</h2>
+                <p className="text-sm text-slate-500 dark:text-[#8a919e]">
                   {students.length} active student{students.length === 1 ? '' : 's'}
                 </p>
               </div>
@@ -446,20 +446,20 @@ function TeacherAttendancePage() {
                 message="There are no active student accounts assigned to this class."
               />
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-slate-200">
-                <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-[#242730]">
+                <table className="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-[#242730]">
+                  <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-[#101216] dark:text-[#8a919e]">
                     <tr>
                       <th className="px-4 py-3 font-semibold">Student</th>
                       <th className="px-4 py-3 font-semibold">Roll number</th>
                       <th className="px-4 py-3 font-semibold">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white text-slate-700">
+                  <tbody className="divide-y divide-slate-100 bg-white text-slate-700 dark:divide-[#1e2128] dark:bg-[#15171c] dark:text-[#d1d6e0]">
                     {students.map((student) => (
                       <tr key={student._id}>
-                        <td className="px-4 py-3 font-medium">{student.name}</td>
-                        <td className="px-4 py-3">{student.rollNo || '—'}</td>
+                        <td className="px-4 py-3 font-medium text-slate-900 dark:text-[#f1f3f6]">{student.name}</td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-[#b5bcc9]">{student.rollNo || '—'}</td>
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
                             {['present', 'absent'].map((status) => (
@@ -470,7 +470,7 @@ function TeacherAttendancePage() {
                                     ? status === 'present'
                                       ? 'bg-green-600 text-white'
                                       : 'bg-red-600 text-white'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-[#181b22] dark:text-[#b5bcc9] dark:hover:bg-[#22252c]'
                                 }`}
                                 key={status}
                                 type="button"

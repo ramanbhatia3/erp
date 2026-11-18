@@ -119,8 +119,8 @@ function StudentMarksPage() {
       label: 'Subject',
       render: (mark) => (
         <div className="min-w-40">
-          <p className="font-bold text-slate-950">{mark.subject?.name || '—'}</p>
-          <p className="mt-1 text-xs text-slate-500">{mark.subject?.code || '—'}</p>
+          <p className="font-bold text-slate-950 dark:text-[#f1f3f6]">{mark.subject?.name || '—'}</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-[#8a919e]">{mark.subject?.code || '—'}</p>
         </div>
       ),
     },
@@ -215,8 +215,8 @@ function StudentMarksPage() {
               aria-selected={selectedTerm === item.value}
               className={`rounded-full border px-5 py-2.5 text-sm font-semibold transition ${
                 selectedTerm === item.value
-                  ? 'border-slate-950 bg-slate-950 text-white'
-                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400'
+                  ? 'border-slate-950 bg-slate-950 text-white dark:border-[#2563eb] dark:bg-[#1d4ed8] dark:text-white'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400 dark:border-[#2b2e36] dark:bg-[#181b22] dark:text-[#b5bcc9] dark:hover:border-[#3e434f]'
               }`}
               key={item.value}
               onClick={() => setTerm(item.value)}
@@ -234,20 +234,20 @@ function StudentMarksPage() {
 
       <Card className="overflow-hidden p-0">
         <div className="grid lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="border-b border-slate-200 bg-gradient-to-br from-blue-50 to-white p-6 lg:border-b-0 lg:border-r sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Result</p>
+          <div className="border-b border-slate-200 bg-gradient-to-br from-blue-50 to-white p-6 lg:border-b-0 lg:border-r sm:p-8 dark:border-[#242730] dark:from-[#13151a] dark:to-[#181b22]">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-[#8a919e]">Result</p>
             <h2 className={`mt-2 text-3xl font-extrabold tracking-tight ${
               resultLabel === 'Reappear'
-                ? 'text-red-700'
+                ? 'text-red-700 dark:text-rose-400'
                 : resultLabel === 'Passed'
-                  ? 'text-emerald-600'
+                  ? 'text-emerald-600 dark:text-emerald-400'
                   : resultLabel === 'In Progress'
-                    ? 'text-amber-700'
-                    : 'text-slate-500'
+                    ? 'text-amber-700 dark:text-amber-400'
+                    : 'text-slate-500 dark:text-[#8a919e]'
             }`}>
               {resultLabel}
             </h2>
-            <p className="mt-4 text-sm leading-6 text-slate-600">
+            <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-[#b5bcc9]">
               {failedCount > 0
                 ? incompleteCount
                   ? `${failedCount} subject${failedCount === 1 ? '' : 's'} below the pass mark; ${incompleteCount} result${incompleteCount === 1 ? ' is' : 's are'} still being entered.`
@@ -258,35 +258,35 @@ function StudentMarksPage() {
                     ? 'All published subject marks meet the pass threshold.'
                     : 'Your results will appear here after marks are published.'}
             </p>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
               Pass threshold: {passingPercentage}%.
             </p>
           </div>
           <div className="p-6 sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">So far</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-[#8a919e]">So far</p>
             <div className="mt-5 grid gap-5 sm:grid-cols-3">
               <div>
-                <p className="text-sm font-semibold text-slate-500">Average percentage</p>
-                <p className="mt-2 text-2xl font-bold text-slate-950">
+                <p className="text-sm font-semibold text-slate-500 dark:text-[#8a919e]">Average percentage</p>
+                <p className="mt-2 text-2xl font-bold text-slate-950 dark:text-white">
                   {visibleMarks.length ? `${percentage}%` : '—'}
                 </p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
+                <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-[#68707f]">
                   Across published subject marks
                 </p>
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-500">Credits earned</p>
-                <p className="mt-2 text-2xl font-bold text-slate-950">—</p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
+                <p className="text-sm font-semibold text-slate-500 dark:text-[#8a919e]">Credits earned</p>
+                <p className="mt-2 text-2xl font-bold text-slate-950 dark:text-white">—</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-[#68707f]">
                   Credit values are not configured
                 </p>
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-500">Subjects passed</p>
-                <p className="mt-2 text-2xl font-bold text-slate-950">
+                <p className="text-sm font-semibold text-slate-500 dark:text-[#8a919e]">Subjects passed</p>
+                <p className="mt-2 text-2xl font-bold text-slate-950 dark:text-white">
                   {passedCount}/{visibleMarks.length}
                 </p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
+                <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-[#68707f]">
                   Published results for this semester
                 </p>
               </div>

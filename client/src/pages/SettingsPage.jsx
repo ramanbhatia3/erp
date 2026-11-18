@@ -119,15 +119,15 @@ function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">University Settings</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">University Settings</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
           Configure academic defaults and review the fixed 100-mark grading formula.
         </p>
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         <Card className="space-y-5">
-          <h2 className="text-lg font-semibold text-slate-900">Academic settings</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-[#f1f3f6]">Academic settings</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
               id="attendance-threshold"
@@ -154,11 +154,11 @@ function SettingsPage() {
               required
             />
             <div className="space-y-1">
-              <p className="text-sm font-medium text-slate-700">Current academic year</p>
-              <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900">
+              <p className="text-sm font-medium text-slate-700 dark:text-[#d1d6e0]">Current academic year</p>
+              <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 dark:border-[#242730] dark:bg-[#101216] dark:text-[#f1f3f6]">
                 {settings.currentAcademicYear}
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-[#8a919e]">
                 Calculated automatically for the July–June academic cycle.
               </p>
             </div>
@@ -167,24 +167,24 @@ function SettingsPage() {
 
         <Card className="space-y-5">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Marks formula</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-[#f1f3f6]">Marks formula</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
               Marks are rounded up to the next whole number, including fractional scores.
             </p>
           </div>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-[#242730]">
             {marksFormula.map((item) => (
               <div className="flex items-center justify-between gap-4 py-3" key={item.name}>
                 <div>
-                  <p className="font-medium text-slate-800">{item.name}</p>
-                  <p className="mt-1 text-sm text-slate-500">{item.detail}</p>
+                  <p className="font-medium text-slate-800 dark:text-[#f1f3f6]">{item.name}</p>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">{item.detail}</p>
                 </div>
-                <p className="whitespace-nowrap font-semibold text-slate-900">
+                <p className="whitespace-nowrap font-semibold text-slate-900 dark:text-[#f1f3f6]">
                   {item.maxMarks} marks
                 </p>
               </div>
             ))}
-            <div className="flex items-center justify-between py-3 font-semibold text-slate-900">
+            <div className="flex items-center justify-between py-3 font-semibold text-slate-900 dark:text-[#f1f3f6]">
               <p>Total</p>
               <p>100 marks</p>
             </div>

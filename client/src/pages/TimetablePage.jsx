@@ -172,20 +172,20 @@ function TimetablePage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">My timetable</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">My timetable</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
             Your assigned classes, subjects, and periods.
           </p>
         </div>
         {facultyTimetable === null ? (
           <Card>
-            <p className="text-sm text-red-700">Unable to load your timetable. Refresh the page to try again.</p>
+            <p className="text-sm text-red-700 dark:text-rose-400">Unable to load your timetable. Refresh the page to try again.</p>
           </Card>
         ) : facultyTimetable.length ? (
           <Card className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-xs font-bold uppercase tracking-wide text-slate-500">
+                <tr className="border-b border-slate-200 text-xs font-bold uppercase tracking-wide text-slate-500 dark:border-[#242730] dark:text-[#8a919e]">
                   <th className="px-3 py-3">Day</th>
                   <th className="px-3 py-3">Period</th>
                   <th className="px-3 py-3">Time</th>
@@ -196,15 +196,15 @@ function TimetablePage() {
               </thead>
               <tbody>
                 {facultySchedule.flatMap(({ day, periods }) => periods.map((entry) => (
-                  <tr className="border-b border-slate-100 last:border-0" key={entry._id}>
-                    <td className="px-3 py-3 font-semibold text-slate-800">{day}</td>
-                    <td className="px-3 py-3">{entry.period}</td>
-                    <td className="px-3 py-3">{entry.startTime}-{entry.endTime}</td>
-                    <td className="px-3 py-3">
+                  <tr className="border-b border-slate-100 last:border-0 dark:border-[#1e2128]" key={entry._id}>
+                    <td className="px-3 py-3 font-semibold text-slate-800 dark:text-[#f1f3f6]">{day}</td>
+                    <td className="px-3 py-3 dark:text-[#d1d6e0]">{entry.period}</td>
+                    <td className="px-3 py-3 dark:text-[#d1d6e0]">{entry.startTime}-{entry.endTime}</td>
+                    <td className="px-3 py-3 dark:text-[#d1d6e0]">
                       {entry.classId?.name} · Semester {entry.classId?.semester}
                     </td>
-                    <td className="px-3 py-3">{entry.subjectId?.name}</td>
-                    <td className="px-3 py-3">{entry.roomId?.name || '—'}</td>
+                    <td className="px-3 py-3 dark:text-[#d1d6e0]">{entry.subjectId?.name}</td>
+                    <td className="px-3 py-3 dark:text-[#d1d6e0]">{entry.roomId?.name || '—'}</td>
                   </tr>
                 )))}
               </tbody>
@@ -212,7 +212,7 @@ function TimetablePage() {
           </Card>
         ) : (
           <Card>
-            <p className="text-sm text-slate-600">No timetable periods have been assigned to you yet.</p>
+            <p className="text-sm text-slate-600 dark:text-[#b5bcc9]">No timetable periods have been assigned to you yet.</p>
           </Card>
         )}
       </div>
@@ -223,8 +223,8 @@ function TimetablePage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Automatic Timetable Generator</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">Automatic Timetable Generator</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
             Reuse existing ERP data to generate a class timetable without duplicate entry.
           </p>
         </div>
@@ -234,33 +234,33 @@ function TimetablePage() {
       </div>
 
       <Card className="grid gap-4 md:grid-cols-3">
-        <label className="space-y-2 text-sm font-medium text-slate-700">
+        <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-[#d1d6e0]">
           <span>Department</span>
           <select
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none focus:border-blue-400"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none focus:border-blue-400 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6]"
             value={selectedDepartment}
             onChange={(event) => chooseDepartment(event.target.value)}
           >
-            <option value="">Select department</option>
+            <option value="" className="dark:bg-[#15171c] dark:text-[#f1f3f6]">Select department</option>
             {departments.map((department) => (
-              <option key={department._id} value={department._id}>
+              <option key={department._id} value={department._id} className="dark:bg-[#15171c] dark:text-[#f1f3f6]">
                 {department.name}
               </option>
             ))}
           </select>
         </label>
 
-        <label className="space-y-2 text-sm font-medium text-slate-700">
+        <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-[#d1d6e0]">
           <span>Class</span>
           <select
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none focus:border-blue-400"
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 shadow-sm outline-none focus:border-blue-400 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6]"
             value={selectedClassId}
             onChange={(event) => chooseClass(event.target.value)}
             disabled={!classes.length}
           >
-            <option value="">Select class</option>
+            <option value="" className="dark:bg-[#15171c] dark:text-[#f1f3f6]">Select class</option>
             {classes.map((schoolClass) => (
-              <option key={schoolClass._id} value={schoolClass._id}>
+              <option key={schoolClass._id} value={schoolClass._id} className="dark:bg-[#15171c] dark:text-[#f1f3f6]">
                 {schoolClass.name} · Semester {schoolClass.semester}
               </option>
             ))}
@@ -268,8 +268,8 @@ function TimetablePage() {
         </label>
 
         <div className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">Configuration</span>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700">
+          <span className="text-sm font-medium text-slate-700 dark:text-[#d1d6e0]">Configuration</span>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 dark:border-[#242730] dark:bg-[#101216] dark:text-[#d1d6e0]">
             {config ? `${config.workingDays?.join(', ') || 'Monday-Friday'} · ${config.numberOfPeriods || 7} periods/day` : 'Not configured yet'}
           </div>
         </div>
@@ -278,19 +278,19 @@ function TimetablePage() {
       {classData && (
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
-            <p className="text-sm font-medium text-slate-500">Class</p>
-            <h2 className="mt-2 text-xl font-bold text-slate-900">{classData.class?.name}</h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="text-sm font-medium text-slate-500 dark:text-[#8a919e]">Class</p>
+            <h2 className="mt-2 text-xl font-bold text-slate-900 dark:text-white">{classData.class?.name}</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
               {classData.class?.department?.name || 'Department'} · Semester {classData.class?.semester}
             </p>
           </Card>
           <Card>
-            <p className="text-sm font-medium text-slate-500">Subjects</p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">{classData.summary?.subjects || 0}</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-[#8a919e]">Subjects</p>
+            <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{classData.summary?.subjects || 0}</p>
           </Card>
           <Card>
-            <p className="text-sm font-medium text-slate-500">Available Rooms</p>
-            <p className="mt-2 text-3xl font-bold text-slate-900">{classData.summary?.rooms || 0}</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-[#8a919e]">Available Rooms</p>
+            <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">{classData.summary?.rooms || 0}</p>
           </Card>
         </div>
       )}
@@ -298,15 +298,15 @@ function TimetablePage() {
       {classData && classData.subjects?.length > 0 && (
         <Card>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900">Subject assignments</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Subject assignments</h2>
             <Badge color="blue">{classData.subjects.length} subjects</Badge>
           </div>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {classData.subjects.map((subject) => (
-              <div key={subject._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                <p className="font-semibold text-slate-800">{subject.name}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.12em] text-slate-500">{subject.code}</p>
-                <p className="mt-2 text-sm text-slate-600">
+              <div key={subject._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-[#242730] dark:bg-[#101216]">
+                <p className="font-semibold text-slate-800 dark:text-[#f1f3f6]">{subject.name}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.12em] text-slate-500 dark:text-[#8a919e]">{subject.code}</p>
+                <p className="mt-2 text-sm text-slate-600 dark:text-[#b5bcc9]">
                   {subject.teacher?.name || 'Teacher not assigned'}
                 </p>
               </div>
@@ -318,37 +318,37 @@ function TimetablePage() {
       {classData && scheduleMatrix.length > 0 && (
         <Card>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900">Weekly timetable preview</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Weekly timetable preview</h2>
             <Badge color="green">{classData.existingTimetable.length} scheduled periods</Badge>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full border-separate border-spacing-y-2 text-left text-sm">
               <thead>
                 <tr>
-                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Day</th>
-                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Period 1</th>
-                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Period 2</th>
-                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Period 3</th>
-                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Period 4</th>
-                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Period 5</th>
+                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-[#68707f]">Day</th>
+                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-[#68707f]">Period 1</th>
+                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-[#68707f]">Period 2</th>
+                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-[#68707f]">Period 3</th>
+                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-[#68707f]">Period 4</th>
+                  <th className="pb-2 pr-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-[#68707f]">Period 5</th>
                 </tr>
               </thead>
               <tbody>
                 {scheduleMatrix.map(({ day, periods }) => (
                   <tr key={day} className="align-top">
-                    <td className="pr-4 font-semibold text-slate-700">{day}</td>
+                    <td className="pr-4 font-semibold text-slate-700 dark:text-[#d1d6e0]">{day}</td>
                     {[1, 2, 3, 4, 5].map((period) => {
                       const entry = periods.find((item) => item.period === period)
                       return (
                         <td key={`${day}-${period}`} className="pr-3">
                           {entry ? (
-                            <div className="rounded-xl border border-blue-100 bg-blue-50 p-2 text-xs text-slate-700 shadow-sm">
+                            <div className="rounded-xl border border-blue-100 bg-blue-50 p-2 text-xs text-slate-700 shadow-sm dark:border-[#2b3548] dark:bg-[#131720] dark:text-[#d1d6e0]">
                               <p className="font-semibold text-slate-900">{entry.subjectId?.name || 'Subject'}</p>
                               <p className="mt-1">{entry.teacherId?.name || 'Teacher'}</p>
                               <p className="mt-1 text-[11px] text-slate-500">{entry.roomId?.name || 'Room'}</p>
                             </div>
                           ) : (
-                            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-2 text-[11px] text-slate-400">Free</div>
+                            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-2 text-[11px] text-slate-400 dark:border-[#242730] dark:bg-[#101216] dark:text-[#68707f]">Free</div>
                           )}
                         </td>
                       )

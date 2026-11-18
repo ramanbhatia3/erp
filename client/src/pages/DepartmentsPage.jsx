@@ -446,29 +446,29 @@ function DepartmentsPage() {
 
   return (
     <div className="space-y-6">
-      <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-        <Link className="font-medium text-blue-700 hover:underline" to="/dashboard/superadmin/departments">
+      <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-[#8a919e]">
+        <Link className="font-medium text-blue-700 hover:underline dark:text-blue-400" to="/dashboard/superadmin/departments">
           Departments
         </Link>
         {selectedDepartment && (
           <>
-            <span aria-hidden="true">/</span>
+            <span aria-hidden="true" className="dark:text-[#68707f]">/</span>
             {selectedClass ? (
               <Link
-                className="font-medium text-blue-700 hover:underline"
+                className="font-medium text-blue-700 hover:underline dark:text-blue-400"
                 to={`/dashboard/superadmin/departments/${selectedDepartment._id}`}
               >
                 {selectedDepartment.name}
               </Link>
             ) : (
-              <span className="font-semibold text-slate-700">{selectedDepartment.name}</span>
+              <span className="font-semibold text-slate-700 dark:text-[#f1f3f6]">{selectedDepartment.name}</span>
             )}
           </>
         )}
         {selectedClass && (
           <>
-            <span aria-hidden="true">/</span>
-            <span className="font-semibold text-slate-700">{formatClassLabel(selectedClass)}</span>
+            <span aria-hidden="true" className="dark:text-[#68707f]">/</span>
+            <span className="font-semibold text-slate-700 dark:text-[#f1f3f6]">{formatClassLabel(selectedClass)}</span>
           </>
         )}
       </nav>
@@ -599,11 +599,11 @@ function DepartmentsPage() {
       >
         {studentCredentials ? (
           <div className="space-y-4">
-            <p className="text-sm text-slate-600">This password was set by an admin. Only an admin can change it later.</p>
-            <div className="rounded-lg bg-slate-50 p-4 text-sm">
+            <p className="text-sm text-slate-600 dark:text-[#b5bcc9]">This password was set by an admin. Only an admin can change it later.</p>
+            <div className="rounded-lg bg-slate-50 p-4 text-sm dark:border dark:border-[#242730] dark:bg-[#101216] dark:text-[#d1d6e0]">
               <p><strong>Name:</strong> {studentCredentials.name}</p>
               <p><strong>Email:</strong> {studentCredentials.email}</p>
-              <p className="break-all"><strong>Temporary password:</strong> <code>{studentCredentials.password}</code></p>
+              <p className="break-all"><strong>Temporary password:</strong> <code className="dark:text-emerald-400">{studentCredentials.password}</code></p>
             </div>
             <div className="flex justify-end">
               <Button onClick={() => { setStudentModalOpen(false); setStudentCredentials(null) }}>Done</Button>
@@ -688,8 +688,8 @@ function DepartmentList({ departments, classes, search, onSearch, onAddDepartmen
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Departments</h1>
-          <p className="mt-1 text-sm text-slate-500">Choose a department to view its classes.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">Departments</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">Choose a department to view its classes.</p>
         </div>
         <Button onClick={onAddDepartment}>Add department</Button>
       </div>
@@ -705,16 +705,16 @@ function DepartmentList({ departments, classes, search, onSearch, onAddDepartmen
             return (
               <Card className="space-y-4" key={department._id}>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900">{department.name}</h2>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-[#f1f3f6]">{department.name}</h2>
                   <div className="mt-2 flex items-center gap-2">
                     <Badge color="blue">{department.code}</Badge>
-                    <span className="text-sm text-slate-500">{classCount} classes</span>
+                    <span className="text-sm text-slate-500 dark:text-[#8a919e]">{classCount} classes</span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-600">HOD: {department.hod?.name || 'Not assigned'}</p>
+                  <p className="mt-2 text-sm text-slate-600 dark:text-[#b5bcc9]">HOD: <span className="font-medium text-slate-800 dark:text-[#e2e6ed]">{department.hod?.name || 'Not assigned'}</span></p>
                 </div>
-                <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+                <div className="flex flex-wrap gap-2 border-t border-slate-100 dark:border-[#242730] pt-4">
                   <Link
-                    className="inline-flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
+                    className="inline-flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
                     to={`/dashboard/superadmin/departments/${department._id}`}
                   >
                     Open department
@@ -742,8 +742,8 @@ function DepartmentDetail({ department, classes, onAddClass, onEditDepartment, o
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{department.name}</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">{department.name}</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
             {department.code} · HOD: {department.hod?.name || 'Not assigned'} · {classes.length} classes
           </p>
         </div>
@@ -758,15 +758,15 @@ function DepartmentDetail({ department, classes, onAddClass, onEditDepartment, o
           {classes.map((classItem) => (
             <Card className="space-y-4" key={classItem._id}>
               <div>
-                <h2 className="text-lg font-bold text-slate-900">{formatClassLabel(classItem)}</h2>
-                <p className="mt-1 text-sm text-slate-500">Academic year {classItem.academicYear}</p>
-                <p className="mt-2 text-sm text-slate-600">
-                  Class incharge: {classItem.advisor?.name || 'Not assigned'}
+                <h2 className="text-lg font-bold text-slate-900 dark:text-[#f1f3f6]">{formatClassLabel(classItem)}</h2>
+                <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">Academic year {classItem.academicYear}</p>
+                <p className="mt-2 text-sm text-slate-600 dark:text-[#b5bcc9]">
+                  Class incharge: <span className="font-medium text-slate-800 dark:text-[#e2e6ed]">{classItem.advisor?.name || 'Not assigned'}</span>
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+              <div className="flex flex-wrap gap-2 border-t border-slate-100 dark:border-[#242730] pt-4">
                 <Link
-                  className="inline-flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
+                  className="inline-flex items-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
                   to={`/dashboard/superadmin/departments/${department._id}/classes/${classItem._id}`}
                 >
                   Open class
@@ -807,8 +807,8 @@ function ClassDetail({
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{formatClassLabel(classItem)}</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">{formatClassLabel(classItem)}</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
             {department.name} · Academic year {classItem.academicYear}
           </p>
         </div>
@@ -843,18 +843,18 @@ function ClassDetail({
           <Card className="space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Students</h2>
-                <p className="text-sm text-slate-500">{students.length} active students enrolled</p>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-[#f1f3f6]">Students</h2>
+                <p className="text-sm text-slate-500 dark:text-[#8a919e]">{students.length} active students enrolled</p>
               </div>
               <Button onClick={onAddStudent}>Add student</Button>
             </div>
             {students.length ? (
-              <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
+              <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 dark:divide-[#242730] dark:border-[#242730]">
                 {students.map((student) => (
                   <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3" key={student._id}>
                     <div className="min-w-0">
-                      <p className="font-semibold text-slate-800">{student.name}</p>
-                      <p className="break-all text-sm text-slate-500">{student.email}</p>
+                      <p className="font-semibold text-slate-800 dark:text-[#f1f3f6]">{student.name}</p>
+                      <p className="break-all text-sm text-slate-500 dark:text-[#8a919e]">{student.email}</p>
                     </div>
                     <Badge color="blue">{student.rollNo || 'No roll number'}</Badge>
                   </div>
@@ -868,22 +868,22 @@ function ClassDetail({
           <Card className="space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Subjects and teachers</h2>
-                <p className="text-sm text-slate-500">{subjects.length} subjects assigned to this class</p>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-[#f1f3f6]">Subjects and teachers</h2>
+                <p className="text-sm text-slate-500 dark:text-[#8a919e]">{subjects.length} subjects assigned to this class</p>
               </div>
               <Button onClick={onAddSubject}>Add subject</Button>
             </div>
             {subjects.length ? (
               <div className="space-y-3">
                 {subjects.map((subject) => (
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 p-4" key={subject._id}>
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 dark:border-[#242730] p-4" key={subject._id}>
                     <div className="min-w-0">
-                      <p className="font-semibold text-slate-900">{subject.name}</p>
-                      <p className="text-sm text-slate-500">{subject.code}</p>
+                      <p className="font-semibold text-slate-900 dark:text-[#f1f3f6]">{subject.name}</p>
+                      <p className="text-sm text-slate-500 dark:text-[#8a919e]">{subject.code}</p>
                     </div>
                     <div className="text-left sm:text-right">
-                      <p className="text-sm font-medium text-slate-800">{subject.teacher?.name || 'Teacher not assigned'}</p>
-                      {subject.teacher?.email && <p className="text-xs text-slate-500">{subject.teacher.email}</p>}
+                      <p className="text-sm font-medium text-slate-800 dark:text-[#e2e6ed]">{subject.teacher?.name || 'Teacher not assigned'}</p>
+                      {subject.teacher?.email && <p className="text-xs text-slate-500 dark:text-[#8a919e]">{subject.teacher.email}</p>}
                     </div>
                     <Button variant="secondary" className="px-3 py-1.5" onClick={() => onEditSubject(subject)}>Edit</Button>
                   </div>

@@ -75,8 +75,8 @@ function SuperAdminDashboard({ user }) {
           </div>
           <section className="space-y-4">
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Departments and class incharges</h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-[#f1f3f6]">Departments and class incharges</h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
                 Head of department, each class, its incharge, and assigned teachers.
               </p>
             </div>
@@ -91,21 +91,21 @@ function SuperAdminDashboard({ user }) {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <Link
-                            className="text-lg font-bold text-blue-800 hover:underline"
+                            className="text-lg font-bold text-blue-800 hover:underline dark:text-blue-400"
                             to={`/dashboard/superadmin/departments?department=${department._id}`}
                           >
                             {department.name}
                           </Link>
-                          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                          <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-[#8a919e]">
                             {department.code} · {departmentClasses.length} classes
                           </p>
                         </div>
-                        <p className="text-sm text-slate-600">
-                          HOD: <span className="font-semibold text-slate-900">{department.hod?.name || 'Not assigned'}</span>
+                        <p className="text-sm text-slate-600 dark:text-[#b5bcc9]">
+                          HOD: <span className="font-semibold text-slate-900 dark:text-[#f1f3f6]">{department.hod?.name || 'Not assigned'}</span>
                         </p>
                       </div>
                       {departmentClasses.length ? (
-                        <div className="divide-y divide-slate-100">
+                        <div className="divide-y divide-slate-100 dark:divide-[#242730]">
                           {departmentClasses.map((schoolClass) => {
                             const classSubjects = subjects.filter(
                               (subject) => subject.class?._id === schoolClass._id,
@@ -116,14 +116,14 @@ function SuperAdminDashboard({ user }) {
                             return (
                               <div className="py-3 first:pt-0 last:pb-0" key={schoolClass._id}>
                                 <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 text-sm">
-                                  <span className="font-semibold text-slate-800">
+                                  <span className="font-semibold text-slate-800 dark:text-[#f1f3f6]">
                                     {formatClassLabel(schoolClass)}
                                   </span>
-                                  <span className="text-slate-600">
+                                  <span className="text-slate-600 dark:text-[#b5bcc9]">
                                     Incharge: {schoolClass.advisor?.name || 'Not assigned'}
                                   </span>
                                 </div>
-                                <p className="mt-1 text-xs text-slate-500">
+                                <p className="mt-1 text-xs text-slate-500 dark:text-[#8a919e]">
                                   Teachers: {classTeachers.length ? classTeachers.join(', ') : 'Not assigned'}
                                 </p>
                               </div>
@@ -131,7 +131,7 @@ function SuperAdminDashboard({ user }) {
                           })}
                         </div>
                       ) : (
-                        <p className="text-sm text-slate-500">No classes in this department yet.</p>
+                        <p className="text-sm text-slate-500 dark:text-[#8a919e]">No classes in this department yet.</p>
                       )}
                     </Card>
                   )

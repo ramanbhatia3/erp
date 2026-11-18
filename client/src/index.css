@@ -73,41 +73,82 @@
 
   :root.dark {
     color-scheme: dark;
-    --ink: #e8edf7;
-    --paper: #101827;
-    --cream: #182337;
-    --border: #28364d;
-    --muted: #9aa9bf;
+    --ink: #f1f3f6;
+    --paper: #0c0d10;
+    --cream: #14161b;
+    --border: #242730;
+    --muted: #8a919e;
     --bg-main: var(--paper);
-    --bg-card: #172235;
-    --sidebar-bg: #0b1220;
+    --bg-card: #15171c;
+    --sidebar-bg: #0e1014;
     --text-main: var(--ink);
     --text-muted: var(--muted);
     --border-color: var(--border);
 
-    --color-slate-50: #172235;
-    --color-slate-100: #1b2940;
-    --color-slate-200: #28364d;
-    --color-slate-300: #3b4b64;
-    --color-slate-400: #71829b;
-    --color-slate-500: #9aa9bf;
-    --color-slate-600: #b4c0d2;
-    --color-slate-700: #cbd5e1;
-    --color-slate-800: #dce4ef;
-    --color-slate-900: #e8edf7;
-    --color-slate-950: #0b1220;
+    --color-slate-50: #101216;
+    --color-slate-100: #181b22;
+    --color-slate-200: #242730;
+    --color-slate-300: #343844;
+    --color-slate-400: #68707f;
+    --color-slate-500: #8a919e;
+    --color-slate-600: #b5bcc9;
+    --color-slate-700: #d1d6e0;
+    --color-slate-800: #e2e6ed;
+    --color-slate-900: #f1f3f6;
+    --color-slate-950: #ffffff;
 
-    --color-blue-50: #142a47;
-    --color-blue-100: #17365e;
-    --color-blue-200: #204b7c;
-    --color-blue-300: #3470ad;
-    --color-blue-400: #5593d2;
-    --color-blue-500: #70a9e5;
-    --color-blue-600: #3b82d0;
-    --color-blue-700: #70a9e5;
-    --color-blue-800: #9bc5ef;
-    --color-blue-900: #c6ddf7;
+    --color-blue-50: #131720;
+    --color-blue-100: #172133;
+    --color-blue-200: #1b2e4d;
+    --color-blue-300: #93c5fd;
+    --color-blue-400: #60a5fa;
+    --color-blue-500: #3b82f6;
+    --color-blue-600: #2563eb;
+    --color-blue-700: #1d4ed8;
+    --color-blue-800: #93c5fd;
+    --color-blue-900: #bfdbfe;
     --color-blue-950: #e2effc;
+
+    --color-emerald-50: #0d1e17;
+    --color-emerald-100: #112d21;
+    --color-emerald-200: #143e2d;
+    --color-emerald-300: #059669;
+    --color-emerald-400: #10b981;
+    --color-emerald-500: #34d399;
+    --color-emerald-600: #6ee7b7;
+    --color-emerald-700: #34d399;
+    --color-emerald-800: #6ee7b7;
+
+    --color-amber-50: #221608;
+    --color-amber-100: #331f0a;
+    --color-amber-200: #47290c;
+    --color-amber-300: #b45309;
+    --color-amber-400: #f59e0b;
+    --color-amber-500: #fbbf24;
+    --color-amber-600: #fcd34d;
+    --color-amber-700: #fbbf24;
+    --color-amber-800: #fde68a;
+
+    --color-red-50: #220b0b;
+    --color-red-100: #340f0f;
+    --color-red-200: #4a1313;
+    --color-red-300: #f87171;
+    --color-red-400: #ef4444;
+    --color-red-500: #ef4444;
+    --color-red-600: #dc2626;
+    --color-red-700: #b91c1c;
+    --color-red-800: #991b1b;
+
+    --color-sky-50: #0a1722;
+    --color-sky-800: #bae6fd;
+    --color-violet-50: #170d28;
+    --color-violet-800: #ddd6fe;
+    --color-pink-50: #220a14;
+    --color-pink-800: #fbcfe8;
+    --color-indigo-50: #101024;
+    --color-indigo-800: #c7d2fe;
+    --color-orange-50: #220f08;
+    --color-orange-800: #fed7aa;
   }
 
   body {
@@ -154,8 +195,8 @@
 
 .dark .app-canvas {
   background:
-    radial-gradient(ellipse at 86% 0%, rgb(37 99 235 / 0.13), transparent 34rem),
-    linear-gradient(135deg, #111b2b 0%, #101827 54%, #0c1421 100%);
+    radial-gradient(ellipse at 86% 0%, rgb(255 255 255 / 0.02), transparent 36rem),
+    linear-gradient(180deg, #0c0d10 0%, #0e1014 100%);
 }
 
 .dashboard-sidebar {
@@ -224,13 +265,59 @@
 }
 
 .dark .table-row-hover tbody tr:hover {
-  background-color: rgb(255 255 255 / 0.035);
+  background-color: rgb(255 255 255 / 0.038);
 }
 
 .dark .dashboard-sidebar {
-  --color-slate-300: #cbd5e1;
-  --color-slate-400: #94a3b8;
-  --color-slate-500: #64748b;
+  --color-slate-300: #d1d6e0;
+  --color-slate-400: #9ca3af;
+  --color-slate-500: #6b7280;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgb(16 185 129 / 0.09), transparent 22rem),
+    #13151a;
+  border-right: 1px solid #22252e;
+}
+
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.2s ease;
+}
+
+.sidebar-scroll:hover {
+  scrollbar-color: #2b2e38 transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background: #2b2e38;
+}
+
+.content-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #242730 transparent;
+}
+
+.content-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content-scroll::-webkit-scrollbar-thumb {
+  background: #242730;
+  border-radius: 9999px;
+}
+
+.content-scroll::-webkit-scrollbar-thumb:hover {
+  background: #343844;
 }
 
 .dark .bg-white {
@@ -238,11 +325,47 @@
 }
 
 .dark .bg-white\/80 {
-  background-color: rgb(23 34 53 / 0.88);
+  background-color: rgb(21 23 28 / 0.88);
 }
 
-.dark .divide-slate-100 > :not(:last-child) {
+.dark .bg-white\/90 {
+  background-color: rgb(21 23 28 / 0.94);
+}
+
+.dark .divide-slate-100 > :not(:last-child),
+.dark .divide-slate-200 > :not(:last-child) {
   border-color: var(--border-color);
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  color: var(--text-main);
+  background-color: #101216;
+  border-color: var(--border);
+}
+
+.dark select option {
+  background-color: #15171c;
+  color: #f1f3f6;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #68707f;
+}
+
+.dark label {
+  color: #d1d6e0;
+}
+
+.dark .bg-red-600 {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+.dark .hover\:bg-red-700:hover {
+  background-color: #b91c1c !important;
 }
 
 .dark .bg-blue-700 {
@@ -251,6 +374,19 @@
 
 .dark .hover\:bg-blue-800:hover {
   background-color: #1e40af;
+}
+
+.dark ::selection {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #242730;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #343844;
 }
 
 ::-webkit-scrollbar {

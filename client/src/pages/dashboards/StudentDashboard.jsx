@@ -79,7 +79,7 @@ function StudentDashboard({ user }) {
         <div aria-hidden="true" className="absolute -right-20 -top-32 h-80 w-80 rounded-full border-[42px] border-white/[0.035]" />
         <div className="relative flex flex-wrap items-center gap-x-8 gap-y-5">
           <div className="flex min-w-0 flex-1 items-center gap-4">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-lime-300 text-lg font-extrabold text-slate-950">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-lime-300 text-lg font-extrabold text-slate-950 dark:text-neutral-900">
               {initials}
             </span>
             <div className="min-w-0">

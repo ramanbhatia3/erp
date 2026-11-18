@@ -59,9 +59,9 @@ function ChangePasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8">
+    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-8 dark:bg-[#0c0d10]">
       <form
-        className="w-full max-w-md space-y-5 rounded-2xl bg-white p-6 shadow-lg sm:p-8"
+        className="w-full max-w-md space-y-5 rounded-2xl bg-white p-6 shadow-lg sm:p-8 dark:border dark:border-[#242730] dark:bg-[#15171c]"
         onSubmit={handleSubmit}
       >
         <div className="text-center">
@@ -75,17 +75,17 @@ function ChangePasswordPage() {
           <p className="mt-3 text-sm font-semibold uppercase tracking-widest text-blue-700">
             Account security
           </p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-900">
+          <h1 className="mt-2 text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">
             Change your password
           </h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-slate-500 dark:text-[#8a919e]">
             Set a new password to continue to your dashboard.
           </p>
         </div>
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-slate-700 dark:text-[#d1d6e0]">
           Current password
           <input
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6] dark:placeholder-[#68707f] dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
             type="password"
             autoComplete="current-password"
             value={currentPassword}
@@ -93,10 +93,10 @@ function ChangePasswordPage() {
             required
           />
         </label>
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-slate-700 dark:text-[#d1d6e0]">
           New password
           <input
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6] dark:placeholder-[#68707f] dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
             type="password"
             autoComplete="new-password"
             minLength={8}
@@ -105,10 +105,10 @@ function ChangePasswordPage() {
             required
           />
         </label>
-        <label className="block text-sm font-medium text-slate-700">
+        <label className="block text-sm font-medium text-slate-700 dark:text-[#d1d6e0]">
           Confirm new password
           <input
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6] dark:placeholder-[#68707f] dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
             type="password"
             autoComplete="new-password"
             minLength={8}
@@ -119,7 +119,7 @@ function ChangePasswordPage() {
         </label>
         {errorMessage && (
           <p
-            className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+            className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:border dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-300"
             role="alert"
           >
             {errorMessage}

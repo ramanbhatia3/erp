@@ -203,8 +203,8 @@ function ClassesPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Classes</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">Classes</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
             {canManage
               ? 'Create one class for each program semester (1–8), then assign that semester’s subjects to the class.'
               : 'Program classes and their semester-specific subjects.'}
@@ -226,9 +226,9 @@ function ClassesPage() {
             ]}
           />
         ) : (
-          <div className="text-sm text-slate-600">
+          <div className="text-sm text-slate-600 dark:text-[#b5bcc9]">
             Assigned classes
-            <p className="mt-2 font-semibold text-slate-900">
+            <p className="mt-2 font-semibold text-slate-900 dark:text-[#f1f3f6]">
               All departments
             </p>
           </div>

@@ -153,11 +153,11 @@ function FeeHostelStudentRow({ student, semester, onUpdate }) {
     <Card className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-slate-950">{student.name}</h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <h2 className="text-lg font-bold text-slate-950 dark:text-[#f1f3f6]">{student.name}</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
             {student.rollNo || 'No roll number'} · {student.email}
           </p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-[#8a919e]">
             {student.class?.name || 'Class not assigned'}
             {student.class?.semester ? ` · Semester ${student.class.semester}` : ''}
             {student.department?.code ? ` · ${student.department.code}` : ''}
@@ -167,16 +167,16 @@ function FeeHostelStudentRow({ student, semester, onUpdate }) {
           <Badge color={paymentStatus === 'Paid' ? 'green' : feeSummary.paid ? 'yellow' : 'red'}>
             {paymentStatus}
           </Badge>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-slate-500 dark:text-[#8a919e]">
             Semester {semester} balance
           </p>
-          <p className="text-lg font-bold text-slate-950">
+          <p className="text-lg font-bold text-slate-950 dark:text-[#f1f3f6]">
             {formatCurrency(feeSummary.balance)}
           </p>
         </div>
       </div>
 
-      <div className="grid gap-4 border-y border-slate-100 py-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 border-y border-slate-100 py-4 md:grid-cols-2 xl:grid-cols-3 dark:border-[#242730]">
         <Select
           id={`hostel-${student._id}`}
           label="Hostel assignment"
@@ -208,17 +208,17 @@ function FeeHostelStudentRow({ student, semester, onUpdate }) {
             {savingAssignment === 'hostelRoom' ? 'Saving...' : 'Save room'}
           </Button>
         </div>
-        <label className="flex min-h-[4.25rem] items-center gap-3 rounded-xl border border-slate-200 px-3.5 text-sm font-medium text-slate-700">
+        <label className="flex min-h-[4.25rem] items-center gap-3 rounded-xl border border-slate-200 px-3.5 text-sm font-medium text-slate-700 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#d1d6e0]">
           <input
             checked={Boolean(student.studentServices?.usesTransport)}
             disabled={Boolean(savingAssignment) || savingFees}
             onChange={(event) => updateAssignment('usesTransport', event.target.checked)}
             type="checkbox"
-            className="h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600"
+            className="h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-600 dark:border-[#383c46] dark:bg-[#181b22]"
           />
           <span>
             Uses university transport
-            <span className="mt-1 block text-xs font-normal text-slate-500">
+            <span className="mt-1 block text-xs font-normal text-slate-500 dark:text-[#8a919e]">
               {savingAssignment === 'usesTransport' ? 'Saving assignment...' : 'Transportation fee: ₹15,000 per semester'}
             </span>
           </span>
@@ -228,14 +228,14 @@ function FeeHostelStudentRow({ student, semester, onUpdate }) {
       <form className="space-y-4" onSubmit={savePaidAmounts}>
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h3 className="font-bold text-slate-900">
+            <h3 className="font-bold text-slate-900 dark:text-[#f1f3f6]">
               Semester {semester} fee payments
             </h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-[#8a919e]">
               {getSemesterTerm(semester)}. Record cumulative paid amounts; each is capped at its assessed fee.
             </p>
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-[#8a919e]">
             Assigned hostel: {getHostelLabel(student.studentServices?.hostel)}
           </p>
         </div>
@@ -260,7 +260,7 @@ function FeeHostelStudentRow({ student, semester, onUpdate }) {
           ))}
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-600 dark:text-[#b5bcc9]">
             Due {formatCurrency(feeSummary.due)} · Paid {formatCurrency(feeSummary.paid)}
           </p>
           <Button type="submit" disabled={savingFees || Boolean(savingAssignment)}>
@@ -324,8 +324,8 @@ function FeesHostelPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-950">Fees & Hostel</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-[#f1f3f6]">Fees & Hostel</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
           Assign student hostels and rooms, manage transport use, and record semester fee payments.
         </p>
       </div>

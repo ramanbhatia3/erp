@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import universityLogo from '../../assets/rbpulogo.webp'
@@ -44,6 +44,52 @@ function MenuIcon({ code }) {
       viewBox="0 0 24 24"
     >
       <path d={menuIconPaths[code] || menuIconPaths.OV} />
+    </svg>
+  )
+}
+
+function SunIcon({ className = 'h-5 w-5' }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <circle cx="12" cy="12" r="4" fill="currentColor" fillOpacity="0.2" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="m4.93 4.93 1.41 1.41" />
+      <path d="m17.66 17.66 1.41 1.41" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="m6.34 17.66-1.41 1.41" />
+      <path d="m19.07 4.93-1.41 1.41" />
+    </svg>
+  )
+}
+
+function MoonIcon({ className = 'h-5 w-5' }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      viewBox="0 0 24 24"
+    >
+      <path
+        d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"
+        fill="currentColor"
+        fillOpacity="0.16"
+      />
     </svg>
   )
 }
@@ -139,10 +185,19 @@ function DashboardLayout({ user, role, children }) {
   const navigate = useNavigate()
   const menu = roleMenus[role] || roleMenus.student
 
+  const rightPaneRef = useRef(null)
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark)
     localStorage.setItem('rbpu-theme', isDark ? 'dark' : 'light')
   }, [isDark])
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    if (rightPaneRef.current) {
+      rightPaneRef.current.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    }
+  }, [location.pathname, location.search])
 
   const activeMenu = isDepartmentsPage
     ? 'Departments'
@@ -187,6 +242,10 @@ function DashboardLayout({ user, role, children }) {
 
   function selectMenu(label) {
     setMobileMenuOpen(false)
+    window.scrollTo(0, 0)
+    if (rightPaneRef.current) {
+      rightPaneRef.current.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    }
 
     if (role === 'superadmin' && label === 'Departments') {
       navigate('/dashboard/superadmin/departments')
@@ -275,11 +334,11 @@ function DashboardLayout({ user, role, children }) {
   function renderSidebar(collapsed = false, mobile = false) {
     return (
       <aside
-        className={`dashboard-sidebar flex h-full flex-col text-slate-300 shadow-[8px_0_32px_rgba(15,23,42,0.08)] transition-[width] duration-300 ease-out ${
+        className={`dashboard-sidebar flex h-full flex-col text-slate-300 shadow-[8px_0_32px_rgba(15,23,42,0.08)] dark:shadow-[8px_0_32px_rgba(0,0,0,0.5)] transition-[width] duration-300 ease-out ${
           collapsed && !mobile ? 'w-20' : 'w-64'
         }`}
       >
-        <div className="flex h-[4.75rem] items-center border-b border-white/[0.08] px-4">
+        <div className="flex h-[4.75rem] shrink-0 items-center border-b border-white/[0.08] dark:border-[#22252e] px-4">
           <img
             alt="Rayat Bahra Professional University"
             className={`h-10 object-contain object-left ${collapsed && !mobile ? 'w-10' : 'w-44'}`}
@@ -287,12 +346,14 @@ function DashboardLayout({ user, role, children }) {
           />
         </div>
         {(!collapsed || mobile) && (
-          <p className="px-5 pb-2 pt-6 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+          <p className="shrink-0 px-5 pb-2 pt-6 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-[#6b7280]">
             Workspace
           </p>
         )}
         <nav
-          className="flex-1 space-y-1 px-3 pb-5 pt-5"
+          className={`sidebar-scroll flex-1 space-y-1 px-3 pb-5 pt-3 ${
+            mobile ? 'overflow-y-auto' : 'overflow-y-hidden hover:overflow-y-auto'
+          }`}
           aria-label="Main navigation"
         >
           {menu.map(([label, icon]) => (
@@ -300,8 +361,8 @@ function DashboardLayout({ user, role, children }) {
               key={label}
               className={`flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-2.5 text-left text-sm font-medium transition duration-200 ${
                 activeMenu === label
-                  ? 'border-emerald-400/15 bg-emerald-400/[0.11] text-white shadow-inner shadow-white/[0.02]'
-                  : 'text-slate-400 hover:bg-white/[0.055] hover:text-slate-100'
+                  ? 'border-emerald-400/20 bg-emerald-400/[0.14] text-white shadow-inner shadow-white/[0.03] dark:border-emerald-500/30 dark:bg-emerald-500/[0.18] dark:text-white'
+                  : 'text-slate-400 hover:bg-white/[0.055] hover:text-slate-100 dark:text-[#9ca3af] dark:hover:bg-white/[0.07] dark:hover:text-[#f3f4f6]'
               }`}
               type="button"
               onClick={() => selectMenu(label)}
@@ -311,8 +372,8 @@ function DashboardLayout({ user, role, children }) {
               <span
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition ${
                   activeMenu === label
-                    ? 'bg-emerald-400/15 text-emerald-300'
-                    : 'text-slate-500'
+                    ? 'bg-emerald-400/15 text-emerald-300 dark:bg-emerald-500/20 dark:text-emerald-300'
+                    : 'text-slate-500 dark:text-[#788090]'
                 }`}
               >
                 <MenuIcon code={icon} />
@@ -322,9 +383,9 @@ function DashboardLayout({ user, role, children }) {
           ))}
         </nav>
         {(!collapsed || mobile) && (
-          <div className="border-t border-white/[0.08] px-5 py-4">
-            <p className="text-xs font-medium text-slate-300">Academic workspace</p>
-            <p className="mt-1 text-[10px] text-slate-500">Rayat Bahra Professional University</p>
+          <div className="shrink-0 border-t border-white/[0.08] dark:border-[#22252e] px-5 py-4">
+            <p className="text-xs font-medium text-slate-300 dark:text-[#d1d6e0]">Academic workspace</p>
+            <p className="mt-1 text-[10px] text-slate-500 dark:text-[#6b7280]">Rayat Bahra Professional University</p>
           </div>
         )}
       </aside>
@@ -332,8 +393,8 @@ function DashboardLayout({ user, role, children }) {
   }
 
   return (
-    <div className="app-canvas flex min-h-screen">
-      <div className="hidden shrink-0 md:block">
+    <div className="app-canvas flex h-screen overflow-hidden">
+      <div className="hidden shrink-0 md:sticky md:top-0 md:h-screen md:block">
         {renderSidebar(sidebarCollapsed)}
       </div>
 
@@ -347,7 +408,7 @@ function DashboardLayout({ user, role, children }) {
           >
             <button
               aria-label="Close navigation menu"
-              className="absolute inset-0 bg-slate-950/50"
+              className="absolute inset-0 bg-slate-950/50 dark:bg-black/80"
               type="button"
               onClick={() => setMobileMenuOpen(false)}
             />
@@ -363,12 +424,15 @@ function DashboardLayout({ user, role, children }) {
         )}
       </AnimatePresence>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex min-h-[4.5rem] items-center justify-between gap-3 border-b border-slate-200/70 bg-[#f1f3f6]/90 px-4 backdrop-blur-xl sm:px-7">
+      <div
+        ref={rightPaneRef}
+        className="content-scroll flex min-w-0 flex-1 flex-col h-screen overflow-y-auto overflow-x-hidden"
+      >
+        <header className="sticky top-0 z-30 flex min-h-[4.5rem] items-center justify-between gap-3 border-b border-slate-200/70 bg-[#f1f3f6]/90 px-4 backdrop-blur-xl sm:px-7 dark:border-[#20232a] dark:bg-[#0c0d10]/92">
           <div className="flex min-w-0 items-center gap-3">
             <button
               aria-label="Open navigation menu"
-              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden"
+              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:hidden dark:text-slate-300 dark:hover:bg-[#181b22]"
               type="button"
               onClick={() => setMobileMenuOpen(true)}
             >
@@ -376,7 +440,7 @@ function DashboardLayout({ user, role, children }) {
             </button>
             <button
               aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              className="hidden rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:block"
+              className="hidden rounded-lg p-2 text-slate-600 hover:bg-slate-100 md:block dark:text-slate-300 dark:hover:bg-[#181b22]"
               type="button"
               onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
             >
@@ -384,10 +448,10 @@ function DashboardLayout({ user, role, children }) {
             </button>
             <div className="min-w-0">
               <p className="truncate text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
-                University <span className="px-1 text-slate-300">/</span>
-                <span className="text-blue-700">{activeMenu}</span>
+                University <span className="px-1 text-slate-300 dark:text-slate-600">/</span>
+                <span className="text-blue-700 dark:text-blue-400">{activeMenu}</span>
               </p>
-              <p className="hidden truncate text-sm font-semibold text-slate-800 sm:block">
+              <p className="hidden truncate text-sm font-semibold text-slate-800 sm:block dark:text-slate-200">
                 {roleLabels[role] || role} workspace
               </p>
             </div>
@@ -395,16 +459,21 @@ function DashboardLayout({ user, role, children }) {
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <button
               aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-lg text-slate-600 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-[#2b2e36] dark:bg-[#181b22] dark:text-amber-400 dark:hover:border-amber-400/50 dark:hover:bg-[#22252c] dark:hover:text-amber-300"
               type="button"
               onClick={() => setIsDark((dark) => !dark)}
             >
-              <span aria-hidden="true">{isDark ? '☀' : '☾'}</span>
+              <span className="sr-only">Toggle theme</span>
+              {isDark ? (
+                <SunIcon className="h-5 w-5 transition-transform duration-300 hover:rotate-45" />
+              ) : (
+                <MoonIcon className="h-5 w-5 transition-transform duration-300 hover:-rotate-12" />
+              )}
             </button>
-            <span className="max-w-20 truncate text-xs font-medium text-slate-800 sm:hidden">
+            <span className="max-w-20 truncate text-xs font-medium text-slate-800 sm:hidden dark:text-slate-200">
               {user.name}
             </span>
-            <div className="hidden items-center gap-2.5 border-l border-slate-200 pl-3 sm:flex">
+            <div className="hidden items-center gap-2.5 border-l border-slate-200 pl-3 sm:flex dark:border-[#242730]">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-xs font-bold text-white shadow-md shadow-emerald-900/15">
                 {user.name
                   .split(/\s+/)
@@ -414,10 +483,10 @@ function DashboardLayout({ user, role, children }) {
                   .toUpperCase()}
               </span>
               <div className="text-left">
-                <p className="max-w-40 truncate text-xs font-bold text-slate-800">
+                <p className="max-w-40 truncate text-xs font-bold text-slate-800 dark:text-slate-100">
                   {user.name}
                 </p>
-                <p className="mt-0.5 text-[10px] font-medium text-slate-500">
+                <p className="mt-0.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
                   {roleLabels[role] || role}
                 </p>
               </div>

@@ -334,8 +334,8 @@ function TeacherMarksPage({ isAdmin = false }) {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Enter Marks</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">Enter Marks</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
             Enter any available marks and leave unmarked components blank. Partial results stay in progress; category averages are rounded up.
           </p>
         </div>
@@ -390,31 +390,31 @@ function TeacherMarksPage({ isAdmin = false }) {
               : 'There are no active students currently assigned to this class.'}
           />
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-slate-200">
-            <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+          <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-[#242730]">
+            <table className="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-[#242730]">
+              <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-[#101216] dark:text-[#8a919e]">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Student</th>
                   <th className="px-4 py-3 font-semibold">Roll number</th>
                   {isAdmin && <th className="px-4 py-3 font-semibold">Section</th>}
                   {components.map((component) => (
                     <th className="min-w-36 px-4 py-3 font-semibold" key={component.name}>
-                      {component.name} <span className="normal-case">/ {component.maxMarks}</span>
+                      {component.name} <span className="normal-case opacity-75 dark:text-[#8a919e]">/ {component.maxMarks}</span>
                     </th>
                   ))}
                   <th className="px-4 py-3 font-semibold">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white text-slate-700">
+              <tbody className="divide-y divide-slate-100 bg-white text-slate-700 dark:divide-[#1e2128] dark:bg-[#15171c] dark:text-[#d1d6e0]">
                 {students.map((student) => {
                   const studentId = getId(student)
                   const existingMark = markByStudent.get(studentId)
                   return (
                     <tr key={studentId}>
-                      <td className="whitespace-nowrap px-4 py-3 font-medium">
+                      <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-900 dark:text-[#f1f3f6]">
                         {student.name}
                         {isAdmin && (
-                          <p className="mt-1 text-xs font-normal text-slate-500">
+                          <p className="mt-1 text-xs font-normal text-slate-500 dark:text-[#8a919e]">
                             {student.academicStatus === 'alumni'
                               ? 'Alumni · Semester 8 completed'
                               : `Semester ${student.currentSemester || '—'} · ${
@@ -423,11 +423,11 @@ function TeacherMarksPage({ isAdmin = false }) {
                           </p>
                         )}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3">
+                      <td className="whitespace-nowrap px-4 py-3 text-slate-600 dark:text-[#b5bcc9]">
                         {student.rollNo || '—'}
                       </td>
                       {isAdmin && (
-                        <td className="whitespace-nowrap px-4 py-3">
+                        <td className="whitespace-nowrap px-4 py-3 text-slate-600 dark:text-[#b5bcc9]">
                           {student.section || '—'}
                         </td>
                       )}
@@ -435,7 +435,7 @@ function TeacherMarksPage({ isAdmin = false }) {
                         <td className="px-4 py-3" key={component.name}>
                           <input
                             aria-label={`${component.name} marks for ${student.name}`}
-                            className="w-28 rounded-lg border border-slate-300 px-2.5 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                            className="w-28 rounded-lg border border-slate-300 px-2.5 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6] dark:focus:ring-blue-500/20"
                             type="number"
                             min="0"
                             max={component.maxMarks}

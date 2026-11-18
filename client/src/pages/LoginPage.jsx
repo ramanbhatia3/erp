@@ -51,9 +51,9 @@ function LoginPage() {
   const isStudent = accountType === 'student'
 
   return (
-    <main className="flex min-h-[100svh] items-center justify-center bg-[#edf0f4] p-3 sm:p-4">
+    <main className="flex min-h-[100svh] items-center justify-center bg-[#edf0f4] p-3 sm:p-4 dark:bg-[#0c0d10]">
       <motion.div
-        className="login-frame grid w-full max-w-[76rem] overflow-hidden rounded-[1.5rem] bg-white shadow-[0_24px_72px_rgba(15,23,42,0.13)] md:grid-cols-[1.08fr_0.92fr]"
+        className="login-frame grid w-full max-w-[76rem] overflow-hidden rounded-[1.5rem] bg-white shadow-[0_24px_72px_rgba(15,23,42,0.13)] md:grid-cols-[1.08fr_0.92fr] dark:border dark:border-[#242730] dark:bg-[#15171c]"
         initial={{ opacity: 0, y: 14, scale: 0.99 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.45, ease: 'easeOut' }}
@@ -86,13 +86,13 @@ function LoginPage() {
             </div>
             <div
               aria-label="Choose account type"
-              className="mb-5 grid grid-cols-2 rounded-xl bg-slate-100 p-1"
+              className="mb-5 grid grid-cols-2 rounded-xl bg-slate-100 p-1 dark:bg-[#101216]"
               role="group"
             >
               <button
                 aria-pressed={isStudent}
                 className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                  isStudent ? 'bg-[#171b20] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  isStudent ? 'bg-[#171b20] text-white shadow-sm dark:bg-[#20232a] dark:border dark:border-[#2e323b]' : 'text-slate-600 hover:text-slate-900 dark:text-[#b5bcc9] dark:hover:text-white'
                 }`}
                 onClick={() => setAccountType('student')}
                 type="button"
@@ -102,7 +102,7 @@ function LoginPage() {
               <button
                 aria-pressed={!isStudent}
                 className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                  !isStudent ? 'bg-[#171b20] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  !isStudent ? 'bg-[#171b20] text-white shadow-sm dark:bg-[#20232a] dark:border dark:border-[#2e323b]' : 'text-slate-600 hover:text-slate-900 dark:text-[#b5bcc9] dark:hover:text-white'
                 }`}
                 onClick={() => setAccountType('staff')}
                 type="button"
@@ -124,10 +124,10 @@ function LoginPage() {
           </div>
 
           <div className="space-y-4">
-            <label className="block text-sm font-semibold text-slate-700">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-[#d1d6e0]">
               University email
               <input
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6] dark:placeholder-[#68707f] dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
                 type="email"
                 autoComplete="email"
                 placeholder={isStudent ? 'student@rbpu.in' : 'name@rbpu.in'}
@@ -136,10 +136,10 @@ function LoginPage() {
                 required
               />
             </label>
-            <label className="block text-sm font-semibold text-slate-700">
+            <label className="block text-sm font-semibold text-slate-700 dark:text-[#d1d6e0]">
               Password
               <input
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6] dark:placeholder-[#68707f] dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
                 type="password"
                 autoComplete="current-password"
                 placeholder="Enter your password"
@@ -150,7 +150,7 @@ function LoginPage() {
             </label>
           </div>
           {errorMessage && (
-            <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-2.5 text-sm text-red-700" role="alert">
+            <p className="mt-3 rounded-xl border border-red-100 bg-red-50 px-4 py-2.5 text-sm text-red-700 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-300" role="alert">
               {errorMessage}
             </p>
           )}

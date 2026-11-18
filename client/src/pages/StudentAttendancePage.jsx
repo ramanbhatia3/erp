@@ -33,8 +33,8 @@ function formatDate(value) {
 function AttendanceMetric({ label, value, highlight = false }) {
   return (
     <Card className="min-h-36 shadow-[0_8px_24px_rgba(15,23,42,0.07)]">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className={`mt-3 text-3xl font-extrabold tracking-tight ${highlight ? 'text-emerald-500' : 'text-slate-950'}`}>
+      <p className="text-sm font-medium text-slate-500 dark:text-[#8a919e]">{label}</p>
+      <p className={`mt-3 text-3xl font-extrabold tracking-tight ${highlight ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-950 dark:text-white'}`}>
         {value}
       </p>
     </Card>
@@ -133,8 +133,8 @@ function StudentAttendancePage() {
       label: 'Subject',
       render: (item) => (
         <div>
-          <p className="font-semibold text-slate-800">{item.subject?.name || '—'}</p>
-          <span className="mt-1 inline-flex rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">
+          <p className="font-semibold text-slate-800 dark:text-[#f1f3f6]">{item.subject?.name || '—'}</p>
+          <span className="mt-1 inline-flex rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 dark:border dark:border-blue-800/40">
             {item.subject?.code || '—'}
           </span>
         </div>
@@ -144,12 +144,12 @@ function StudentAttendancePage() {
     {
       key: 'present',
       label: 'Present',
-      render: (item) => <span className="font-semibold text-emerald-700">{item.present}</span>,
+      render: (item) => <span className="font-semibold text-emerald-700 dark:text-emerald-400">{item.present}</span>,
     },
     {
       key: 'absent',
       label: 'Absent',
-      render: (item) => <span className="font-semibold text-red-700">{item.absent}</span>,
+      render: (item) => <span className="font-semibold text-red-700 dark:text-rose-400">{item.absent}</span>,
     },
     {
       key: 'leave',
@@ -168,10 +168,10 @@ function StudentAttendancePage() {
         const belowThreshold = item.percentage < result.attendanceThreshold
         return (
           <div className="min-w-28">
-            <p className={`font-bold ${belowThreshold ? 'text-red-700' : 'text-emerald-600'}`}>
+            <p className={`font-bold ${belowThreshold ? 'text-red-700 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
               {item.percentage.toFixed(2)}%
             </p>
-            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
+            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-[#181b22]">
               <div
                 className={`h-full rounded-full ${belowThreshold ? 'bg-red-500' : 'bg-emerald-500'}`}
                 style={{ width: `${Math.min(100, item.percentage)}%` }}
@@ -245,7 +245,7 @@ function StudentAttendancePage() {
       <Card className="overflow-hidden p-0">
         <div
           aria-label="Attendance views"
-          className="flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50 p-4"
+          className="flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50 p-4 dark:border-[#242730] dark:bg-[#101216]"
           role="tablist"
         >
           {[
@@ -257,7 +257,7 @@ function StudentAttendancePage() {
               className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
                 activeTab === tab
                   ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/20'
-                  : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                  : 'text-slate-600 hover:bg-white hover:text-slate-900 dark:text-[#8a919e] dark:hover:bg-[#181b22] dark:hover:text-[#f1f3f6]'
               }`}
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -273,8 +273,8 @@ function StudentAttendancePage() {
           {activeTab === 'summary' ? (
             <div className="space-y-4">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Subject-wise summary</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-[#f1f3f6]">Subject-wise summary</h2>
+                <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
                   Leave and unmarked counts are not tracked by the current attendance records.
                 </p>
               </div>
@@ -288,8 +288,8 @@ function StudentAttendancePage() {
           ) : (
             <div className="space-y-4">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Attendance register</h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-[#f1f3f6]">Attendance register</h2>
+                <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
                   Your recorded attendance by date, subject, and lecture.
                 </p>
               </div>

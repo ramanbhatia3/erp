@@ -21,14 +21,14 @@ const eventTypes = [
   'deadline',
 ]
 const eventColors = {
-  holiday: 'border-emerald-500 bg-emerald-50 text-emerald-800',
-  exam: 'border-red-500 bg-red-50 text-red-800',
-  workshop: 'border-sky-500 bg-sky-50 text-sky-800',
-  seminar: 'border-violet-500 bg-violet-50 text-violet-800',
-  function: 'border-pink-500 bg-pink-50 text-pink-800',
-  competition: 'border-amber-500 bg-amber-50 text-amber-800',
-  placement: 'border-indigo-500 bg-indigo-50 text-indigo-800',
-  deadline: 'border-orange-500 bg-orange-50 text-orange-800',
+  holiday: 'border-emerald-500 bg-emerald-50 text-emerald-800 dark:border-emerald-500/35 dark:bg-emerald-500/15 dark:text-emerald-300',
+  exam: 'border-red-500 bg-red-50 text-red-800 dark:border-rose-500/35 dark:bg-rose-500/15 dark:text-rose-300',
+  workshop: 'border-sky-500 bg-sky-50 text-sky-800 dark:border-sky-500/35 dark:bg-sky-500/15 dark:text-sky-300',
+  seminar: 'border-violet-500 bg-violet-50 text-violet-800 dark:border-violet-500/35 dark:bg-violet-500/15 dark:text-violet-300',
+  function: 'border-pink-500 bg-pink-50 text-pink-800 dark:border-pink-500/35 dark:bg-pink-500/15 dark:text-pink-300',
+  competition: 'border-amber-500 bg-amber-50 text-amber-800 dark:border-amber-500/35 dark:bg-amber-500/15 dark:text-amber-300',
+  placement: 'border-indigo-500 bg-indigo-50 text-indigo-800 dark:border-indigo-500/35 dark:bg-indigo-500/15 dark:text-indigo-300',
+  deadline: 'border-orange-500 bg-orange-50 text-orange-800 dark:border-orange-500/35 dark:bg-orange-500/15 dark:text-orange-300',
 }
 const eventAccents = {
   holiday: 'bg-emerald-500',
@@ -350,7 +350,7 @@ function EventsPage() {
 
   return (
     <div className="space-y-5">
-      <section className="overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-5 py-6 text-white shadow-sm sm:px-8 sm:py-8">
+      <section className="overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 px-5 py-6 text-white shadow-sm sm:px-8 sm:py-8 dark:from-[#15171c] dark:via-[#181a20] dark:to-[#1c1f26] dark:border dark:border-[#2b2e36]">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-4">
             <span className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/10 text-blue-200 ring-1 ring-white/15 sm:flex">
@@ -474,7 +474,7 @@ function EventsPage() {
             </div>
             <div
               aria-label="Calendar view"
-              className="flex rounded-xl bg-slate-100 p-1"
+              className="flex rounded-xl bg-slate-100 p-1 dark:border dark:border-[#242730] dark:bg-[#101216]"
               role="group"
             >
               <Button
@@ -525,8 +525,8 @@ function EventsPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto border-t border-slate-100 pt-3">
-          <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <div className="flex items-center gap-2 overflow-x-auto border-t border-slate-100 dark:border-[#242730] pt-3">
+          <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-[#8a919e]">
             Types
           </span>
           {eventTypes.map((type) => (
@@ -535,7 +535,7 @@ function EventsPage() {
               className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium capitalize transition ${
                 typeFilter === type
                   ? eventColors[type]
-                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-800'
+                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-800 dark:border-[#2b2e36] dark:bg-[#181b22] dark:text-[#8a919e] dark:hover:text-[#f1f3f6]'
               }`}
               key={type}
               onClick={() => setTypeFilter(typeFilter === type ? '' : type)}
@@ -551,7 +551,7 @@ function EventsPage() {
         <Loader />
       ) : loadError ? (
         <p
-          className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+          className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-300"
           role="alert"
         >
           {loadError}
@@ -559,23 +559,23 @@ function EventsPage() {
       ) : view === 'calendar' ? (
         <>
           <Card className="overflow-hidden p-0">
-            <div className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50/60 px-4 py-3 sm:px-5">
-              <p className="text-sm font-semibold text-slate-800">
+            <div className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50/60 px-4 py-3 sm:px-5 dark:border-[#242730] dark:from-[#13151a] dark:to-[#181b22]">
+              <p className="text-sm font-semibold text-slate-800 dark:text-[#f1f3f6]">
                 {formatDate(month, { month: 'long', year: 'numeric' })}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-[#8a919e]">
                 Select a date to see its schedule
               </p>
             </div>
-            <div className="grid grid-cols-7 gap-px bg-slate-200 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
+            <div className="grid grid-cols-7 gap-px bg-slate-200 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs dark:bg-[#242730] dark:text-[#8a919e]">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <div className="bg-white py-2.5 sm:py-3" key={day}>
+                <div className="bg-white py-2.5 sm:py-3 dark:bg-[#15171c]" key={day}>
                   <span className="sm:hidden">{day.slice(0, 1)}</span>
                   <span className="hidden sm:inline">{day}</span>
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-px bg-slate-200">
+            <div className="grid grid-cols-7 gap-px bg-slate-200 dark:bg-[#242730]">
               {calendarDays.map(({ date, key, inMonth }) => {
                 const dayEvents = eventsByDay.get(key) || []
                 return (
@@ -585,8 +585,8 @@ function EventsPage() {
                       month: 'long',
                       day: 'numeric',
                     })}, ${dayEvents.length} events`}
-                    className={`min-h-20 p-1 text-left align-top transition hover:bg-blue-50 sm:min-h-28 sm:p-2 ${
-                      inMonth ? 'bg-white' : 'bg-slate-50 text-slate-400'
+                    className={`min-h-20 p-1 text-left align-top transition hover:bg-blue-50 dark:hover:bg-[#1c1f26] sm:min-h-28 sm:p-2 ${
+                      inMonth ? 'bg-white dark:bg-[#15171c]' : 'bg-slate-50 text-slate-400 dark:bg-[#101216] dark:text-[#68707f]'
                     } ${selectedDate === key ? 'ring-2 ring-inset ring-blue-500' : ''}`}
                     key={key}
                     onClick={() => setSelectedDate(key)}
@@ -597,8 +597,8 @@ function EventsPage() {
                         key === todayKey
                           ? 'bg-blue-700 text-white'
                           : inMonth
-                            ? 'text-slate-700'
-                            : 'text-slate-400'
+                            ? 'text-slate-700 dark:text-[#f1f3f6]'
+                            : 'text-slate-400 dark:text-[#68707f]'
                       }`}
                     >
                       {date.getDate()}
@@ -699,12 +699,12 @@ function EventsPage() {
               value={form.title}
             />
             <label
-              className="block text-sm font-medium text-slate-700"
+              className="block text-sm font-medium text-slate-700 dark:text-[#d1d6e0]"
               htmlFor="event-description"
             >
               Description
               <textarea
-                className="mt-1 min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6] dark:placeholder-[#68707f] dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
                 id="event-description"
                 maxLength={5000}
                 name="description"
@@ -857,18 +857,18 @@ function EventCard({ event, scopeLabel, canEdit, onEdit, onDelete, deleting }) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-base font-semibold text-slate-900 sm:text-lg">
+              <h3 className="text-base font-semibold text-slate-900 sm:text-lg dark:text-[#f1f3f6]">
                 {event.title}
               </h3>
               <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${eventColors[event.type]}`}>
                 {event.type}
               </span>
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600">
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-[#b5bcc9]">
               <span className="inline-flex items-center gap-1.5">
                 <svg
                   aria-hidden="true"
-                  className="h-4 w-4 text-slate-400"
+                  className="h-4 w-4 text-slate-400 dark:text-[#8a919e]"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="1.8"
@@ -882,15 +882,15 @@ function EventCard({ event, scopeLabel, canEdit, onEdit, onDelete, deleting }) {
                 </svg>
                 {dateLabel}
               </span>
-              <span className="hidden text-slate-300 sm:inline">·</span>
+              <span className="hidden text-slate-300 sm:inline dark:text-[#4b5563]">·</span>
               <span>{scopeLabel}</span>
             </div>
             {event.description && (
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600">
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600 dark:text-[#d1d6e0]">
                 {event.description}
               </p>
             )}
-            <p className="mt-3 text-xs text-slate-400">
+            <p className="mt-3 text-xs text-slate-400 dark:text-[#8a919e]">
               Added by {event.createdBy?.name || 'University'}
             </p>
           </div>

@@ -109,13 +109,13 @@ function StudentTimetablePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">My Timetable</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">My Timetable</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
           Your assigned class schedule, subjects, and faculty.
         </p>
       </div>
       <Card className="space-y-4">
-        <h2 className="text-lg font-semibold text-slate-900">Weekly schedule</h2>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-[#f1f3f6]">Weekly schedule</h2>
         <Table
           columns={scheduleColumns}
           rows={schedule}
@@ -124,7 +124,7 @@ function StudentTimetablePage() {
         />
       </Card>
       <Card className="space-y-4">
-        <h2 className="text-lg font-semibold text-slate-900">Subjects and faculty</h2>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-[#f1f3f6]">Subjects and faculty</h2>
         <Table
           columns={subjectColumns}
           rows={classData.subjects || []}

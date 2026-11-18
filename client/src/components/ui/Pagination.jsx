@@ -15,7 +15,7 @@ function Pagination({ page, totalPages, onPageChange }) {
       >
         Previous
       </Button>
-      <span className="text-sm text-slate-600">
+      <span className="text-sm text-slate-600 dark:text-[#b5bcc9]">
         Page {page} of {totalPages}
       </span>
       <Button

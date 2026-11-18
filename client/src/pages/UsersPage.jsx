@@ -440,8 +440,8 @@ function UsersPage() {
       <section className="space-y-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">{pageTitle}</h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
               {isStudentsSection
                 ? 'Create and manage student accounts.'
                 : 'Create and manage teacher accounts.'}
@@ -536,13 +536,13 @@ function UsersPage() {
       >
         {createdCredentials ? (
           <div className="space-y-4">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-[#b5bcc9]">
               Share this password securely. Only an admin can change it later.
             </p>
-            <div className="space-y-2 rounded-lg bg-slate-50 p-4 text-sm">
+            <div className="space-y-2 rounded-lg bg-slate-50 p-4 text-sm dark:border dark:border-[#242730] dark:bg-[#101216] dark:text-[#d1d6e0]">
               <p><span className="font-medium">Name:</span> {createdCredentials.name}</p>
               <p><span className="font-medium">Email:</span> {createdCredentials.email}</p>
-              <p className="break-all"><span className="font-medium">Initial password:</span> <code>{createdCredentials.password}</code></p>
+              <p className="break-all"><span className="font-medium">Initial password:</span> <code className="dark:text-emerald-400">{createdCredentials.password}</code></p>
             </div>
             <div className="flex justify-end">
               <Button onClick={closeUserModal}>Done</Button>
@@ -731,10 +731,10 @@ function UsersPage() {
             </p>
             <div className="max-h-80 space-y-3 overflow-auto">
               {bulkCredentials.map((credential) => (
-                <div className="rounded-lg bg-slate-50 p-3 text-sm" key={credential.id}>
-                  <p className="font-medium text-slate-900">{credential.name}</p>
-                  <p className="text-slate-600">{credential.email}</p>
-                  <p className="break-all text-slate-700">Password: <code>{credential.defaultPassword}</code></p>
+                <div className="rounded-lg bg-slate-50 p-3 text-sm dark:border dark:border-[#242730] dark:bg-[#101216]" key={credential.id}>
+                  <p className="font-medium text-slate-900 dark:text-[#f1f3f6]">{credential.name}</p>
+                  <p className="text-slate-600 dark:text-[#b5bcc9]">{credential.email}</p>
+                  <p className="break-all text-slate-700 dark:text-[#d1d6e0]">Password: <code className="dark:text-emerald-400">{credential.defaultPassword}</code></p>
                 </div>
               ))}
             </div>
@@ -744,10 +744,10 @@ function UsersPage() {
           </div>
         ) : (
           <form className="space-y-4" onSubmit={handleCsvUpload}>
-            <div className="rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
-              <p className="font-semibold text-slate-800">CSV format</p>
+            <div className="rounded-lg bg-slate-50 p-4 text-sm text-slate-600 dark:border dark:border-[#242730] dark:bg-[#101216] dark:text-[#b5bcc9]">
+              <p className="font-semibold text-slate-800 dark:text-[#f1f3f6]">CSV format</p>
               <p className="mt-1">Use this exact header row:</p>
-              <code className="mt-2 block overflow-x-auto whitespace-nowrap text-xs">
+              <code className="mt-2 block overflow-x-auto whitespace-nowrap text-xs dark:bg-[#181b22] dark:text-emerald-300 dark:p-2 dark:rounded">
                 name,email,departmentCode,className,semester,section,academicYear,rollNo
               </code>
               <p className="mt-2">
