@@ -17,7 +17,6 @@ const eventTypes = [
   'seminar',
   'function',
   'competition',
-  'placement',
   'deadline',
 ]
 const eventColors = {
@@ -27,7 +26,6 @@ const eventColors = {
   seminar: 'border-violet-500 bg-violet-50 text-violet-800 dark:border-violet-500/35 dark:bg-violet-500/15 dark:text-violet-300',
   function: 'border-pink-500 bg-pink-50 text-pink-800 dark:border-pink-500/35 dark:bg-pink-500/15 dark:text-pink-300',
   competition: 'border-amber-500 bg-amber-50 text-amber-800 dark:border-amber-500/35 dark:bg-amber-500/15 dark:text-amber-300',
-  placement: 'border-indigo-500 bg-indigo-50 text-indigo-800 dark:border-indigo-500/35 dark:bg-indigo-500/15 dark:text-indigo-300',
   deadline: 'border-orange-500 bg-orange-50 text-orange-800 dark:border-orange-500/35 dark:bg-orange-500/15 dark:text-orange-300',
 }
 const eventAccents = {
@@ -37,7 +35,6 @@ const eventAccents = {
   seminar: 'bg-violet-500',
   function: 'bg-pink-500',
   competition: 'bg-amber-500',
-  placement: 'bg-indigo-500',
   deadline: 'bg-orange-500',
 }
 const visibilityOptions = [
@@ -112,7 +109,6 @@ function eventIncludesDate(event, key) {
 function EventsPage() {
   const { user } = useAuth()
   const canManage = user.role === 'superadmin'
-  const isClassAdvisor = false
   const [month, setMonth] = useState(initialMonth)
   const [view, setView] = useState('calendar')
   const [typeFilter, setTypeFilter] = useState('')
@@ -124,15 +120,7 @@ function EventsPage() {
   const [loadError, setLoadError] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState(null)
-  const [form, setForm] = useState({
-    ...blankForm,
-    visibility: isClassAdvisor
-      ? 'class'
-      : user.role === 'superadmin'
-        ? 'university'
-        : 'department',
-    department: user.department || '',
-  })
+  const [form, setForm] = useState(blankForm)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState('')
 
@@ -187,30 +175,11 @@ function EventsPage() {
     if (!canManage) return undefined
 
     let active = true
-    const requests = [api.get('/departments'), api.get('/classes')]
-    if (user.role === 'teacher') requests.push(api.get('/subjects'))
-
-    Promise.all(requests)
-      .then(([departmentResponse, classResponse, subjectResponse]) => {
+    Promise.all([api.get('/departments'), api.get('/classes')])
+      .then(([departmentResponse, classResponse]) => {
         if (!active) return
         setDepartments(departmentResponse.data.departments)
-        const allClasses = classResponse.data.classes
-        if (isClassAdvisor) {
-          setClasses(
-            allClasses.filter((item) => item.advisor?._id === user.id),
-          )
-        } else if (user.role === 'teacher') {
-          const subjectClassIds = new Set(
-            subjectResponse.data.subjects.map((subject) =>
-              String(subject.class?._id || subject.class),
-            ),
-          )
-          setClasses(
-            allClasses.filter((item) => subjectClassIds.has(String(item._id))),
-          )
-        } else {
-          setClasses(allClasses)
-        }
+        setClasses(classResponse.data.classes)
       })
       .catch((error) => {
         if (active) toast.error(messageFrom(error, 'Unable to load event scopes.'))
@@ -219,7 +188,7 @@ function EventsPage() {
     return () => {
       active = false
     }
-  }, [canManage, isClassAdvisor, user.id, user.role])
+  }, [canManage])
 
   const calendarDays = useMemo(() => getCalendarDays(month), [month])
   const eventsByDay = useMemo(() => {
@@ -250,12 +219,6 @@ function EventsPage() {
     setForm({
       ...blankForm,
       date: date || localDateKey(new Date()),
-      visibility: isClassAdvisor
-        ? 'class'
-        : user.role === 'superadmin'
-          ? 'university'
-          : 'department',
-      department: user.department || '',
     })
     setModalOpen(true)
   }
@@ -280,7 +243,7 @@ function EventsPage() {
       ...current,
       [event.target.name]: event.target.value,
       ...(event.target.name === 'visibility'
-        ? { department: user.role === 'teacher' ? user.department || '' : '', class: '' }
+        ? { department: '', class: '' }
         : {}),
     }))
   }
@@ -340,11 +303,6 @@ function EventsPage() {
       ? `${event.class.name} · Semester ${event.class.semester}`
       : 'Class'
   }
-
-  const canEditEvent = (event) =>
-    user.role === 'superadmin' ||
-    (user.role === 'teacher' &&
-      event.createdBy?._id === user.id)
 
   const activeTypeCount = new Set(events.map((event) => event.type)).size
 
@@ -646,7 +604,7 @@ function EventsPage() {
             ) : (
               selectedEvents.map((event) => (
                 <EventCard
-                  canEdit={canEditEvent(event)}
+                  canEdit={canManage}
                   deleting={deletingId === event._id}
                   event={event}
                   key={event._id}
@@ -667,7 +625,7 @@ function EventsPage() {
         <section className="space-y-3">
           {visibleListEvents.map((event) => (
             <EventCard
-              canEdit={canEditEvent(event)}
+              canEdit={canManage}
               deleting={deletingId === event._id}
               event={event}
               key={event._id}
@@ -729,15 +687,7 @@ function EventsPage() {
                 label="Visibility"
                 name="visibility"
                 onChange={updateForm}
-                options={
-                  isClassAdvisor
-                    ? [{ value: 'class', label: 'My class' }]
-                    : user.role === 'superadmin'
-                      ? visibilityOptions
-                      : visibilityOptions.filter(
-                          (option) => option.value !== 'university',
-                        )
-                }
+                options={visibilityOptions}
                 value={form.visibility}
               />
               <Input
@@ -773,7 +723,6 @@ function EventsPage() {
                   ]}
                   required
                   value={form.department}
-                  disabled={user.role === 'teacher'}
                 />
               )}
               {form.visibility === 'class' && (

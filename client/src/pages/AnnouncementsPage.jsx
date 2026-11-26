@@ -10,7 +10,12 @@ import Input from '../components/ui/Input'
 import Loader from '../components/ui/Loader'
 import Select from '../components/ui/Select'
 
-const emptyForm = { title: '', message: '', visibility: '', department: '', class: '' }
+const emptyForm = { title: '', message: '', visibility: 'university', department: '', class: '' }
+const visibilityOptions = [
+  { value: 'university', label: 'University' },
+  { value: 'department', label: 'Department' },
+  { value: 'class', label: 'Class' },
+]
 
 function messageFrom(error, fallback) {
   return error.response?.data?.message || fallback
@@ -19,19 +24,10 @@ function messageFrom(error, fallback) {
 function AnnouncementsPage() {
   const { user } = useAuth()
   const canPost = user.role === 'superadmin'
-  const isClassAdvisor = false
   const [announcements, setAnnouncements] = useState([])
   const [departments, setDepartments] = useState([])
   const [classes, setClasses] = useState([])
-  const [form, setForm] = useState({
-    ...emptyForm,
-    visibility: isClassAdvisor
-      ? 'class'
-      : user.role === 'superadmin'
-        ? 'university'
-        : 'department',
-    department: user.department || '',
-  })
+  const [form, setForm] = useState(emptyForm)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -51,14 +47,7 @@ function AnnouncementsPage() {
         setAnnouncements(announcementResponse.data.announcements)
         if (canPost) {
           setDepartments(departmentResponse.data.departments)
-          const availableClasses = classResponse.data.classes
-          setClasses(
-            isClassAdvisor
-              ? availableClasses.filter(
-                  (item) => item.advisor?._id === user.id,
-                )
-              : availableClasses,
-          )
+          setClasses(classResponse.data.classes)
         }
       })
       .catch((error) => {
@@ -75,22 +64,7 @@ function AnnouncementsPage() {
     return () => {
       active = false
     }
-  }, [canPost, isClassAdvisor, user.id])
-
-  const visibilityOptions = useMemo(() => {
-    if (isClassAdvisor) return [{ value: 'class', label: 'My class' }]
-    if (user.role === 'superadmin') {
-      return [
-        { value: 'university', label: 'University' },
-        { value: 'department', label: 'Department' },
-        { value: 'class', label: 'Class' },
-      ]
-    }
-    return [
-      { value: 'department', label: 'Department' },
-      { value: 'class', label: 'Class' },
-    ]
-  }, [isClassAdvisor, user.role])
+  }, [canPost])
 
   const sortedAnnouncements = useMemo(
     () =>
@@ -107,10 +81,7 @@ function AnnouncementsPage() {
       ...current,
       [event.target.name]: event.target.value,
       ...(event.target.name === 'visibility'
-        ? {
-            department: user.role === 'teacher' ? user.department || '' : '',
-            class: '',
-          }
+        ? { department: '', class: '' }
         : {}),
     }))
   }
@@ -130,15 +101,7 @@ function AnnouncementsPage() {
     try {
       const response = await api.post('/announcements', payload)
       setAnnouncements((current) => [response.data.announcement, ...current])
-      setForm({
-        ...emptyForm,
-        visibility: isClassAdvisor
-          ? 'class'
-          : user.role === 'superadmin'
-            ? 'university'
-            : 'department',
-        department: user.department || '',
-      })
+      setForm(emptyForm)
       toast.success('Announcement posted.')
     } catch (error) {
       toast.error(messageFrom(error, 'Unable to post announcement.'))
@@ -225,7 +188,6 @@ function AnnouncementsPage() {
                   required
                   value={form.department}
                   onChange={updateForm}
-                  disabled={user.role === 'teacher'}
                 />
               )}
               {form.visibility === 'class' && (

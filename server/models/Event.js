@@ -23,7 +23,6 @@ const eventSchema = new mongoose.Schema(
         'seminar',
         'function',
         'competition',
-        'placement',
         'deadline',
       ],
       required: true,

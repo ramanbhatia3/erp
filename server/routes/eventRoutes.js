@@ -17,7 +17,6 @@ const eventTypes = [
   'seminar',
   'function',
   'competition',
-  'placement',
   'deadline',
 ]
 const visibilityTypes = ['university', 'department', 'class']

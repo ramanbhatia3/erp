@@ -65,12 +65,7 @@ async function resolveEventScope(user, payload) {
     departmentId = targetClass.department
   }
 
-  const permission = await validateEventScope(
-    user,
-    payload.visibility,
-    departmentId,
-    classId,
-  )
+  const permission = validateEventScope(user)
   if (permission.error) {
     return { response: { status: 403, message: permission.error } }
   }

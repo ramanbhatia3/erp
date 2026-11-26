@@ -14,7 +14,6 @@ const marksRoutes = require('./routes/marksRoutes')
 const announcementRoutes = require('./routes/announcementRoutes')
 const eventRoutes = require('./routes/eventRoutes')
 const timetableRoutes = require('./routes/timetableRoutes')
-const roomRoutes = require('./routes/roomRoutes')
 const facultyRoutes = require('./routes/facultyRoutes')
 const connectDB = require('./config/db')
 const User = require('./models/User')
@@ -39,12 +38,14 @@ app.use('/api/attendance', attendanceRoutes)
 app.use('/api/marks', marksRoutes)
 app.use('/api/announcements', announcementRoutes)
 app.use('/api/events', eventRoutes)
-app.use('/api/rooms', roomRoutes)
 app.use('/api/faculty', facultyRoutes)
 app.use('/api/timetable', timetableRoutes)
 
 app.use((error, req, res, next) => {
   console.error(`Request failed: ${req.method} ${req.path}`, error)
+  if (res.headersSent) {
+    return next(error)
+  }
   res.status(500).json({ message: 'An unexpected server error occurred.' })
 })
 

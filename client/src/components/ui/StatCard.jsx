@@ -8,8 +8,6 @@ const metricIcons = {
   attendance: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2ZM8 15l2 2 5-5',
   results: 'M8 21h8M12 17v4M7 4h10v8a5 5 0 0 1-10 0V4ZM7 7H4v2a4 4 0 0 0 4 4M17 7h3v2a4 4 0 0 1-4 4',
   students: 'M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M20 8v6M23 11h-6',
-  placement: 'M3 7h18v13H3zM8 7V4h8v3M3 12h18M10 12v2h4v-2',
-  applications: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13h8M8 17h8',
 }
 
 function getMetricIcon(label = '') {
@@ -20,8 +18,6 @@ function getMetricIcon(label = '') {
   if (key.includes('attendance')) return metricIcons.attendance
   if (key.includes('result')) return metricIcons.results
   if (key.includes('student') || key.includes('user')) return metricIcons.users
-  if (key.includes('drive')) return metricIcons.placement
-  if (key.includes('application')) return metricIcons.applications
   return metricIcons.results
 }
 
