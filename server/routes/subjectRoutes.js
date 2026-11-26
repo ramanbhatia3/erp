@@ -33,7 +33,11 @@ const teacherValidation = body('teacher')
   .isMongoId()
   .withMessage('Select a valid teacher.')
 const optionalSubjectMeta = [
-  body('type').optional().isIn(['Theory', 'Practical', 'Lab', 'Elective']).withMessage('Select a valid subject type.'),
+  body('type').optional().isIn(['Theory', 'Practical', 'Lab', 'Elective', 'Project', 'Training', 'Mandatory']).withMessage('Select a valid subject type.'),
+  body('credits').optional().isFloat({ min: 0, max: 30 }).withMessage('Credits must be between 0 and 30.').toFloat(),
+  body('internalMax').optional().isFloat({ min: 0 }).withMessage('Internal max marks must be non-negative.').toFloat(),
+  body('externalMax').optional().isFloat({ min: 0 }).withMessage('External max marks must be non-negative.').toFloat(),
+  body('totalMarks').optional().isFloat({ min: 0 }).withMessage('Total marks must be non-negative.').toFloat(),
   body('weeklyPeriods').optional().isInt({ min: 1, max: 12 }).withMessage('Weekly periods must be between 1 and 12.').toInt(),
   body('roomType').optional().trim().notEmpty().withMessage('Room type is required when provided.'),
   body('isLab').optional().isBoolean().withMessage('Lab status must be true or false.'),

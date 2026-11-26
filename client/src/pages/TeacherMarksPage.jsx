@@ -4,12 +4,30 @@ import api from '../services/api'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import EmptyState from '../components/ui/EmptyState'
+import Input from '../components/ui/Input'
 import Loader from '../components/ui/Loader'
 import Select from '../components/ui/Select'
 import { getSemesterTerm } from '../utils/classDisplay'
 
 const EMPTY_MARKS = []
 const PROGRAM_CODES = new Set(['CSE', 'IT', 'ME', 'CE'])
+
+const DEFAULT_THEORY_COMPONENTS = [
+  { name: 'MST 1', maxMarks: 24, group: 'mst' },
+  { name: 'MST 2', maxMarks: 24, group: 'mst' },
+  { name: 'Assignment 1', maxMarks: 10, group: 'assignment' },
+  { name: 'Assignment 2', maxMarks: 10, group: 'assignment' },
+  { name: 'Assignment 3', maxMarks: 10, group: 'assignment' },
+  { name: 'Attendance', maxMarks: 6, group: 'attendance' },
+  { name: 'Final Exam', maxMarks: 60, group: 'final' },
+]
+
+const DEFAULT_LAB_COMPONENTS = [
+  { name: 'Viva 1', maxMarks: 10, group: 'lab_internal' },
+  { name: 'Viva 2', maxMarks: 10, group: 'lab_internal' },
+  { name: 'Lab Record', maxMarks: 10, group: 'lab_internal' },
+  { name: 'Final Exam', maxMarks: 20, group: 'lab_external' },
+]
 
 function getId(value) {
   return String(value?._id || value || '')
@@ -34,6 +52,8 @@ function TeacherMarksPage({ isAdmin = false }) {
   const [initialError, setInitialError] = useState('')
   const [classId, setClassId] = useState('')
   const [subjectId, setSubjectId] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [batchFilter, setBatchFilter] = useState('')
   const [rosterResult, setRosterResult] = useState({
     classId: '',
     students: [],
@@ -58,12 +78,14 @@ function TeacherMarksPage({ isAdmin = false }) {
         const assignedClassIds = new Set(
           loadedSubjects.map((subject) => getId(subject.class)),
         )
-        const assignedClasses = classResponse.data.classes.filter((item) =>
-          assignedClassIds.has(getId(item)),
-        )
+        const assignedClasses = isAdmin
+          ? classResponse.data.classes
+          : classResponse.data.classes.filter((item) =>
+              assignedClassIds.has(getId(item)),
+            )
         setClasses(assignedClasses)
         setSubjects(loadedSubjects)
-        setComponents(settingsResponse.data.settings.marksComponents)
+        setComponents(settingsResponse.data.settings?.marksComponents || DEFAULT_THEORY_COMPONENTS)
         if (assignedClasses.length) setClassId(getId(assignedClasses[0]))
         setInitialError('')
       })
@@ -81,7 +103,7 @@ function TeacherMarksPage({ isAdmin = false }) {
     return () => {
       active = false
     }
-  }, [])
+  }, [isAdmin])
 
   const classSubjects = useMemo(
     () => subjects.filter((subject) => getId(subject.class) === classId),
@@ -92,7 +114,17 @@ function TeacherMarksPage({ isAdmin = false }) {
   )
     ? subjectId
     : getId(classSubjects[0])
+  const selectedSubject = classSubjects.find(
+    (subject) => getId(subject) === selectedSubjectId,
+  )
   const selectedClass = classes.find((item) => getId(item) === classId)
+
+  const isLab = Boolean(selectedSubject?.isLab || selectedSubject?.type === 'Lab')
+
+  const effectiveComponents = useMemo(() => {
+    if (components && components.length > 0) return components
+    return isLab ? DEFAULT_LAB_COMPONENTS : DEFAULT_THEORY_COMPONENTS
+  }, [components, isLab])
 
   useEffect(() => {
     if (!classId || (isAdmin && !selectedClass)) return undefined
@@ -105,7 +137,7 @@ function TeacherMarksPage({ isAdmin = false }) {
           },
         }).then((response) => response.data.users.filter((student) => {
           const studentClassName =
-            typeof student.class === 'object' ? student.class.name : ''
+            typeof student.class === 'object' ? student.class?.name : ''
           const studentDepartmentCode = student.department?.code
           const studentProgram =
             getProgramCode(student.program) ||
@@ -123,6 +155,7 @@ function TeacherMarksPage({ isAdmin = false }) {
         }))
       : api.get(`/attendance/class/${classId}/students`)
         .then((response) => response.data.students)
+
     rosterRequest
       .then((response) => {
         if (!active) return
@@ -154,6 +187,13 @@ function TeacherMarksPage({ isAdmin = false }) {
       .then((response) => {
         if (!active) return
         const loadedMarks = response.data.marks
+        if (response.data.settings?.marksComponents && response.data.settings.marksComponents.length > 0) {
+          setComponents(response.data.settings.marksComponents)
+        } else if (isLab) {
+          setComponents(DEFAULT_LAB_COMPONENTS)
+        } else {
+          setComponents(DEFAULT_THEORY_COMPONENTS)
+        }
         setMarksResult({ key: marksRequestKey, marks: loadedMarks, error: '' })
         setValues(
           Object.fromEntries(
@@ -180,9 +220,12 @@ function TeacherMarksPage({ isAdmin = false }) {
     return () => {
       active = false
     }
-  }, [classId, selectedSubjectId, marksRequestKey])
+  }, [classId, selectedSubjectId, marksRequestKey, isLab])
 
-  const students = rosterResult.classId === classId ? rosterResult.students : []
+  const students = useMemo(
+    () => (rosterResult.classId === classId ? rosterResult.students : []),
+    [rosterResult.classId, rosterResult.students, classId],
+  )
   const rosterError = rosterResult.classId === classId ? rosterResult.error : ''
   const rosterLoading = Boolean(classId && rosterResult.classId !== classId)
   const marks = marksResult.key === marksRequestKey
@@ -197,6 +240,29 @@ function TeacherMarksPage({ isAdmin = false }) {
     [marks],
   )
 
+  const availableBatches = useMemo(() => {
+    const years = new Set(
+      students.map((s) => s.startingYear).filter(Boolean),
+    )
+    if (years.size === 0) return ['2023', '2024', '2025', '2026']
+    return [...years].sort((a, b) => Number(b) - Number(a))
+  }, [students])
+
+  const filteredStudents = useMemo(() => {
+    return students.filter((student) => {
+      if (batchFilter && String(student.startingYear) !== String(batchFilter)) {
+        return false
+      }
+      if (!searchQuery.trim()) return true
+      const q = searchQuery.toLowerCase().trim()
+      return (
+        (student.name || '').toLowerCase().includes(q) ||
+        (student.rollNo || '').toLowerCase().includes(q) ||
+        (student.email || '').toLowerCase().includes(q)
+      )
+    })
+  }, [students, batchFilter, searchQuery])
+
   function updateValue(studentId, componentName, value) {
     setValues((current) => ({
       ...current,
@@ -209,7 +275,8 @@ function TeacherMarksPage({ isAdmin = false }) {
 
   function buildPayload(studentId) {
     const studentValues = values[studentId] || {}
-    for (const component of components) {
+    const activeComponents = effectiveComponents
+    for (const component of activeComponents) {
       const value = studentValues[component.name]
       if (value === undefined || value === '') continue
 
@@ -228,15 +295,16 @@ function TeacherMarksPage({ isAdmin = false }) {
     return {
       student: studentId,
       subject: selectedSubjectId,
-      components: components
+      components: activeComponents
         .filter((component) => {
           const value = studentValues[component.name]
           return value !== undefined && value !== ''
         })
         .map((component) => ({
           name: component.name,
-          marksObtained: Number(studentValues[component.name]),
+          marksObtained: Math.round(Number(studentValues[component.name])),
           maxMarks: component.maxMarks,
+          ...(component.group ? { group: component.group } : {}),
         })),
     }
   }
@@ -279,7 +347,7 @@ function TeacherMarksPage({ isAdmin = false }) {
     let savedCount = 0
     const failures = []
 
-    for (const student of students) {
+    for (const student of filteredStudents) {
       try {
         if (await saveStudent(getId(student))) savedCount += 1
       } catch (error) {
@@ -313,18 +381,14 @@ function TeacherMarksPage({ isAdmin = false }) {
     return <EmptyState title="Marks unavailable" message={initialError} />
   }
 
-  if (classes.length === 0 || components.length === 0) {
+  if (classes.length === 0) {
     return (
       <EmptyState
-        title={classes.length === 0
-          ? isAdmin ? 'No subjects available' : 'No assigned subjects'
-          : 'No marks components configured'}
+        title={isAdmin ? 'No classes available' : 'No assigned subjects'}
         message={
-          classes.length === 0
-            ? isAdmin
-              ? 'Add a class and at least one subject before entering marks.'
-              : 'Marks entry is available for classes where you teach an assigned subject.'
-            : 'Ask a superadmin to configure marks components in Settings.'
+          isAdmin
+            ? 'Add a class and at least one subject before entering marks.'
+            : 'Marks entry is available for classes where you teach an assigned subject.'
         }
       />
     )
@@ -336,43 +400,105 @@ function TeacherMarksPage({ isAdmin = false }) {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-[#f1f3f6]">Enter Marks</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-[#8a919e]">
-            Enter any available marks and leave unmarked components blank. Partial results stay in progress; category averages are rounded up.
+            {isAdmin
+              ? 'Admin marks management: select class, subject, and batch to enter or update whole number marks.'
+              : 'Enter whole numbers for any available components. Leave unmarked components blank.'}
           </p>
         </div>
-        <Button
-          onClick={saveAll}
-          disabled={
-            savingAll || students.length === 0 || rosterLoading || marksLoading
-          }
-        >
-          {savingAll ? 'Saving all marks...' : 'Save all students'}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            onClick={saveAll}
+            disabled={
+              savingAll || filteredStudents.length === 0 || rosterLoading || marksLoading
+            }
+          >
+            {savingAll ? 'Saving all marks...' : `Save all (${filteredStudents.length})`}
+          </Button>
+        </div>
       </div>
 
-      <Card className="grid gap-4 sm:grid-cols-2">
-        <Select
-          id="marks-class"
-          label="Class"
-          value={classId}
-          onChange={(event) => {
-            setClassId(event.target.value)
-            setSubjectId('')
-          }}
-          options={classes.map((item) => ({
-            value: getId(item),
-            label: `${item.name} · Semester ${item.semester} (${getSemesterTerm(item.semester)})`,
-          }))}
-        />
-        <Select
-          id="marks-subject"
-          label="Subject"
-          value={selectedSubjectId}
-          onChange={(event) => setSubjectId(event.target.value)}
-          options={classSubjects.map((item) => ({
-            value: getId(item),
-            label: `${item.name} (${item.code})`,
-          }))}
-        />
+      <Card className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Select
+            id="marks-class"
+            label="Class"
+            value={classId}
+            onChange={(event) => {
+              setClassId(event.target.value)
+              setSubjectId('')
+            }}
+            options={classes.map((item) => ({
+              value: getId(item),
+              label: `${item.name} · Semester ${item.semester} (${getSemesterTerm(item.semester)})`,
+            }))}
+          />
+          <Select
+            id="marks-subject"
+            label="Subject"
+            value={selectedSubjectId}
+            onChange={(event) => setSubjectId(event.target.value)}
+            options={classSubjects.map((item) => ({
+              value: getId(item),
+              label: `${item.name} (${item.code})`,
+            }))}
+          />
+        </div>
+
+        {/* Search & Batch Filters */}
+        <div className="grid gap-4 pt-1 sm:grid-cols-3">
+          <div className="sm:col-span-2">
+            <Input
+              id="search-student"
+              label="Search student"
+              placeholder="Search by student name, roll number, or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div>
+            <Select
+              id="filter-batch"
+              label="Filter by Batch (Starting Year)"
+              value={batchFilter}
+              onChange={(e) => setBatchFilter(e.target.value)}
+              options={[
+                { value: '', label: 'All batches' },
+                ...availableBatches.map((year) => ({
+                  value: String(year),
+                  label: `Batch ${year} (Matriculated ${year})`,
+                })),
+              ]}
+            />
+          </div>
+        </div>
+
+        {selectedSubject && (
+          <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-[#242730] dark:text-[#8a919e]">
+            <span>
+              Type: <strong className="text-slate-800 dark:text-[#f1f3f6]">{selectedSubject.isLab ? 'Lab / Practical' : (selectedSubject.type || 'Theory')}</strong>
+            </span>
+            <span>·</span>
+            <span>
+              Credits: <strong className="text-slate-800 dark:text-[#f1f3f6]">{selectedSubject.credits ?? (selectedSubject.isLab ? 1 : 3)}</strong>
+            </span>
+            <span>·</span>
+            <span>
+              Evaluation Scheme: <strong className="text-slate-800 dark:text-[#f1f3f6]">
+                {selectedSubject.isLab
+                  ? '50 Marks: 30 Internal (Viva 1 [10], Viva 2 [10], Lab Record [10]) + 20 External'
+                  : '100 Marks: 40 Internal (MST 1 & 2 [24], Assn 1-3 [10], Att [6]) + 60 External'}
+              </strong>
+            </span>
+            {batchFilter && (
+              <>
+                <span>·</span>
+                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                  Showing Batch {batchFilter} ({filteredStudents.length} students)
+                </span>
+              </>
+            )}
+          </div>
+        )}
       </Card>
 
       <Card>
@@ -382,12 +508,16 @@ function TeacherMarksPage({ isAdmin = false }) {
           <EmptyState title="Unable to load students" message={rosterError} />
         ) : marksError ? (
           <EmptyState title="Unable to load marks" message={marksError} />
-        ) : students.length === 0 ? (
+        ) : filteredStudents.length === 0 ? (
           <EmptyState
-            title="No eligible students"
-            message={isAdmin
-              ? 'There are no students from this program available for the selected class.'
-              : 'There are no active students currently assigned to this class.'}
+            title={searchQuery || batchFilter ? 'No matching students' : 'No eligible students'}
+            message={
+              searchQuery || batchFilter
+                ? 'No students matched your search query or batch filter.'
+                : isAdmin
+                  ? 'There are no students from this program available for the selected class.'
+                  : 'There are no active students currently assigned to this class.'
+            }
           />
         ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-[#242730]">
@@ -396,50 +526,57 @@ function TeacherMarksPage({ isAdmin = false }) {
                 <tr>
                   <th className="px-4 py-3 font-semibold">Student</th>
                   <th className="px-4 py-3 font-semibold">Roll number</th>
-                  {isAdmin && <th className="px-4 py-3 font-semibold">Section</th>}
-                  {components.map((component) => (
-                    <th className="min-w-36 px-4 py-3 font-semibold" key={component.name}>
+                  {isAdmin && <th className="px-4 py-3 font-semibold">Batch</th>}
+                  {effectiveComponents.map((component) => (
+                    <th className="min-w-32 px-4 py-3 font-semibold" key={component.name}>
                       {component.name} <span className="normal-case opacity-75 dark:text-[#8a919e]">/ {component.maxMarks}</span>
                     </th>
                   ))}
+                  <th className="px-4 py-3 font-semibold">Total</th>
                   <th className="px-4 py-3 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white text-slate-700 dark:divide-[#1e2128] dark:bg-[#15171c] dark:text-[#d1d6e0]">
-                {students.map((student) => {
+                {filteredStudents.map((student) => {
                   const studentId = getId(student)
                   const existingMark = markByStudent.get(studentId)
+                  const studentValues = values[studentId] || {}
+                  const enteredSum = effectiveComponents.reduce((sum, comp) => {
+                    const val = Number(studentValues[comp.name])
+                    return Number.isFinite(val) ? sum + val : sum
+                  }, 0)
+                  const maxPossible = effectiveComponents.reduce((sum, comp) => sum + comp.maxMarks, 0)
+                  const hasAnyValue = effectiveComponents.some((comp) => studentValues[comp.name] !== undefined && studentValues[comp.name] !== '')
+
                   return (
                     <tr key={studentId}>
                       <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-900 dark:text-[#f1f3f6]">
                         {student.name}
-                        {isAdmin && (
-                          <p className="mt-1 text-xs font-normal text-slate-500 dark:text-[#8a919e]">
-                            {student.academicStatus === 'alumni'
-                              ? 'Alumni · Semester 8 completed'
-                              : `Semester ${student.currentSemester || '—'} · ${
-                                  student.isActive ? 'Account active' : 'Account inactive'
-                                }`}
-                          </p>
-                        )}
+                        <p className="mt-0.5 text-xs font-normal text-slate-500 dark:text-[#8a919e]">
+                          {student.email || ''}
+                          {isAdmin && student.currentSemester ? ` · Sem ${student.currentSemester}` : ''}
+                        </p>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-slate-600 dark:text-[#b5bcc9]">
                         {student.rollNo || '—'}
                       </td>
                       {isAdmin && (
                         <td className="whitespace-nowrap px-4 py-3 text-slate-600 dark:text-[#b5bcc9]">
-                          {student.section || '—'}
+                          <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-[#20232a] dark:text-[#d1d6e0]">
+                            {student.startingYear ? `Batch ${student.startingYear}` : '—'}
+                          </span>
                         </td>
                       )}
-                      {components.map((component) => (
+                      {effectiveComponents.map((component) => (
                         <td className="px-4 py-3" key={component.name}>
                           <input
                             aria-label={`${component.name} marks for ${student.name}`}
-                            className="w-28 rounded-lg border border-slate-300 px-2.5 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6] dark:focus:ring-blue-500/20"
+                            className="w-24 rounded-lg border border-slate-300 px-2.5 py-1.5 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 dark:border-[#2b2e36] dark:bg-[#101216] dark:text-[#f1f3f6] dark:focus:ring-blue-500/20"
                             type="number"
                             min="0"
                             max={component.maxMarks}
-                            step="0.01"
+                            step="1"
+                            placeholder="0"
                             value={values[studentId]?.[component.name] ?? ''}
                             onChange={(event) =>
                               updateValue(studentId, component.name, event.target.value)
@@ -447,6 +584,15 @@ function TeacherMarksPage({ isAdmin = false }) {
                           />
                         </td>
                       ))}
+                      <td className="whitespace-nowrap px-4 py-3 font-semibold text-slate-900 dark:text-[#f1f3f6]">
+                        {hasAnyValue ? (
+                          <span>
+                            {Math.round(enteredSum)} <span className="text-xs font-normal text-slate-500 dark:text-[#8a919e]">/ {maxPossible}</span>
+                          </span>
+                        ) : (
+                          <span className="text-xs font-normal text-slate-400">—</span>
+                        )}
+                      </td>
                       <td className="whitespace-nowrap px-4 py-3">
                         <Button
                           className="px-3 py-1.5"

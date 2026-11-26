@@ -36,8 +36,29 @@ const subjectSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['Theory', 'Practical', 'Lab', 'Elective'],
+      enum: ['Theory', 'Practical', 'Lab', 'Elective', 'Project', 'Training', 'Mandatory'],
       default: 'Theory',
+    },
+    credits: {
+      type: Number,
+      min: 0,
+      max: 30,
+      default: 3,
+    },
+    internalMax: {
+      type: Number,
+      min: 0,
+      default: 40,
+    },
+    externalMax: {
+      type: Number,
+      min: 0,
+      default: 60,
+    },
+    totalMarks: {
+      type: Number,
+      min: 0,
+      default: 100,
     },
     weeklyPeriods: {
       type: Number,

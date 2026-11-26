@@ -21,6 +21,9 @@ const blankForm = {
   department: '',
   class: '',
   teacher: '',
+  type: 'Theory',
+  credits: 3,
+  isLab: false,
 }
 
 function messageFrom(error, fallback) {
@@ -198,7 +201,14 @@ function SubjectsPage() {
 
   function openCreate() {
     setEditingSubject(null)
-    setForm({ ...blankForm, department: departmentId, class: classId })
+    setForm({
+      ...blankForm,
+      department: departmentId,
+      class: classId,
+      type: 'Theory',
+      credits: 3,
+      isLab: false,
+    })
     setModalOpen(true)
   }
 
@@ -210,6 +220,9 @@ function SubjectsPage() {
       department: item.department?._id || item.department,
       class: item.class?._id || item.class,
       teacher: item.teacher?._id || item.teacher,
+      type: item.type || (item.isLab ? 'Lab' : 'Theory'),
+      credits: item.credits !== undefined && item.credits !== null ? item.credits : (item.isLab ? 1 : 3),
+      isLab: Boolean(item.isLab || item.type === 'Lab'),
     })
     setModalOpen(true)
   }
@@ -282,6 +295,24 @@ function SubjectsPage() {
       key: 'code',
       label: 'Code',
       render: (item) => <Badge color="blue">{item.code}</Badge>,
+    },
+    {
+      key: 'type',
+      label: 'Type',
+      render: (item) => (
+        <Badge color={item.isLab ? 'amber' : 'purple'}>
+          {item.type || (item.isLab ? 'Lab' : 'Theory')}
+        </Badge>
+      ),
+    },
+    {
+      key: 'credits',
+      label: 'Credits',
+      render: (item) => (
+        <span className="font-semibold text-slate-800 dark:text-[#f1f3f6]">
+          {item.credits !== undefined && item.credits !== null ? item.credits : '—'}
+        </span>
+      ),
     },
     {
       key: 'class',
@@ -418,6 +449,43 @@ function SubjectsPage() {
         <form className="space-y-4" onSubmit={handleSubmit}>
           <Input id="subject-name" label="Subject name" name="name" value={form.name} onChange={updateForm} required maxLength={100} placeholder="e.g. Mathematics" />
           <Input id="subject-code" label="Subject code" name="code" value={form.code} onChange={updateForm} required maxLength={20} placeholder="e.g. MATH101" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Select
+              id="subject-type"
+              label="Subject type"
+              name="type"
+              value={form.type || 'Theory'}
+              onChange={(e) => {
+                const val = e.target.value
+                const isLabVal = val === 'Lab'
+                setForm((prev) => ({
+                  ...prev,
+                  type: val,
+                  isLab: isLabVal,
+                  credits: isLabVal ? (prev.credits === 3 || prev.credits === 4 ? 1 : prev.credits) : (prev.credits === 1 ? 3 : prev.credits),
+                }))
+              }}
+              options={[
+                { value: 'Theory', label: 'Theory (100 Marks: 40 Int + 60 Ext)' },
+                { value: 'Lab', label: 'Lab / Practical (50 Marks: 30 Int + 20 Ext)' },
+                { value: 'Practical', label: 'Practical / Project' },
+                { value: 'Elective', label: 'Elective' },
+                { value: 'Project', label: 'Project / Training' },
+                { value: 'Mandatory', label: 'Mandatory (Non-credit)' },
+              ]}
+            />
+            <Input
+              id="subject-credits"
+              label="Credits"
+              name="credits"
+              type="number"
+              min="0"
+              max="30"
+              value={form.credits ?? 3}
+              onChange={updateForm}
+              required
+            />
+          </div>
           <Select
             id="subject-department"
             label="Department"

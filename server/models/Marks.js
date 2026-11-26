@@ -19,7 +19,7 @@ const marksComponentSchema = new mongoose.Schema(
     },
     group: {
       type: String,
-      enum: ['mst', 'assignment', 'attendance', 'final'],
+      trim: true,
     },
   },
   { _id: false },

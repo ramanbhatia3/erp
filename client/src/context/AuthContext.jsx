@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
-import api, { TOKEN_KEY } from '../services/api'
+import api, { setUnauthorizedHandler, TOKEN_KEY } from '../services/api'
 import AuthContext from './authContextValue'
 
 export function AuthProvider({ children }) {
@@ -8,6 +8,23 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(() =>
     Boolean(localStorage.getItem(TOKEN_KEY)),
   )
+  const userRef = useRef(user)
+
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
+
+  useEffect(() => {
+    return setUnauthorizedHandler(() => {
+      if (userRef.current) {
+        userRef.current = null
+        setUser(null)
+        toast.error('Your session has expired. Please log in again.', {
+          id: 'session-expired',
+        })
+      }
+    })
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -21,6 +38,7 @@ export function AuthProvider({ children }) {
       try {
         const response = await api.get('/auth/me')
         if (active) {
+          userRef.current = response.data.user
           setUser(response.data.user)
         }
       } catch (error) {
@@ -46,6 +64,7 @@ export function AuthProvider({ children }) {
   async function login(email, password) {
     const response = await api.post('/auth/login', { email, password })
     localStorage.setItem(TOKEN_KEY, response.data.token)
+    userRef.current = response.data.user
     setUser(response.data.user)
     return response.data.user
   }
@@ -55,18 +74,21 @@ export function AuthProvider({ children }) {
       currentPassword,
       newPassword,
     })
+    userRef.current = response.data.user
     setUser(response.data.user)
     return response.data.user
   }
 
   async function updateStudentProfile(studentProfile) {
     const response = await api.patch('/auth/profile', { studentProfile })
+    userRef.current = response.data.user
     setUser(response.data.user)
     return response.data.user
   }
 
   function logout() {
     localStorage.removeItem(TOKEN_KEY)
+    userRef.current = null
     setUser(null)
   }
 

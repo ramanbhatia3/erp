@@ -157,7 +157,6 @@ function DashboardLayout({ user, role, children }) {
   const isFeesHostelPage =
     role === 'superadmin' &&
     location.pathname === '/dashboard/superadmin/fees-hostel'
-  const isUsersPage = role === 'superadmin' && (location.pathname.endsWith('/users') || isTeachersPage || isStudentsPage)
   const isClassesPage = location.pathname.endsWith('/classes')
   const isSubjectsPage = location.pathname.endsWith('/subjects')
   const isAttendancePage =
@@ -207,8 +206,6 @@ function DashboardLayout({ user, role, children }) {
         ? 'Students'
         : isFeesHostelPage
           ? 'Fees & Hostel'
-        : isUsersPage
-          ? 'Teachers'
           : isClassesPage
             ? role === 'superadmin' ? 'Classes' : 'My Classes'
       : isSubjectsPage
@@ -507,7 +504,7 @@ function DashboardLayout({ user, role, children }) {
 
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
           <div className="mx-auto max-w-[82.5rem]">
-            {isDepartmentsPage || isTeachersPage || isStudentsPage || isFeesHostelPage || isAdminMarksPage || isUsersPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isStudentFeesPage || isStudentHostelPage || isSettingsPage || isAnnouncementsPage || isEventsPage || isTimetablePage ? (
+            {isDepartmentsPage || isTeachersPage || isStudentsPage || isFeesHostelPage || isAdminMarksPage || isClassesPage || isSubjectsPage || isAttendancePage || isTeacherMarksPage || isStudentAttendancePage || isStudentMarksPage || isStudentFeesPage || isStudentHostelPage || isSettingsPage || isAnnouncementsPage || isEventsPage || isTimetablePage ? (
               <motion.div
                 key={location.pathname}
                 className="page-content"

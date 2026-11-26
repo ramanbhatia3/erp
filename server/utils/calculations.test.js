@@ -122,3 +122,32 @@ test('keeps historical ungrouped marks on their original calculation', () => {
   assert.equal(result.maxTotal, 124)
   assert.deepEqual(result.displayComponents, result.components)
 })
+
+test('calculates lab marks out of 50 with 30 internal (viva 1, viva 2, lab record) and 20 external', () => {
+  const labSubject = { name: 'Engineering Physics Lab', code: 'BTAS103-23', isLab: true, type: 'Lab' }
+  const result = calculateMarks([
+    { name: 'Viva 1', marksObtained: 8, maxMarks: 10 },
+    { name: 'Viva 2', marksObtained: 9, maxMarks: 10 },
+    { name: 'Lab Record', marksObtained: 9, maxMarks: 10 },
+    { name: 'Final Exam', marksObtained: 16, maxMarks: 20 },
+  ], settings, { subject: labSubject })
+
+  assert.equal(result.total, 42)
+  assert.equal(result.maxTotal, 50)
+  assert.equal(result.percentage, 84)
+  assert.equal(result.result, 'pass')
+  assert.equal(result.displayComponents.length, 4)
+})
+
+test('rejects out of range marks for lab components', () => {
+  const labSubject = { name: 'Data Structures Lab', code: 'BTCS303-18', isLab: true }
+  assert.throws(
+    () => calculateMarks([
+      { name: 'Viva 1', marksObtained: 11, maxMarks: 10 },
+      { name: 'Viva 2', marksObtained: 9, maxMarks: 10 },
+      { name: 'Lab Record', marksObtained: 9, maxMarks: 10 },
+      { name: 'Final Exam', marksObtained: 16, maxMarks: 20 },
+    ], settings, { subject: labSubject }),
+    /between 0 and 10/,
+  )
+})

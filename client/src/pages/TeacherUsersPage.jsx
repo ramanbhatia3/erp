@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useLocation, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api from '../services/api'
 import Badge from '../components/ui/Badge'
@@ -31,7 +31,6 @@ function getErrorMessage(error, fallback) {
 
 function TeacherUsersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const location = useLocation()
   const isAddingFromClass = searchParams.get('add') === '1'
   const [users, setUsers] = useState([])
   const [departments, setDepartments] = useState([])

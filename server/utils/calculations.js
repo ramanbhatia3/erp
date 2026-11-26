@@ -1,6 +1,8 @@
 const Settings = require('../models/Settings')
 const {
   defaultMarksComponents,
+  defaultLabMarksComponents,
+  isLabSubject,
   marksFormulaVersion,
   marksGroups,
 } = require('./markingScheme')
@@ -82,6 +84,58 @@ function calculateGroupedMarks(components, passingPercentage, { allowPartial = f
     (sum, component) => sum + component.maxMarks,
     0,
   )
+  const percentage = maxTotal ? (total / maxTotal) * 100 : 0
+
+  return {
+    components,
+    displayComponents,
+    total,
+    maxTotal,
+    percentage: Number(percentage.toFixed(2)),
+    average: displayComponents.length ? Number((total / displayComponents.length).toFixed(2)) : 0,
+    result: incomplete
+      ? 'incomplete'
+      : percentage >= passingPercentage
+        ? 'pass'
+        : 'fail',
+  }
+}
+
+function calculateLabMarks(components, passingPercentage, { allowPartial = false, allowHistorical = false } = {}) {
+  let incomplete = false
+  const submittedByName = new Map(components.map((c) => [c.name.trim(), c]))
+
+  const displayComponents = defaultLabMarksComponents.flatMap((configured) => {
+    let submitted = submittedByName.get(configured.name)
+    if (!submitted && configured.name === 'Final Exam') {
+      submitted = submittedByName.get('External Practical Exam')
+    }
+    if (!submitted) {
+      incomplete = true
+      if (allowPartial || allowHistorical) return []
+      throw new Error(`Marks are missing for the "${configured.name}" component.`)
+    }
+    const marksObtained = Number(submitted.marksObtained)
+    if (!Number.isFinite(marksObtained) || marksObtained < 0 || marksObtained > configured.maxMarks) {
+      throw new Error(`Marks for "${configured.name}" must be between 0 and ${configured.maxMarks}.`)
+    }
+    return [{
+      name: configured.name,
+      marksObtained: roundMarksUp(marksObtained),
+      maxMarks: configured.maxMarks,
+      group: configured.group,
+    }]
+  })
+
+  if (displayComponents.length === 0) {
+    if (allowHistorical) {
+      return calculateLegacyMarks(components, passingPercentage)
+    }
+    throw new Error('Enter marks for at least one component.')
+  }
+
+  const total = displayComponents.reduce((sum, c) => sum + c.marksObtained, 0)
+  const maxTotal = 50
   const percentage = (total / maxTotal) * 100
 
   return {
@@ -102,8 +156,29 @@ function calculateGroupedMarks(components, passingPercentage, { allowPartial = f
 function calculateMarks(
   components,
   settings,
-  { allowHistorical = false, allowPartial = false } = {},
+  { allowHistorical = false, allowPartial = false, subject = null } = {},
 ) {
+  const hasDistinctLabComponents = components.some((c) =>
+    c.name === 'Viva 1' ||
+    c.name === 'Viva 2' ||
+    c.name === 'Lab Record' ||
+    c.name === 'External Practical Exam' ||
+    c.name === 'Lab Performance' ||
+    c.name === 'Lab Record & Viva' ||
+    c.group === 'lab_internal' ||
+    c.group === 'lab_external',
+  )
+
+  const isLab = isLabSubject(subject) || hasDistinctLabComponents
+
+  if (hasDistinctLabComponents || (isLab && !components.some((c) => c.name.includes('MST')))) {
+    return calculateLabMarks(components, settings.passingPercentage, {
+      allowPartial,
+      allowHistorical,
+    })
+  }
+
+  // Otherwise, standard theory handling
   const configuredComponents = settings.marksComponents || []
   const submittedByName = new Map()
 
@@ -228,6 +303,7 @@ function calculatePerformance(markRecords, settings) {
   for (const record of markRecords) {
     const calculated = calculateMarks(record.components, settings, {
       allowHistorical: true,
+      subject: record.subject,
     })
     const subjectId = String(record.subject?._id || record.subject)
     const key = `${subjectId}:${record.semester}:${record.academicYear}`
@@ -307,5 +383,6 @@ function calculatePerformance(markRecords, settings) {
 module.exports = {
   getMarksSettings,
   calculateMarks,
+  calculateLabMarks,
   calculatePerformance,
 }

@@ -7,6 +7,7 @@ const {
   calculateMarks,
   calculatePerformance,
 } = require('../utils/calculations')
+const { getComponentsForSubject } = require('../utils/markingScheme')
 const { isStudentEligibleForClass } = require('../utils/marksEligibility')
 
 function getId(value) {
@@ -17,6 +18,7 @@ function formatMark(mark, settings) {
   const record = mark.toObject ? mark.toObject() : mark
   const calculation = calculateMarks(record.components, settings, {
     allowHistorical: true,
+    subject: record.subject,
   })
   return {
     ...record,
@@ -68,7 +70,7 @@ async function createMarks(req, res, next) {
   try {
     const subjectFilter = { _id: req.body.subject }
     if (req.user.role === 'teacher') subjectFilter.teacher = req.user._id
-    const subject = await Subject.findOne(subjectFilter).select('class name code')
+    const subject = await Subject.findOne(subjectFilter).select('class name code isLab type credits totalMarks internalMax externalMax')
 
     if (!subject) {
       return res.status(403).json({
@@ -92,6 +94,7 @@ async function createMarks(req, res, next) {
     try {
       calculation = calculateMarks(req.body.components, settings, {
         allowPartial: true,
+        subject,
       })
     } catch (error) {
       return res.status(400).json({ message: error.message })
@@ -109,7 +112,7 @@ async function createMarks(req, res, next) {
 
     await mark.populate([
       { path: 'student', select: 'name email rollNo' },
-      { path: 'subject', select: 'name code' },
+      { path: 'subject', select: 'name code isLab type credits totalMarks internalMax externalMax' },
       { path: 'class', select: 'name semester academicYear' },
       { path: 'enteredBy', select: 'name' },
     ])
@@ -153,6 +156,7 @@ async function updateMarks(req, res, next) {
     try {
       calculation = calculateMarks(req.body.components, settings, {
         allowPartial: true,
+        subject,
       })
     } catch (error) {
       return res.status(400).json({ message: error.message })
@@ -163,7 +167,7 @@ async function updateMarks(req, res, next) {
     await mark.save()
     await mark.populate([
       { path: 'student', select: 'name email rollNo' },
-      { path: 'subject', select: 'name code' },
+      { path: 'subject', select: 'name code isLab type credits totalMarks internalMax externalMax' },
       { path: 'class', select: 'name semester academicYear' },
       { path: 'enteredBy', select: 'name' },
     ])
@@ -200,11 +204,28 @@ async function listClassSubjectMarks(req, res, next) {
       .populate('enteredBy', 'name')
       .sort({ 'student.name': 1 })
 
+    const subjectComponents = getComponentsForSubject(subject, settings)
+
     return res.json({
-      marks: marks.map((mark) => formatMark(mark, settings)),
+      marks: marks.map((mark) => {
+        const markObj = mark.toObject ? mark.toObject() : mark
+        markObj.subject = subject
+        return formatMark(markObj, settings)
+      }),
       settings: {
-        marksComponents: settings.marksComponents,
+        marksComponents: subjectComponents,
         passingPercentage: settings.passingPercentage,
+      },
+      subject: {
+        _id: subject._id,
+        name: subject.name,
+        code: subject.code,
+        isLab: subject.isLab,
+        type: subject.type,
+        credits: subject.credits,
+        totalMarks: subject.totalMarks,
+        internalMax: subject.internalMax,
+        externalMax: subject.externalMax,
       },
     })
   } catch (error) {
@@ -216,7 +237,7 @@ async function getStudentMarks(req, res, next) {
   try {
     const settings = await getMarksSettings()
     const marks = await Marks.find({ student: req.user._id })
-      .populate('subject', 'name code type')
+      .populate('subject', 'name code type isLab credits totalMarks internalMax externalMax')
       .populate('class', 'name semester academicYear')
       .populate('enteredBy', 'name')
       .sort({ academicYear: -1, semester: 1, subject: 1 })

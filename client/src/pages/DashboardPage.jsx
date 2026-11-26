@@ -64,13 +64,6 @@ function DashboardPage() {
   const isAdminMarksPage =
     dashboardRole === 'superadmin' &&
     location.pathname === '/dashboard/superadmin/marks'
-  const isUsersPage =
-    dashboardRole === 'superadmin' &&
-    (
-      location.pathname === '/dashboard/superadmin/users' ||
-      isTeachersPage ||
-      isStudentsPage
-    )
   const isClassesPage = location.pathname.endsWith('/classes')
   const isSubjectsPage = location.pathname.endsWith('/subjects')
   const isSettingsPage =
