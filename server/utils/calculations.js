@@ -41,21 +41,25 @@ function calculateLegacyMarks(components, passingPercentage) {
   }
 }
 
+// Round fractional marks upward while ignoring tiny JavaScript floating-point inaccuracies.
 function roundMarksUp(value) {
   return Math.ceil(value - Number.EPSILON * Math.max(1, Math.abs(value)))
 }
 
 function calculateGroupedMarks(components, passingPercentage, { allowPartial = false } = {}) {
   let incomplete = false
-  const displayComponents = marksGroups.flatMap((group) => {
+  const displayComponents = []
+
+  for (const group of marksGroups) {
     const groupComponents = components.filter(
       (component) => component.group === group.key,
     )
+
     if (groupComponents.length !== group.componentCount) {
       incomplete = true
     }
     if (groupComponents.length === 0 && allowPartial) {
-      return []
+      continue
     }
     if (!allowPartial && groupComponents.length !== group.componentCount) {
       throw new Error(
@@ -63,28 +67,37 @@ function calculateGroupedMarks(components, passingPercentage, { allowPartial = f
       )
     }
 
-    const average = groupComponents.reduce(
-      (sum, component) => sum + component.marksObtained,
-      0,
-    ) / groupComponents.length
+    let groupSum = 0
+    for (const component of groupComponents) {
+      groupSum += component.marksObtained
+    }
+    const average = groupSum / groupComponents.length
 
-    return [{
-      name: groupComponents.length === group.componentCount
-        ? group.label
-        : `${group.label} (${groupComponents.length}/${group.componentCount} entered)`,
+    const label = groupComponents.length === group.componentCount
+      ? group.label
+      : `${group.label} (${groupComponents.length}/${group.componentCount} entered)`
+
+    displayComponents.push({
+      name: label,
       marksObtained: roundMarksUp(average),
       maxMarks: group.maxMarks,
-    }]
-  })
-  const total = displayComponents.reduce(
-    (sum, component) => sum + component.marksObtained,
-    0,
-  )
-  const maxTotal = displayComponents.reduce(
-    (sum, component) => sum + component.maxMarks,
-    0,
-  )
+    })
+  }
+
+  let total = 0
+  let maxTotal = 0
+  for (const component of displayComponents) {
+    total += component.marksObtained
+    maxTotal += component.maxMarks
+  }
+
   const percentage = maxTotal ? (total / maxTotal) * 100 : 0
+  let result = 'fail'
+  if (incomplete) {
+    result = 'incomplete'
+  } else if (percentage >= passingPercentage) {
+    result = 'pass'
+  }
 
   return {
     components,
@@ -93,39 +106,42 @@ function calculateGroupedMarks(components, passingPercentage, { allowPartial = f
     maxTotal,
     percentage: Number(percentage.toFixed(2)),
     average: displayComponents.length ? Number((total / displayComponents.length).toFixed(2)) : 0,
-    result: incomplete
-      ? 'incomplete'
-      : percentage >= passingPercentage
-        ? 'pass'
-        : 'fail',
+    result,
   }
 }
 
 function calculateLabMarks(components, passingPercentage, { allowPartial = false, allowHistorical = false } = {}) {
   let incomplete = false
-  const submittedByName = new Map(components.map((c) => [c.name.trim(), c]))
+  const submittedByName = new Map()
+  for (const component of components) {
+    submittedByName.set(component.name.trim(), component)
+  }
 
-  const displayComponents = defaultLabMarksComponents.flatMap((configured) => {
+  const displayComponents = []
+  for (const configured of defaultLabMarksComponents) {
     let submitted = submittedByName.get(configured.name)
     if (!submitted && configured.name === 'Final Exam') {
       submitted = submittedByName.get('External Practical Exam')
     }
+
     if (!submitted) {
       incomplete = true
-      if (allowPartial || allowHistorical) return []
+      if (allowPartial || allowHistorical) continue
       throw new Error(`Marks are missing for the "${configured.name}" component.`)
     }
+
     const marksObtained = Number(submitted.marksObtained)
     if (!Number.isFinite(marksObtained) || marksObtained < 0 || marksObtained > configured.maxMarks) {
       throw new Error(`Marks for "${configured.name}" must be between 0 and ${configured.maxMarks}.`)
     }
-    return [{
+
+    displayComponents.push({
       name: configured.name,
       marksObtained: roundMarksUp(marksObtained),
       maxMarks: configured.maxMarks,
       group: configured.group,
-    }]
-  })
+    })
+  }
 
   if (displayComponents.length === 0) {
     if (allowHistorical) {
@@ -134,9 +150,19 @@ function calculateLabMarks(components, passingPercentage, { allowPartial = false
     throw new Error('Enter marks for at least one component.')
   }
 
-  const total = displayComponents.reduce((sum, c) => sum + c.marksObtained, 0)
+  let total = 0
+  for (const component of displayComponents) {
+    total += component.marksObtained
+  }
   const maxTotal = 50
   const percentage = (total / maxTotal) * 100
+
+  let result = 'fail'
+  if (incomplete) {
+    result = 'incomplete'
+  } else if (percentage >= passingPercentage) {
+    result = 'pass'
+  }
 
   return {
     components,
@@ -145,11 +171,7 @@ function calculateLabMarks(components, passingPercentage, { allowPartial = false
     maxTotal,
     percentage: Number(percentage.toFixed(2)),
     average: Number((total / displayComponents.length).toFixed(2)),
-    result: incomplete
-      ? 'incomplete'
-      : percentage >= passingPercentage
-        ? 'pass'
-        : 'fail',
+    result,
   }
 }
 
@@ -326,8 +348,10 @@ function calculatePerformance(markRecords, settings) {
     summary.total += calculated.total
     summary.maxTotal += calculated.maxTotal
     summary.averageTotal += calculated.average
-    summary.incomplete ||= calculated.result === 'incomplete'
-    hasIncompleteMarks ||= calculated.result === 'incomplete'
+    if (calculated.result === 'incomplete') {
+      summary.incomplete = true
+      hasIncompleteMarks = true
+    }
     overallTotal += calculated.total
     overallMaxTotal += calculated.maxTotal
     overallAverageTotal += calculated.average

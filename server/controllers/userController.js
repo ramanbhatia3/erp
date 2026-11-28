@@ -13,6 +13,11 @@ const {
 
 const userFields = 'name email role department class program section rollNo startingYear isActive studentServices'
 
+// Escape special regex characters before using user input in a MongoDB $regex search.
+function escapeSearchRegex(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 function createDefaultPassword() {
   return crypto.randomBytes(12).toString('base64url')
 }
@@ -70,7 +75,7 @@ async function listUsers(req, res, next) {
 
     const search = req.query.search?.trim()
     if (search) {
-      const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const escaped = escapeSearchRegex(search)
       filter.$and = [
         { $or: [{ name: { $regex: escaped, $options: 'i' } }, { email: { $regex: escaped, $options: 'i' } }, { rollNo: { $regex: escaped, $options: 'i' } }] },
       ]
@@ -323,6 +328,7 @@ async function removeStudentFromClass(req, res, next) {
   }
 }
 
+// Parse a single CSV line, preserving commas inside double-quoted values.
 function parseCsvLine(line) {
   const fields = []
   let field = ''
@@ -330,7 +336,9 @@ function parseCsvLine(line) {
 
   for (let index = 0; index < line.length; index += 1) {
     const character = line[index]
-    if (character === '"' && quoted && line[index + 1] === '"') {
+    const isEscapedQuote = character === '"' && quoted && line[index + 1] === '"'
+
+    if (isEscapedQuote) {
       field += '"'
       index += 1
     } else if (character === '"') {
@@ -357,6 +365,7 @@ async function uploadStudentsCsv(req, res, next) {
       return res.status(400).json({ message: 'The uploaded file must have a .csv extension.' })
     }
 
+    // Remove the UTF-8 BOM marker if exported from Excel before splitting lines.
     const content = req.file.buffer.toString('utf8').replace(/^\uFEFF/, '')
     const lines = content.split(/\r?\n/).filter((line) => line.trim())
     const requiredHeaders = [
@@ -400,7 +409,10 @@ async function uploadStudentsCsv(req, res, next) {
         throw new Error(`CSV row ${index + 2} must contain all required values.`)
       }
 
-      const row = Object.fromEntries(headers.map((header, fieldIndex) => [header, values[fieldIndex]]))
+      const row = {}
+      for (let fieldIndex = 0; fieldIndex < headers.length; fieldIndex += 1) {
+        row[headers[fieldIndex]] = values[fieldIndex]
+      }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) {
         throw new Error(`CSV row ${index + 2} has an invalid email address.`)
       }

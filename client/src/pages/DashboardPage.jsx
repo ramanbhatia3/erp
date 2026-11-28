@@ -120,43 +120,32 @@ function DashboardPage() {
     return <Navigate to={getDashboardPath(user)} replace />
   }
 
+  function renderPageContent() {
+    if (isTimetablePage) {
+      return dashboardRole === 'student' ? <StudentTimetablePage /> : <TimetablePage />
+    }
+    if (isEventsPage) return <EventsPage />
+    if (isAnnouncementsPage) return <AnnouncementsPage />
+    if (isDepartmentsPage) return <DepartmentsPage />
+    if (isTeachersPage) return <TeacherUsersPage />
+    if (isStudentsPage) return <StudentUsersPage />
+    if (isFeesHostelPage) return <FeesHostelPage />
+    if (isAdminMarksPage) return <TeacherMarksPage isAdmin />
+    if (isClassesPage) return <ClassesPage />
+    if (isSubjectsPage) return <SubjectsPage />
+    if (isSettingsPage) return <SettingsPage />
+    if (isTeacherAttendancePage) return <TeacherAttendancePage />
+    if (isStudentAttendancePage) return <StudentAttendancePage />
+    if (isTeacherMarksPage) return <TeacherMarksPage />
+    if (isStudentMarksPage) return <StudentMarksPage />
+    if (isStudentFeesPage) return <StudentServicePage service="Fees" />
+    if (isStudentHostelPage) return <StudentServicePage service="Hostel" />
+    return <RoleDashboard user={user} />
+  }
+
   return (
     <DashboardLayout user={user} role={dashboardRole}>
-      {isTimetablePage ? (
-        dashboardRole === 'student' ? <StudentTimetablePage /> : <TimetablePage />
-      ) : isEventsPage ? (
-        <EventsPage />
-      ) : isAnnouncementsPage ? (
-        <AnnouncementsPage />
-      ) : isDepartmentsPage ? (
-        <DepartmentsPage />
-      ) : isTeachersPage ? (
-        <TeacherUsersPage />
-      ) : isStudentsPage ? (
-        <StudentUsersPage />
-      ) : isFeesHostelPage ? (
-        <FeesHostelPage />
-      ) : isAdminMarksPage ? (
-        <TeacherMarksPage isAdmin />
-      ) : isClassesPage ? (
-        <ClassesPage />
-      ) : isSubjectsPage ? (
-        <SubjectsPage />
-      ) : isSettingsPage ? (
-        <SettingsPage />
-      ) : isTeacherAttendancePage ? (
-        <TeacherAttendancePage />
-      ) : isStudentAttendancePage ? (
-        <StudentAttendancePage />
-      ) : isTeacherMarksPage ? (
-        <TeacherMarksPage />
-      ) : isStudentMarksPage ? (
-        <StudentMarksPage />
-      ) : isStudentFeesPage ? (
-        <StudentServicePage service="Fees" />
-      ) : isStudentHostelPage ? (
-        <StudentServicePage service="Hostel" />
-      ) : <RoleDashboard user={user} />}
+      {renderPageContent()}
     </DashboardLayout>
   )
 }

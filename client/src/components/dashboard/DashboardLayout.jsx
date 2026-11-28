@@ -198,39 +198,26 @@ function DashboardLayout({ user, role, children }) {
     }
   }, [location.pathname, location.search])
 
-  const activeMenu = isDepartmentsPage
-    ? 'Departments'
-    : isTeachersPage
-      ? 'Teachers'
-      : isStudentsPage
-        ? 'Students'
-        : isFeesHostelPage
-          ? 'Fees & Hostel'
-          : isClassesPage
-            ? role === 'superadmin' ? 'Classes' : 'My Classes'
-      : isSubjectsPage
-        ? 'Subjects'
-        : isTimetablePage
-          ? 'Timetable'
-          : isAttendancePage
-            ? 'Attendance'
-            : isStudentAttendancePage
-              ? 'Attendance'
-              : isStudentMarksPage
-                ? 'Results'
-                : isStudentFeesPage
-                  ? 'Fees'
-                  : isStudentHostelPage
-                    ? 'Hostel'
-                : isTeacherMarksPage || isAdminMarksPage
-                  ? 'Marks'
-                    : isSettingsPage
-                      ? 'Settings'
-                      : isAnnouncementsPage
-                        ? 'Announcements'
-                        : isEventsPage
-                          ? 'Events'
-                          : selectedMenu
+  function getActiveMenu() {
+    if (isDepartmentsPage) return 'Departments'
+    if (isTeachersPage) return 'Teachers'
+    if (isStudentsPage) return 'Students'
+    if (isFeesHostelPage) return 'Fees & Hostel'
+    if (isClassesPage) return role === 'superadmin' ? 'Classes' : 'My Classes'
+    if (isSubjectsPage) return 'Subjects'
+    if (isTimetablePage) return 'Timetable'
+    if (isAttendancePage || isStudentAttendancePage) return 'Attendance'
+    if (isStudentMarksPage) return 'Results'
+    if (isStudentFeesPage) return 'Fees'
+    if (isStudentHostelPage) return 'Hostel'
+    if (isTeacherMarksPage || isAdminMarksPage) return 'Marks'
+    if (isSettingsPage) return 'Settings'
+    if (isAnnouncementsPage) return 'Announcements'
+    if (isEventsPage) return 'Events'
+    return selectedMenu
+  }
+
+  const activeMenu = getActiveMenu()
 
   function handleLogout() {
     logout()

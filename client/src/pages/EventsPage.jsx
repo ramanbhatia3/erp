@@ -138,7 +138,8 @@ function EventsPage() {
       to: days[days.length - 1].key,
     }
   }, [month, view])
-  const queryKey = JSON.stringify([range.from, range.to, typeFilter])
+  // Track which filter query has finished loading so we know when to show the loader.
+  const queryKey = `${range.from}|${range.to}|${typeFilter}`
   const loading = loadedQuery !== queryKey
 
   const loadEvents = useCallback(async (signal) => {
@@ -154,6 +155,7 @@ function EventsPage() {
       setLoadError('')
       setLoadedQuery(queryKey)
     } catch (error) {
+      // Ignore errors caused by cancelling an outdated request.
       if (signal?.aborted) return
       const message = messageFrom(error, 'Unable to load events.')
       setLoadError(message)
@@ -163,6 +165,7 @@ function EventsPage() {
   }, [queryKey, range, typeFilter])
 
   useEffect(() => {
+    // Cancel in-flight requests if the month/view/filter changes before they finish.
     const controller = new AbortController()
     const timer = window.setTimeout(() => loadEvents(controller.signal), 0)
     return () => {

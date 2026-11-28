@@ -44,6 +44,24 @@ function getProgramCode(value) {
   return PROGRAM_CODES.has(code) ? code : ''
 }
 
+// Convert loaded mark records into `{ [studentId]: { [componentName]: "score" } }` for form inputs.
+function buildMarksFormValues(loadedMarks) {
+  const formValues = {}
+
+  for (const mark of loadedMarks) {
+    const studentId = getId(mark.student)
+    const studentScores = {}
+
+    for (const component of mark.components) {
+      studentScores[component.name] = String(component.marksObtained)
+    }
+
+    formValues[studentId] = studentScores
+  }
+
+  return formValues
+}
+
 function TeacherMarksPage({ isAdmin = false }) {
   const [classes, setClasses] = useState([])
   const [subjects, setSubjects] = useState([])
@@ -178,7 +196,8 @@ function TeacherMarksPage({ isAdmin = false }) {
     }
   }, [classId, isAdmin, selectedClass])
 
-  const marksRequestKey = JSON.stringify([classId, selectedSubjectId, reloadKey])
+  // Key tied to current filters so loading state stays accurate without triggering synchronous setState in useEffect.
+  const marksRequestKey = `${classId}:${selectedSubjectId}:${reloadKey}`
   useEffect(() => {
     if (!classId || !selectedSubjectId) return undefined
 
@@ -195,19 +214,7 @@ function TeacherMarksPage({ isAdmin = false }) {
           setComponents(DEFAULT_THEORY_COMPONENTS)
         }
         setMarksResult({ key: marksRequestKey, marks: loadedMarks, error: '' })
-        setValues(
-          Object.fromEntries(
-            loadedMarks.map((mark) => [
-              getId(mark.student),
-              Object.fromEntries(
-                mark.components.map((component) => [
-                  component.name,
-                  String(component.marksObtained),
-                ]),
-              ),
-            ]),
-          ),
-        )
+        setValues(buildMarksFormValues(loadedMarks))
       })
       .catch((error) => {
         if (active) {
